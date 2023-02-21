@@ -18,10 +18,10 @@
  * Created on:
  *     Author:
  */
-#include "arl/impl/ModelBuildContext.h"
-#include "vsc/impl/DebugMacros.h"
-#include "vsc/impl/TaskSetUsedRand.h"
-#include "vsc/impl/TaskUnrollModelFieldRefConstraints.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
+#include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/TaskSetUsedRand.h"
+#include "vsc/dm/impl/TaskUnrollModelFieldRefConstraints.h"
 #include "TaskBuildActivitySolveModel.h"
 #include "TaskBuildActivityTraverseData.h"
 #include "TaskElaborateActivity.h"
@@ -29,10 +29,12 @@
 #include "TaskElaborateActivityBinds.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
-TaskElaborateActivity::TaskElaborateActivity(IContext *ctxt) : m_ctxt(ctxt) {
+TaskElaborateActivity::TaskElaborateActivity(dm::IContext *ctxt) : m_ctxt(ctxt) {
     DEBUG_INIT("TaskElaborateActivity", ctxt->getDebugMgr());
 }
 
@@ -41,22 +43,23 @@ TaskElaborateActivity::~TaskElaborateActivity() {
 }
 
 ElabActivity *TaskElaborateActivity::elaborate(
-    vsc::IRandState                 *randstate,
-    IModelFieldComponent            *root_comp,
-    IDataTypeAction                 *root_action) {
+    vsc::solvers::IRandState            *randstate,
+    dm::IModelFieldComponent            *root_comp,
+    dm::IDataTypeAction                 *root_action) {
     bool ret = true;
 
-    ModelBuildContext build_ctxt(m_ctxt);
-    IModelFieldAction *root_action_f = root_action->mkRootFieldT<IModelFieldAction>(
+    dm::ModelBuildContext build_ctxt(m_ctxt);
+    dm::IModelFieldAction *root_action_f = root_action->mkRootFieldT<dm::IModelFieldAction>(
         &build_ctxt,
         root_action->name(),
         false
     );
 
     // Mark all declared-random fields as used-random
-    vsc::TaskSetUsedRand().apply(root_action_f, true);
+    vsc::dm::TaskSetUsedRand().apply(root_action_f, true);
 
-    IModelActivityScope *seq = m_ctxt->mkModelActivityScope(ModelActivityScopeT::Sequence);
+    dm::IModelActivityScope *seq = m_ctxt->mkModelActivityScope(
+        dm::ModelActivityScopeT::Sequence);
     seq->addActivity(m_ctxt->mkModelActivityTraverse(
         root_action_f, 
         0,
@@ -68,7 +71,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
     seq->addField(root_action_f);
 
     m_activity = ElabActivityUP(new ElabActivity());
-    m_activity->activity_s.push_back(IModelActivityScopeUP(seq));
+    m_activity->activity_s.push_back(dm::IModelActivityScopeUP(seq));
 
     // Gen2: expand all replicate scopes
     m_activity->activity_s.push_back(IModelActivityScopeUP(
@@ -80,7 +83,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
     // The final activities revolve around binding, inference, and scheduling
     ActivityScheduleData sched_data(
         m_ctxt, 
-        dynamic_cast<IModelFieldComponentRoot *>(root_comp));
+        dynamic_cast<dm::IModelFieldComponentRoot *>(root_comp));
     TaskElaborateActivityBinds(m_ctxt).elab(
         &sched_data, 
         m_activity->activity_s.back().get());
@@ -89,8 +92,8 @@ ElabActivity *TaskElaborateActivity::elaborate(
     sched_data.initRefSelectors();
 
     // Now, grab the selectors and relevant constraints
-    std::vector<vsc::IRefSelector *> selectors;
-    std::vector<vsc::IModelConstraint *> constraints;
+    std::vector<vsc::dm::IRefSelector *> selectors;
+    std::vector<vsc::dm::IModelConstraint *> constraints;
 
     sched_data.getSelectorsConstraints(selectors, constraints);
 
@@ -98,20 +101,20 @@ ElabActivity *TaskElaborateActivity::elaborate(
         selectors.size(),
         constraints.size());
 
-    std::vector<vsc::IModelConstraint *> constraints_i;
-    std::vector<vsc::IModelConstraintUP> unroll_result;
+    std::vector<vsc::dm::IModelConstraint *> constraints_i;
+    std::vector<vsc::dm::IModelConstraintUP> unroll_result;
 
-    vsc::TaskUnrollModelFieldRefConstraints(m_ctxt).build(
+    vsc::dm::TaskUnrollModelFieldRefConstraints(m_ctxt).build(
         unroll_result,
         selectors,
         constraints_i);
 
-    vsc::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
 
-    std::vector<vsc::IModelField *> selector_fields;
-    std::vector<vsc::IModelConstraint *> selector_constraints;
+    std::vector<vsc::dm::IModelField *> selector_fields;
+    std::vector<vsc::dm::IModelConstraint *> selector_constraints;
 
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=selectors.begin();
         it!=selectors.end(); it++) {
         selector_fields.push_back((*it)->getSelector());
@@ -122,7 +125,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
         constraints.begin(),
         constraints.end());
 
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
         it=unroll_result.begin();
         it!=unroll_result.end(); it++) {
         selector_constraints.push_back(it->get());
@@ -132,9 +135,9 @@ ElabActivity *TaskElaborateActivity::elaborate(
         randstate,
         selector_fields,
         selector_constraints,
-        vsc::SolveFlags::Randomize
-        | vsc::SolveFlags::RandomizeDeclRand
-        | vsc::SolveFlags::RandomizeTopFields);
+        vsc::dm::SolveFlags::Randomize
+        | vsc::dm::SolveFlags::RandomizeDeclRand
+        | vsc::dm::SolveFlags::RandomizeTopFields);
 
     // Gen3: Assign flow-object claims and infer actions as needed
 
@@ -170,7 +173,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
     return m_activity.release();
 }
 
-void TaskElaborateActivity::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void TaskElaborateActivity::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
 #ifdef UNDEFINED
     if (a->getTarget()->isCompound()) {
         if (m_target_depth == m_depth) {
@@ -188,13 +191,13 @@ void TaskElaborateActivity::visitModelActivityTraverse(IModelActivityTraverse *a
 #endif
 }
 
-void TaskElaborateActivity::process_scope(IModelActivityScope *s) {
+void TaskElaborateActivity::process_scope(dm::IModelActivityScope *s) {
     bool more_work = false;
 
     // TODO: need some indication as to how deep to dig. Could 
     // be multiple levels of scope before we reach the 
 
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=s->activities().begin();
         it!=s->activities().end(); it++) {
         // Always propagate 'false' down
@@ -211,7 +214,7 @@ void TaskElaborateActivity::process_scope(IModelActivityScope *s) {
         m_action_target_depth++;
 
         // Go back to handle the next level of compound 
-        for (std::vector<IModelActivity *>::const_iterator
+        for (std::vector<dm::IModelActivity *>::const_iterator
             it=s->activities().begin();
             it!=s->activities().end(); it++) {
             (*it)->accept(m_this);
@@ -222,10 +225,12 @@ void TaskElaborateActivity::process_scope(IModelActivityScope *s) {
     m_more_work = more_work;
 }
 
-void TaskElaborateActivity::process_traversal(IModelActivityTraverse *t) {
+void TaskElaborateActivity::process_traversal(dm::IModelActivityTraverse *t) {
 
 }
 
-vsc::IDebug *TaskElaborateActivity::m_dbg = 0;
+dmgr::IDebug *TaskElaborateActivity::m_dbg = 0;
 
+}
+}
 }

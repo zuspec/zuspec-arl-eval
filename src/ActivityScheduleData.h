@@ -23,14 +23,16 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <vector>
-#include "arl/IContext.h"
-#include "arl/IModelComponentTreeData.h"
-#include "arl/IModelActivitySchedule.h"
-#include "arl/IModelActivityTraverse.h"
-#include "vsc/IRefSelector.h"
-#include "vsc/impl/TaskUnrollModelFieldRefConstraints.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelComponentTreeData.h"
+#include "zsp/arl/dm/IModelActivitySchedule.h"
+#include "zsp/arl/dm/IModelActivityTraverse.h"
+#include "vsc/dm/IRefSelector.h"
+#include "vsc/dm/impl/TaskUnrollModelFieldRefConstraints.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ActivityScheduleData;
 using ActivityScheduleDataUP=std::unique_ptr<ActivityScheduleData>;
@@ -41,36 +43,36 @@ public:
     struct ClaimData;
 public:
     ActivityScheduleData(
-        IContext                    *ctxt,
-        IModelComponentTreeData     *comp_data);
+        dm::IContext                    *ctxt,
+        dm::IModelComponentTreeData     *comp_data);
 
     virtual ~ActivityScheduleData();
 
     void initRefSelectors();
 
     void getSelectorsConstraints(
-        std::vector<vsc::IRefSelector *>        &refs,
-        std::vector<vsc::IModelConstraint *>    &constraints);
+        std::vector<vsc::dm::IRefSelector *>        &refs,
+        std::vector<vsc::dm::IModelConstraint *>    &constraints);
 
-    ActionTraversalData *getTraversal(IModelActivityTraverse *t);
+    ActionTraversalData *getTraversal(dm::IModelActivityTraverse *t);
 
     ActionTraversalData *addTraversal(
-        IModelFieldAction           *parent,
-        IModelActivityTraverse      *traversal,
-        vsc::IModelExpr             *cond
+        dm::IModelFieldAction           *parent,
+        dm::IModelActivityTraverse      *traversal,
+        vsc::dm::IModelExpr             *cond
         );
 
-    vsc::IRefSelector *getRefSelector(vsc::IModelFieldRef *ref);
+    vsc::dm::IRefSelector *getRefSelector(vsc::dm::IModelFieldRef *ref);
 
-    vsc::IRefSelector *addRefSelector(
-        vsc::IModelFieldRef         *ref,
-        FlowObjKindE                kind);
+    vsc::dm::IRefSelector *addRefSelector(
+        vsc::dm::IModelFieldRef         *ref,
+        dm::FlowObjKindE                kind);
 
     int32_t getFlowObjId(
-        vsc::IModelField        *obj);
+        vsc::dm::IModelField        *obj);
 
     int32_t addFlowObj(
-        vsc::IModelField        *obj);
+        vsc::dm::IModelField        *obj);
 
     // Holds backtrack information
     struct CheckPoint {
@@ -83,9 +85,9 @@ public:
 
     ActivityScheduleData::ClaimData *getClaim(
         ActivityScheduleData::ActionData    *action,
-        IModelFieldClaim                    *f);
+        dm::IModelFieldClaim                *f);
 
-    void addConstraint(vsc::IModelConstraint *c);
+    void addConstraint(vsc::dm::IModelConstraint *c);
 
 public:
 
@@ -95,8 +97,8 @@ public:
     struct ClaimData;
     using ClaimDataUP=std::unique_ptr<ClaimData>;
     struct ClaimData {
-        vsc::IRefSelectorUP                                     selector;
-        std::vector<vsc::IModelConstraintUP>                    constraints;
+        vsc::dm::IRefSelectorUP                                     selector;
+        std::vector<vsc::dm::IModelConstraintUP>                    constraints;
     };
 
     // Each action requires a set of information centering
@@ -107,31 +109,31 @@ public:
     struct ActionData {
         // Track which traversals reference this action and
         // under what circumstances
-        IModelFieldAction                                       *action;
+        dm::IModelFieldAction                                       *action;
 
         // Note: if two unconditional traversals point to the
         // same action, then we have a conflict
         std::vector<ActionTraversalData *>                      traversals;
 
-        vsc::IRefSelectorUP                                     comp_ref_sel;
+        vsc::dm::IRefSelectorUP                                     comp_ref_sel;
 
         // Need a set of ref selectors to cover resources
-        std::unordered_map<IModelFieldClaim *,ClaimDataUP>      claim_m;
+        std::unordered_map<dm::IModelFieldClaim *,ClaimDataUP>      claim_m;
         std::vector<ClaimData *>                                claim_l;
 
         // Do we need to qualify/catergorize these?
-        std::vector<vsc::IModelConstraintUP>                    constraints;
+        std::vector<vsc::dm::IModelConstraintUP>                    constraints;
 
-        ClaimData *getClaim(IModelFieldClaim *f);
+        ClaimData *getClaim(dm::IModelFieldClaim *f);
     };
 
     // There
     using ActionTraversalDataUP=std::unique_ptr<ActionTraversalData>;
     struct ActionTraversalData {
-        IModelActivityTraverse          *traversal;
+        dm::IModelActivityTraverse          *traversal;
 
         // 
-        vsc::IModelExprUP               m_cond;
+        vsc::dm::IModelExprUP               m_cond;
 
         // Action <key I/O> is connected to a pool.
         // Action comp must match this.
@@ -145,7 +147,7 @@ public:
     };
 
     struct ScheduleRegionData {
-        IModelActivitySchedule      *root;
+        dm::IModelActivitySchedule      *root;
         std::vector<int32_t>        action_ids;
         uint8_t                     *action_pairs;
 
@@ -157,32 +159,34 @@ public:
 
 private:
     struct ObjData {
-        std::unordered_map<vsc::IModelField *, int32_t>     obj2id_m;
-        std::vector<vsc::IModelField *>                     obj_l;
+        std::unordered_map<vsc::dm::IModelField *, int32_t>     obj2id_m;
+        std::vector<vsc::dm::IModelField *>                     obj_l;
     };
-    using FlowObjTypeM=std::unordered_map<vsc::IDataType *, ObjData>;
+    using FlowObjTypeM=std::unordered_map<vsc::dm::IDataType *, ObjData>;
 
 private:
-    static vsc::IDebug                                              *m_dbg;
-    IContext                                                        *m_ctxt;
-    IModelComponentTreeData                                         *m_comp_data;
-    std::unordered_map<IModelActivityTraverse *, int32_t>           m_traversal_id_m;
+    static dmgr::IDebug                                              *m_dbg;
+    dm::IContext                                                        *m_ctxt;
+    dm::IModelComponentTreeData                                         *m_comp_data;
+    std::unordered_map<dm::IModelActivityTraverse *, int32_t>           m_traversal_id_m;
     std::vector<ActionTraversalDataUP>                              m_traversal_l;
 
-    std::unordered_map<IModelFieldAction *, int32_t>                m_action_id_m;
+    std::unordered_map<dm::IModelFieldAction *, int32_t>                m_action_id_m;
     std::vector<ActionDataUP>                                       m_action_l;
 
-    std::unordered_map<vsc::IModelFieldRef *, vsc::IRefSelectorUP>  m_ref_selector_m;
-    std::vector<vsc::IRefSelector *>                                m_buffer_sel_l;
-    std::vector<vsc::IRefSelector *>                                m_resource_sel_l;
-    std::vector<vsc::IRefSelector *>                                m_stream_sel_l;
+    std::unordered_map<vsc::dm::IModelFieldRef *, vsc::dm::IRefSelectorUP>  m_ref_selector_m;
+    std::vector<vsc::dm::IRefSelector *>                                m_buffer_sel_l;
+    std::vector<vsc::dm::IRefSelector *>                                m_resource_sel_l;
+    std::vector<vsc::dm::IRefSelector *>                                m_stream_sel_l;
 
     FlowObjTypeM                                                    m_objtype_m;
-    std::vector<vsc::IModelConstraintUP>                            m_constraints;
+    std::vector<vsc::dm::IModelConstraintUP>                            m_constraints;
 
     // Need a selector per action to handle the 
 
 
 };
 
+}
+}
 }

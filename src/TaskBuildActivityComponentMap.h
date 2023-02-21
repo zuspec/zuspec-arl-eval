@@ -22,36 +22,39 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
-#include "arl/IModelActivity.h"
-#include "arl/IModelFieldAction.h"
-#include "arl/IModelFieldComponent.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IModelActivity.h"
+#include "zsp/arl/dm/IModelFieldAction.h"
+#include "zsp/arl/dm/IModelFieldComponent.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 struct ActivityComponentMap {
 
-    using AllCompMapT=std::unordered_map<IModelFieldComponent *, uint32_t>;
+    using AllCompMapT=std::unordered_map<dm::IModelFieldComponent *, uint32_t>;
 
-    AllCompMapT                         all_comp_m;
-    std::vector<IModelFieldComponent *> all_comp_l;
+    AllCompMapT                             all_comp_m;
+    std::vector<dm::IModelFieldComponent *> all_comp_l;
 };
 using ActivityComponentMapUP=std::unique_ptr<ActivityComponentMap>;
 
 
-class TaskBuildActivityComponentMap : public VisitorBase {
+class TaskBuildActivityComponentMap : public dm::VisitorBase {
 public:
-    TaskBuildActivityComponentMap(IModelFieldComponent *root_comp);
+    TaskBuildActivityComponentMap(dm::IModelFieldComponent *root_comp);
 
     virtual ~TaskBuildActivityComponentMap();
 
-    ActivityComponentMap *build(IModelActivity *root_activity);
+    ActivityComponentMap *build(dm::IModelActivity *root_activity);
 
 private:
-    IModelFieldComponent                *m_root_comp;
+    dm::IModelFieldComponent                *m_root_comp;
 
 };
 
 }
-
+}
+}
 

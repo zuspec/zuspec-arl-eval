@@ -7,7 +7,9 @@
 
 #include "ModelEvalIteratorIncrElabMgr.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ModelEvalIteratorIncrElabMgr::ModelEvalIteratorIncrElabMgr(
 		ModelEvaluatorIncrElab *eval) : m_eval(eval) {
@@ -45,17 +47,18 @@ bool ModelEvalIteratorIncrElabMgr::next() {
 	return ret;
 }
 
-ModelEvalNodeT ModelEvalIteratorIncrElabMgr::type() const {
+dm::ModelEvalNodeT ModelEvalIteratorIncrElabMgr::type() const {
 	return m_eval_s.back()->type();
 }
 
-IModelFieldAction *ModelEvalIteratorIncrElabMgr::action() {
-	return dynamic_cast<IModelFieldAction *>(m_eval_s.back()->action());
+dm::IModelFieldAction *ModelEvalIteratorIncrElabMgr::action() {
+	return dynamic_cast<dm::IModelFieldAction *>(m_eval_s.back()->action());
 }
 
-IModelEvalIterator *ModelEvalIteratorIncrElabMgr::iterator() {
+dm::IModelEvalIterator *ModelEvalIteratorIncrElabMgr::iterator() {
 	return m_eval_s.back()->iterator();
 }
 
-
+}
 } /* namespace arl */
+}

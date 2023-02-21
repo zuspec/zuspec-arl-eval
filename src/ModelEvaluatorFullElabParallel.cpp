@@ -18,17 +18,19 @@
  * Created on:
  *     Author:
  */
-#include "vsc/impl/DebugMacros.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "ModelEvaluatorFullElabParallel.h"
 #include "ModelEvaluatorFullElabSequence.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 ModelEvaluatorFullElabParallel::ModelEvaluatorFullElabParallel(
-    IContext            *ctxt,
-    vsc::IRandState     *randstate) : m_ctxt(ctxt), m_randstate(randstate) {
+    dm::IContext                *ctxt,
+    vsc::solvers::IRandState    *randstate) : m_ctxt(ctxt), m_randstate(randstate) {
     DEBUG_INIT("ModelEvaluatorFullElabParallel", ctxt->getDebugMgr())
     m_idx = -1;
 }
@@ -37,7 +39,7 @@ ModelEvaluatorFullElabParallel::~ModelEvaluatorFullElabParallel() {
 
 }
 
-void ModelEvaluatorFullElabParallel::addBranch(IModelActivity *branch) {
+void ModelEvaluatorFullElabParallel::addBranch(dm::IModelActivity *branch) {
     m_branches.push_back(branch);
 }
 
@@ -51,7 +53,7 @@ bool ModelEvaluatorFullElabParallel::next() {
         return false;
     }
 
-    m_type = ModelEvalNodeT::Action;
+    m_type = dm::ModelEvalNodeT::Action;
     m_action = 0;
     m_iterator = 0;
     m_branches.at(m_idx)->accept(m_this);
@@ -61,61 +63,63 @@ bool ModelEvaluatorFullElabParallel::next() {
 }
 
 void ModelEvaluatorFullElabParallel::visitModelActivityParallel(
-    IModelActivityParallel *a) {
+    dm::IModelActivityParallel *a) {
     DEBUG_ENTER("visitModelActivityParallel");
     ModelEvaluatorFullElabParallel *par = new ModelEvaluatorFullElabParallel(
         m_ctxt, 
         m_randstate->next());
 
-    m_type = ModelEvalNodeT::Parallel;
+    m_type = dm::ModelEvalNodeT::Parallel;
     m_iterator = par;
     DEBUG_LEAVE("visitModelActivityParallel");
 }
 
 void ModelEvaluatorFullElabParallel::visitModelActivitySequence(
-    IModelActivitySequence *a) {
-    DEBUG_ENTER("visitModelActivitySequence");
+    dm::IModelActivitySequence *a) {
+    DEBUG_ENTER(k"visitModelActivitySequence");
     ModelEvaluatorFullElabSequence *seq = new ModelEvaluatorFullElabSequence(
         m_ctxt,
         m_randstate->next(), // Not sure about this
         a);
     m_iterator = seq;
-    m_type = ModelEvalNodeT::Sequence;
+    m_type = dm::ModelEvalNodeT::Sequence;
     DEBUG_LEAVE("visitModelActivitySequence");
 }
 
 void ModelEvaluatorFullElabParallel::visitModelActivityTraverse(
-    IModelActivityTraverse *a) {
+    dm::IModelActivityTraverse *a) {
     DEBUG_ENTER("visitModelActivityTraverse");
-    std::vector<vsc::IModelConstraint *> constraints;
+    std::vector<vsc::dm::IModelConstraint *> constraints;
 
     if (a->getWithC()) {
         constraints.push_back(a->getWithC());
     }
 
     // Add in the local action constraints
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
-        it=a->getTarget()->constraints().begin();
-        it!=a->getTarget()->constraints().end(); it++) {
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
+        it=a->getTarget()->getConstraints().begin();
+        it!=a->getTarget()->getConstraints().end(); it++) {
         constraints.push_back(it->get());
     }
 
-    vsc::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
 
-    vsc::IRandStateUP state(m_randstate->next());
+    vsc::dm::IRandStateUP state(m_randstate->next());
     bool result = solver->solve(
         state.get(),
         {a->getTarget()},
         constraints,
-        vsc::SolveFlags::Randomize
-            | vsc::SolveFlags::RandomizeDeclRand
-            | vsc::SolveFlags::RandomizeTopFields);
+        vsc::dm::SolveFlags::Randomize
+            | vsc::dm::SolveFlags::RandomizeDeclRand
+            | vsc::dm::SolveFlags::RandomizeTopFields);
 
-    m_type = ModelEvalNodeT::Action;
+    m_type = dm::ModelEvalNodeT::Action;
     m_action = a->getTarget();
     DEBUG_LEAVE("visitModelActivityTraverse");
 }
 
-vsc::IDebug *ModelEvaluatorFullElabParallel::m_dbg = 0;
+dmgr::IDebug *ModelEvaluatorFullElabParallel::m_dbg = 0;
 
+}
+}
 }

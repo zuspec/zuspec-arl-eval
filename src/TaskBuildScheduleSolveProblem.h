@@ -6,28 +6,30 @@
  */
 
 #pragma once
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 #include "ScheduleSolveActionData.h"
 #include "ScheduleSolveProblem.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class TaskBuildScheduleSolveProblem : public VisitorBase {
+class TaskBuildScheduleSolveProblem : public dm::VisitorBase {
 public:
 
 	TaskBuildScheduleSolveProblem();
 
 	virtual ~TaskBuildScheduleSolveProblem();
 
-	ScheduleSolveProblem *build(IModelActivity *activity);
+	ScheduleSolveProblem *build(dm::IModelActivity *activity);
 
-	virtual void visitModelActivityParallel(IModelActivityParallel *a) override;
+	virtual void visitModelActivityParallel(dm::IModelActivityParallel *a) override;
 
-	virtual void visitModelActivitySchedule(IModelActivitySchedule *a) override;
+	virtual void visitModelActivitySchedule(dm::IModelActivitySchedule *a) override;
 
-	virtual void visitModelActivitySequence(IModelActivitySequence *a) override;
+	virtual void visitModelActivitySequence(dm::IModelActivitySequence *a) override;
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
 	enum Kind {
@@ -47,5 +49,6 @@ private:
 
 };
 
+}
 } /* namespace arl */
-
+}

@@ -18,16 +18,18 @@
  * Created on:
  *     Author:
  */
-#include "DebugMacros.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "ModelEvaluatorIncrElabParallel.h"
 #include "ModelEvaluatorThread.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 ModelEvaluatorIncrElabParallel::ModelEvaluatorIncrElabParallel(
     const std::vector<ModelEvaluatorThread *> &branches) :
     m_idx(-2), m_branches(branches.begin(), branches.end()) {
-    DEBUG_INIT("ModelEvaluatorIncrElabParallel");
+//    DEBUG_INIT("ModelEvaluatorIncrElabParallel", nullptr);
 }
 
 ModelEvaluatorIncrElabParallel::~ModelEvaluatorIncrElabParallel() {
@@ -52,28 +54,22 @@ bool ModelEvaluatorIncrElabParallel::valid() {
     return (m_idx >= 0 && m_idx < m_branches.size());
 }
 
-bool ModelEvaluatorIncrElabParallel::pop() {
-    // Ensure this iterator has been consumed as an iterator
-    // before indicating it's time to pop
-    return m_idx >= -1;
-}
-
-ModelEvalNodeT ModelEvaluatorIncrElabParallel::type() const {
+dm::ModelEvalNodeT ModelEvaluatorIncrElabParallel::type() const {
     if (m_idx < 0) {
         DEBUG("type: hardcoded Parallel");
-        return ModelEvalNodeT::Parallel;
+        return dm::ModelEvalNodeT::Parallel;
     } else {
         DEBUG("type: hardcoded Sequence");
-        return ModelEvalNodeT::Sequence;
+        return dm::ModelEvalNodeT::Sequence;
     }
 }
 
-IModelFieldAction *ModelEvaluatorIncrElabParallel::action() {
+dm::IModelFieldAction *ModelEvaluatorIncrElabParallel::action() {
     DEBUG("action: hardcoded 0");
     return 0;
 }
 
-IModelEvalIterator *ModelEvaluatorIncrElabParallel::iterator() {
+dm::IModelEvalIterator *ModelEvaluatorIncrElabParallel::iterator() {
     if (m_idx < 0) {
         return this;
     } else {
@@ -82,4 +78,8 @@ IModelEvalIterator *ModelEvaluatorIncrElabParallel::iterator() {
     }
 }
 
+dmgr::IDebug *ModelEvaluatorIncrElabParallel::m_dbg;
+
+}
+}
 }

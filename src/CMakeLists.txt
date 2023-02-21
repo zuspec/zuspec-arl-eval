@@ -7,27 +7,29 @@ file(GLOB zsp_arl_eval_SRC
 add_library(zsp-arl-eval SHARED ${zsp_arl_eval_SRC})
 
 target_include_directories(zsp-arl-eval PUBLIC
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/src/include
-    ${DEBUG_MGR_DIR}/src/include
-    ${LIBVSC_DM_DIR}/src/include
-    ${JSON_DIR}/include
     ${CMAKE_BINARY_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${debug_mgr_INCDIR}
+    ${zsp_arl_dm_INCDIR}
+    ${vsc_dm_INCDIR}
+    ${vsc_solvers_INCDIR}
     )
 
 target_link_directories(zsp-arl-eval PRIVATE
     ${CMAKE_BINARY_DIR}/lib
     ${CMAKE_BINARY_DIR}/lib64
+    ${zsp_arl_dm_LIBDIR}
+    ${vsc_dm_LIBDIR}
+    ${vsc_solvers_LIBDIR}
+    ${debug_mgr_LIBDIR}
     )
 target_link_libraries(zsp-arl-eval
     vsc-dm
     debug-mgr)
 
-add_dependencies(zsp-arl-eval 
-    LibVSC-DM 
-    ZSP-ARL-DM
-    LibVSC-Solvers
-    DebugMgr)
+#add_dependencies(zsp-arl-eval 
+#    LibVSC-DM 
+#    LibVSC-Solvers)
 
 install(TARGETS zsp-arl-eval
     DESTINATION lib

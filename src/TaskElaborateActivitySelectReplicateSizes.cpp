@@ -18,15 +18,17 @@
  * Created on:
  *     Author:
  */
-#include "vsc/impl/PrettyPrinter.h"
+#include "vsc/dm/impl/PrettyPrinter.h"
 #include "TaskElaborateActivitySelectReplicateSizes.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskElaborateActivitySelectReplicateSizes::TaskElaborateActivitySelectReplicateSizes(
-    IContext *ctxt) : m_ctxt(ctxt) {
+    dm::IContext *ctxt) : m_ctxt(ctxt) {
     
     DEBUG_INIT("TaskElaborateActivitySelectReplicateSizes", m_ctxt->getDebugMgr());
 
@@ -37,13 +39,13 @@ TaskElaborateActivitySelectReplicateSizes::~TaskElaborateActivitySelectReplicate
 }
 
 bool TaskElaborateActivitySelectReplicateSizes::eval(
-    vsc::IRandState         *randstate,
-    IModelActivity          *root) {
+    vsc::solvers::IRandState         *randstate,
+    dm::IModelActivity          *root) {
     root->accept(m_this);
 
     // Now that we have the fields, solve all at once to arrive at a
     // consistent result
-    vsc::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
 
     DEBUG("Fields: %d ; Constraints: %d", m_count_fields.size(), m_constraints.size());
 
@@ -51,21 +53,21 @@ bool TaskElaborateActivitySelectReplicateSizes::eval(
         randstate,
         m_count_fields,
         m_constraints,
-        vsc::SolveFlags::Randomize 
-        | vsc::SolveFlags::RandomizeDeclRand
-        | vsc::SolveFlags::RandomizeTopFields
+        vsc::dm::SolveFlags::Randomize 
+        | vsc::dm::SolveFlags::RandomizeDeclRand
+        | vsc::dm::SolveFlags::RandomizeTopFields
     );
 
     return ret;
 }
 
 void TaskElaborateActivitySelectReplicateSizes::visitModelActivityReplicate(
-    IModelActivityReplicate *a) {
+    dm::IModelActivityReplicate *a) {
     m_count_fields.push_back(a->getCountField());
     DEBUG_ENTER("visitModelActivityReplicate");
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
-        it=a->constraints().begin();
-        it!=a->constraints().end(); it++) {
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
+        it=a->getConstraints().begin();
+        it!=a->getConstraints().end(); it++) {
         if (m_constraint_s.insert(it->get()).second) {
             DEBUG("Add constraint");
             m_constraints.push_back(it->get());
@@ -75,18 +77,18 @@ void TaskElaborateActivitySelectReplicateSizes::visitModelActivityReplicate(
 }
 
 void TaskElaborateActivitySelectReplicateSizes::visitModelActivityScope(
-    IModelActivityScope *a) {
+    dm::IModelActivityScope *a) {
     DEBUG_ENTER("visitModelActivityScope");
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
-        it=a->constraints().begin();
-        it!=a->constraints().end(); it++) {
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
+        it=a->getConstraints().begin();
+        it!=a->getConstraints().end(); it++) {
         if (m_constraint_s.insert(it->get()).second) {
             DEBUG("Add constraint");
             m_constraints.push_back(it->get());
         }
     }
 
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->activities().begin();
         it!=a->activities().end(); it++) {
         (*it)->accept(m_this);
@@ -95,14 +97,14 @@ void TaskElaborateActivitySelectReplicateSizes::visitModelActivityScope(
 }
 
 void TaskElaborateActivitySelectReplicateSizes::visitModelActivityTraverse(
-    IModelActivityTraverse *a) {
+    dm::IModelActivityTraverse *a) {
     DEBUG_ENTER("visitModelActivityTraverse");
 
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
-        it=a->getTarget()->constraints().begin();
-        it!=a->getTarget()->constraints().end(); it++) {
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
+        it=a->getTarget()->getConstraints().begin();
+        it!=a->getTarget()->getConstraints().end(); it++) {
         if (m_constraint_s.insert(it->get()).second) {
-            DEBUG("Add constraint:\n%s", vsc::PrettyPrinter().print(it->get()));
+            DEBUG("Add constraint:\n%s", vsc::dm::PrettyPrinter().print(it->get()));
             m_constraints.push_back(it->get());
         }
     }
@@ -114,6 +116,8 @@ void TaskElaborateActivitySelectReplicateSizes::visitModelActivityTraverse(
     DEBUG_LEAVE("visitModelActivityTraverse");
 }
 
-vsc::IDebug *TaskElaborateActivitySelectReplicateSizes::m_dbg = 0;
+dmgr::IDebug *TaskElaborateActivitySelectReplicateSizes::m_dbg = 0;
 
+}
+}
 }

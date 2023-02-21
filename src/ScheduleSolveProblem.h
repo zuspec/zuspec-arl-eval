@@ -11,7 +11,9 @@
 #include "ScheduleSolveActionData.h"
 #include "ScheduleSolvePropagatorActivityPairRel.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveProblem;
 using ScheduleSolveProblemUP=std::unique_ptr<ScheduleSolveProblem>;
@@ -25,12 +27,12 @@ public:
 
 	virtual ~ScheduleSolveProblem();
 
-	ScheduleSolveActionData *addActivity(IModelActivity *activity);
+	ScheduleSolveActionData *addActivity(dm::IModelActivity *activity);
 
 	void addRelation(
-			IModelActivity		*src,
-			IModelActivity		*dst,
-			bool				is_parallel);
+			dm::IModelActivity		*src,
+			dm::IModelActivity		*dst,
+			bool				    is_parallel);
 
 private:
 	struct pair_hash {
@@ -38,7 +40,7 @@ private:
 			return std::hash<T1>()(p.first) ^ std::hash<T2>()(p.second);
 		}
 	};
-	using RelPairKeyT=std::pair<IModelActivity*,IModelActivity*>;
+	using RelPairKeyT=std::pair<dm::IModelActivity*,dm::IModelActivity*>;
 	using RelPairMapT=std::unordered_map<RelPairKeyT,ScheduleSolvePropagatorActivityPairRel*,pair_hash>;
 
 private:
@@ -47,5 +49,7 @@ private:
 	std::vector<ScheduleSolveActionDataUP>					m_actions;
 };
 
+}
 } /* namespace arl */
+}
 

@@ -18,18 +18,20 @@
  * Created on:
  *     Author:
  */
-#include "arl/impl/ModelBuildContext.h"
-#include "arl/impl/TaskVisitModelFieldInOut.h"
-#include "arl/impl/TaskVisitModelFieldClaim.h"
-#include "vsc/impl/DebugMacros.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
+#include "zsp/arl/dm/impl/TaskVisitModelFieldInOut.h"
+#include "zsp/arl/dm/impl/TaskVisitModelFieldClaim.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskElaborateActivityBinds.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskElaborateActivityBinds::TaskElaborateActivityBinds(
-    IContext *ctxt) : m_ctxt(ctxt) {
+    dm::IContext *ctxt) : m_ctxt(ctxt) {
     m_sched_data = 0;
     DEBUG_INIT("TaskElaborateActivityBinds", ctxt->getDebugMgr());
 
@@ -40,8 +42,8 @@ TaskElaborateActivityBinds::~TaskElaborateActivityBinds() {
 }
 
 bool TaskElaborateActivityBinds::elab(
-    ActivityScheduleData    *sched_data,
-    IModelActivity          *activity) {
+    ActivityScheduleData        *sched_data,
+    dm::IModelActivity          *activity) {
     DEBUG_ENTER("elab");
     m_sched_data = sched_data;
     
@@ -59,18 +61,18 @@ bool TaskElaborateActivityBinds::elab(
     return true;
 }
 
-void TaskElaborateActivityBinds::visitModelActivityBind(IModelActivityBind *a) {
+void TaskElaborateActivityBinds::visitModelActivityBind(dm::IModelActivityBind *a) {
     // TODO: capture bind relationships along with condition (if applicable)
 
 }
 
-void TaskElaborateActivityBinds::visitModelActivityParallel(IModelActivityParallel *a) {
+void TaskElaborateActivityBinds::visitModelActivityParallel(dm::IModelActivityParallel *a) {
     DEBUG_ENTER("visitModelActivityParallel");
     processActivityParallel(a);
     DEBUG_LEAVE("visitModelActivityParallel");
 }
 
-void TaskElaborateActivityBinds::visitModelActivitySchedule(IModelActivitySchedule *a) {
+void TaskElaborateActivityBinds::visitModelActivitySchedule(dm::IModelActivitySchedule *a) {
     DEBUG_ENTER("visitModelActivitySchedule");
     processActivitySchedule(a);
 
@@ -83,22 +85,22 @@ void TaskElaborateActivityBinds::visitModelActivitySchedule(IModelActivitySchedu
     DEBUG_LEAVE("visitModelActivitySchedule");
 }
 
-void TaskElaborateActivityBinds::visitModelActivitySequence(IModelActivitySequence *a) {
+void TaskElaborateActivityBinds::visitModelActivitySequence(dm::IModelActivitySequence *a) {
     DEBUG_ENTER("visitModelActivitySequence");
     processActivitySequence(a);
     DEBUG_LEAVE("visitModelActivitySequence");
 }
 
-void TaskElaborateActivityBinds::visitModelActivityScope(IModelActivityScope *a) {
+void TaskElaborateActivityBinds::visitModelActivityScope(dm::IModelActivityScope *a) {
     DEBUG_ENTER("visitActivityScope %d", a->getType());
     switch (a->getType()) {
-        case ModelActivityScopeT::Parallel: 
+        case dm::ModelActivityScopeT::Parallel: 
             processActivityParallel(a);
             break;
-        case ModelActivityScopeT::Schedule: 
+        case dm::ModelActivityScopeT::Schedule: 
             processActivitySchedule(a);
             break;
-        case ModelActivityScopeT::Sequence: 
+        case dm::ModelActivityScopeT::Sequence: 
             processActivitySequence(a);
             break;
         default:
@@ -107,7 +109,7 @@ void TaskElaborateActivityBinds::visitModelActivityScope(IModelActivityScope *a)
     DEBUG_LEAVE("visitActivityScope");
 }
 
-void TaskElaborateActivityBinds::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void TaskElaborateActivityBinds::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
     DEBUG_ENTER("visitModelActivityTraverse %s", a->getTarget()->name().c_str());
 
     ActivityScheduleData::ActionTraversalData *td = m_sched_data->getTraversal(a);
@@ -115,8 +117,8 @@ void TaskElaborateActivityBinds::visitModelActivityTraverse(IModelActivityTraver
     // Add if it doesn't already exist
     if (!td) {
         // TODO: create a condition if required
-        IModelFieldAction *parent = 0;
-        vsc::IModelExpr *cond = 0;
+        dm::IModelFieldAction *parent = 0;
+        vsc::dm::IModelExpr *cond = 0;
 
         if (m_traverse_s.size() > 0) {
             parent = m_traverse_s.back()->traversal->getTarget();
@@ -131,30 +133,30 @@ void TaskElaborateActivityBinds::visitModelActivityTraverse(IModelActivityTraver
     m_traverse_s.push_back(td);
 
     // Process inputs first
-    TaskVisitModelFieldInOut(
-        [&](IModelFieldInOut *f) { if (f->isInput()) processRefInput(f); }
+    dm::TaskVisitModelFieldInOut(
+        [&](dm::IModelFieldInOut *f) { if (f->isInput()) processRefInput(f); }
         ).visit(a->getTarget());
 
     // Then, outputs
-    TaskVisitModelFieldInOut(
-        [&](IModelFieldInOut *f) { if (!f->isInput()) processRefOutput(f); }
+    dm::TaskVisitModelFieldInOut(
+        [&](dm::IModelFieldInOut *f) { if (!f->isInput()) processRefOutput(f); }
         ).visit(a->getTarget());
 
     // Push a scope for collecting resources
     m_resource_s.push_back(ResourceClaimM());
-    TaskVisitModelFieldClaim(
-        [&](IModelFieldClaim *f) { processClaim(f); }
+    dm::TaskVisitModelFieldClaim(
+        [&](dm::IModelFieldClaim *f) { processClaim(f); }
         ).visit(a->getTarget());
     
     const ResourceClaimM &last = m_resource_s.back();
 
     // Note: these constraints are really per-type, and shouldn't need
     // to be created during traversal analysis
-    for (std::vector<vsc::IDataType *>::const_iterator
+    for (std::vector<vsc::dm::IDataType *>::const_iterator
         dt_it=last.types.begin();
         dt_it!=last.types.end(); dt_it++) {
 
-        std::unordered_map<vsc::IDataType *, ResourceClaimType>::const_iterator l_it;
+        std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>::const_iterator l_it;
         l_it=last.claims.find(*dt_it);
 
         // TODO: add lock <-> lock exclusion constraints
@@ -165,16 +167,16 @@ void TaskElaborateActivityBinds::visitModelActivityTraverse(IModelActivityTraver
                     m_ctxt->mkModelConstraintExpr(
                         m_ctxt->mkModelExprBin(
                             m_ctxt->mkModelExprFieldRef(l_it->second.lock.at(i)->getSelector()),
-                            vsc::BinOp::Ne,
+                            vsc::dm::BinOp::Ne,
                             m_ctxt->mkModelExprFieldRef(l_it->second.lock.at(j)->getSelector()))));
             }
         }
 
         // TODO: add lock <-> share exclusion constraints
-        for (std::vector<vsc::IRefSelector *>::const_iterator
+        for (std::vector<vsc::dm::IRefSelector *>::const_iterator
             ll_it=l_it->second.lock.begin();
             ll_it!=l_it->second.lock.end(); ll_it++) {
-            for (std::vector<vsc::IRefSelector *>::const_iterator
+            for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                 ls_it=l_it->second.share.begin();
                 ls_it!=l_it->second.share.end(); ls_it++) {
                 DEBUG("TODO: Add action-specific lock <-> share constraints");
@@ -182,7 +184,7 @@ void TaskElaborateActivityBinds::visitModelActivityTraverse(IModelActivityTraver
                     m_ctxt->mkModelConstraintExpr(
                         m_ctxt->mkModelExprBin(
                             m_ctxt->mkModelExprFieldRef((*ll_it)->getSelector()),
-                            vsc::BinOp::Ne,
+                            vsc::dm::BinOp::Ne,
                             m_ctxt->mkModelExprFieldRef((*ls_it)->getSelector()))));
             }
         }
@@ -207,10 +209,10 @@ void TaskElaborateActivityBinds::visitModelActivityTraverse(IModelActivityTraver
     DEBUG_LEAVE("visitModelActivityTraverse %s", a->getTarget()->name().c_str());
 }
 
-void TaskElaborateActivityBinds::processClaim(IModelFieldClaim *f) {
+void TaskElaborateActivityBinds::processClaim(dm::IModelFieldClaim *f) {
     DEBUG_ENTER("processClaim");
 
-    std::unordered_map<vsc::IDataType *, ResourceClaimType>::iterator it;
+    std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>::iterator it;
 
     if ((it=m_resource_s.back().claims.find(f->getDataType())) == m_resource_s.back().claims.end()) {
         it = m_resource_s.back().claims.insert({f->getDataType(), ResourceClaimType()}).first;
@@ -231,16 +233,16 @@ void TaskElaborateActivityBinds::processClaim(IModelFieldClaim *f) {
     DEBUG_LEAVE("processClaim");
 }
 
-void TaskElaborateActivityBinds::processRefInput(IModelFieldInOut *f) {
+void TaskElaborateActivityBinds::processRefInput(dm::IModelFieldInOut *f) {
     DEBUG_ENTER("processRefInput");
 
-    vsc::IRefSelector *sel = m_sched_data->getRefSelector(f);
+    vsc::dm::IRefSelector *sel = m_sched_data->getRefSelector(f);
     if (!sel) {
-        sel = m_sched_data->addRefSelector(f, f->getDataTypeT<IDataTypeFlowObj>()->kind());
+        sel = m_sched_data->addRefSelector(f, f->getDataTypeT<dm::IDataTypeFlowObj>()->kind());
     }
 
-    switch (f->getDataTypeT<IDataTypeFlowObj>()->kind()) {
-        case FlowObjKindE::Buffer: {
+    switch (f->getDataTypeT<dm::IDataTypeFlowObj>()->kind()) {
+        case dm::FlowObjKindE::Buffer: {
             FlowObjType2ObjM::iterator it = m_buffer_s.back().find(f->getDataType());
             if (it != m_buffer_s.back().end()) {
                 DEBUG("%d available objects", it->second.size());
@@ -260,14 +262,14 @@ void TaskElaborateActivityBinds::processRefInput(IModelFieldInOut *f) {
     DEBUG_LEAVE("processRefInput");
 }
 
-void TaskElaborateActivityBinds::processRefOutput(IModelFieldInOut *f) {
+void TaskElaborateActivityBinds::processRefOutput(dm::IModelFieldInOut *f) {
     DEBUG_ENTER("processRefOutput");
     // Determine what kind of object this is 
 
     // Create an object if this field isn't already populated
     int32_t id;
     if (!f->getRef()) {
-        arl::ModelBuildContext build_ctxt(m_ctxt);
+        dm::ModelBuildContext build_ctxt(m_ctxt);
         f->setRef(f->getDataType()->mkRootField(&build_ctxt, f->name(), false));
 
         // Add this object to the collection
@@ -276,8 +278,8 @@ void TaskElaborateActivityBinds::processRefOutput(IModelFieldInOut *f) {
         id = m_sched_data->getFlowObjId(f->getRef());
     }
 
-    switch (f->getDataTypeT<IDataTypeFlowObj>()->kind()) {
-        case FlowObjKindE::Buffer: {
+    switch (f->getDataTypeT<dm::IDataTypeFlowObj>()->kind()) {
+        case dm::FlowObjKindE::Buffer: {
             FlowObjType2ObjM::iterator it = m_buffer_s.back().find(f->getDataType());
             if (it == m_buffer_s.back().end()) {
                 it = m_buffer_s.back().insert({f->getDataType(), std::vector<int32_t>()}).first;
@@ -291,7 +293,7 @@ void TaskElaborateActivityBinds::processRefOutput(IModelFieldInOut *f) {
     DEBUG_LEAVE("processRefOutput");
 }
 
-void TaskElaborateActivityBinds::processActivityParallel(IModelActivityScope *a) {
+void TaskElaborateActivityBinds::processActivityParallel(dm::IModelActivityScope *a) {
     DEBUG_ENTER("processActivityParallel");
     // TODO: If any branch has a schedule prior to any action, then we should 
     // treat the parallel as if it were a schedule with some specific
@@ -308,7 +310,7 @@ void TaskElaborateActivityBinds::processActivityParallel(IModelActivityScope *a)
     // Incorporate buffer/state in containing object state
     ResourceClaimM combined_claim_data;
 
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->activities().begin();
         it!=a->activities().end(); it++) {
         m_resource_s.push_back(ResourceClaimM());
@@ -319,22 +321,22 @@ void TaskElaborateActivityBinds::processActivityParallel(IModelActivityScope *a)
             // Add new resource constraints to the action
 
             // Iterate through the types introduced by this 
-            for (std::vector<vsc::IDataType *>::const_iterator
+            for (std::vector<vsc::dm::IDataType *>::const_iterator
                 rt_it=m_resource_s.back().types.begin();
                 rt_it!=m_resource_s.back().types.end(); rt_it++) {
                 DEBUG("Checking resource type %p from parallel branch", *rt_it);
-                std::unordered_map<vsc::IDataType *, ResourceClaimType>::const_iterator
+                std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>::const_iterator
                     ex_rt_it = combined_claim_data.claims.find(*rt_it);
                 if (ex_rt_it != combined_claim_data.claims.end()) {
                     // Ensure that no two locks between the two sets claims the same resource
-                    std::unordered_map<vsc::IDataType *, ResourceClaimType>::const_iterator
+                    std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>::const_iterator
                         n_rt_it = m_resource_s.back().claims.find(*rt_it); 
 
                     // Add lock <-> lock constraints
-                    for (std::vector<vsc::IRefSelector *>::const_iterator
+                    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                         n_it=n_rt_it->second.lock.begin();
                         n_it!=n_rt_it->second.lock.end(); n_it++) {
-                        for (std::vector<vsc::IRefSelector *>::const_iterator
+                        for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                             e_it=ex_rt_it->second.lock.begin();
                             e_it!=ex_rt_it->second.lock.end(); e_it++) {
                             DEBUG("Add lock <-> lock constraint");
@@ -342,16 +344,16 @@ void TaskElaborateActivityBinds::processActivityParallel(IModelActivityScope *a)
                                 m_ctxt->mkModelConstraintExpr(
                                     m_ctxt->mkModelExprBin(
                                         m_ctxt->mkModelExprFieldRef((*n_it)->getSelector()),
-                                        vsc::BinOp::Ne,
+                                        vsc::dm::BinOp::Ne,
                                         m_ctxt->mkModelExprFieldRef((*e_it)->getSelector()))));
                         }
                     }
 
                     // Add lock <-> share constraints
-                    for (std::vector<vsc::IRefSelector *>::const_iterator
+                    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                         n_it=n_rt_it->second.lock.begin();
                         n_it!=n_rt_it->second.lock.end(); n_it++) {
-                        for (std::vector<vsc::IRefSelector *>::const_iterator
+                        for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                             e_it=ex_rt_it->second.share.begin();
                             e_it!=ex_rt_it->second.share.end(); e_it++) {
                             DEBUG("Add lock <-> share constraint");
@@ -359,17 +361,17 @@ void TaskElaborateActivityBinds::processActivityParallel(IModelActivityScope *a)
                                 m_ctxt->mkModelConstraintExpr(
                                     m_ctxt->mkModelExprBin(
                                         m_ctxt->mkModelExprFieldRef((*n_it)->getSelector()),
-                                        vsc::BinOp::Ne,
+                                        vsc::dm::BinOp::Ne,
                                         m_ctxt->mkModelExprFieldRef((*e_it)->getSelector()))));
                         }
                     }
 
                     /* Isn't this a duplicate?
                     // Add share <-> lock constraints
-                    for (std::vector<vsc::IRefSelector *>::const_iterator
+                    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                         n_it=n_rt_it->second.share.begin();
                         n_it!=n_rt_it->second.share.end(); n_it++) {
-                        for (std::vector<vsc::IRefSelector *>::const_iterator
+                        for (std::vector<vsc::dm::IRefSelector *>::const_iterator
                             e_it=ex_rt_it->second.lock.begin();
                             e_it!=ex_rt_it->second.lock.end(); e_it++) {
                             DEBUG("TODO: add share <-> lock constraint");
@@ -389,9 +391,9 @@ void TaskElaborateActivityBinds::processActivityParallel(IModelActivityScope *a)
     DEBUG_LEAVE("processActivityParallel");
 }
 
-void TaskElaborateActivityBinds::processActivitySchedule(IModelActivityScope *a) {
+void TaskElaborateActivityBinds::processActivitySchedule(dm::IModelActivityScope *a) {
     DEBUG_ENTER("processActivitySchedule");
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->activities().begin();
         it!=a->activities().end(); it++) {
         (*it)->accept(m_this);
@@ -399,14 +401,14 @@ void TaskElaborateActivityBinds::processActivitySchedule(IModelActivityScope *a)
     DEBUG_LEAVE("processActivitySchedule");
 }
 
-void TaskElaborateActivityBinds::processActivitySequence(IModelActivityScope *a) {
+void TaskElaborateActivityBinds::processActivitySequence(dm::IModelActivityScope *a) {
     DEBUG_ENTER("processActivitySequence");
     // Progress any refs/claims on this 
 
     // Map <FlowOBjT> -> List<Index>
     // 
 
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->activities().begin();
         it!=a->activities().end(); it++) {
         (*it)->accept(m_this);
@@ -418,11 +420,11 @@ void TaskElaborateActivityBinds::processActivitySequence(IModelActivityScope *a)
 void TaskElaborateActivityBinds::propagateResources(
         ResourceClaimM              &dst,
         const ResourceClaimM        &src) {
-    for (std::vector<vsc::IDataType *>::const_iterator
+    for (std::vector<vsc::dm::IDataType *>::const_iterator
         rt_it=src.types.begin();
         rt_it!=src.types.end(); rt_it++) {
-        std::unordered_map<vsc::IDataType *, ResourceClaimType>::iterator cc_it;
-        std::unordered_map<vsc::IDataType *, ResourceClaimType>::const_iterator bc_it;
+        std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>::iterator cc_it;
+        std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>::const_iterator bc_it;
 
         bc_it = src.claims.find(*rt_it);
 
@@ -431,14 +433,14 @@ void TaskElaborateActivityBinds::propagateResources(
             dst.types.push_back(*rt_it);
         }
 
-        for (std::vector<vsc::IRefSelector *>::const_iterator
+        for (std::vector<vsc::dm::IRefSelector *>::const_iterator
             cl_it=bc_it->second.lock.begin();
             cl_it!=bc_it->second.lock.end(); cl_it++) {
             DEBUG("Adding lock %p", *cl_it);
             cc_it->second.lock.push_back(*cl_it);
         }
 
-        for (std::vector<vsc::IRefSelector *>::const_iterator
+        for (std::vector<vsc::dm::IRefSelector *>::const_iterator
             cl_it=bc_it->second.share.begin();
             cl_it!=bc_it->second.share.end(); cl_it++) {
             cc_it->second.share.push_back(*cl_it);
@@ -446,6 +448,8 @@ void TaskElaborateActivityBinds::propagateResources(
     }
 }
 
-vsc::IDebug *TaskElaborateActivityBinds::m_dbg = 0;
+dmgr::IDebug *TaskElaborateActivityBinds::m_dbg = 0;
 
+}
+}
 }

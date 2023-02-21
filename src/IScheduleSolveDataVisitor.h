@@ -7,7 +7,9 @@
 
 #pragma once
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class IScheduleSolveDataVisitor {
 public:
@@ -16,4 +18,6 @@ public:
 
 };
 
+}
+}
 }

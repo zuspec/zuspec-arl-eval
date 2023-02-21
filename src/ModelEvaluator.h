@@ -6,35 +6,39 @@
  */
 
 #pragma once
-#include "arl/impl/VisitorBase.h"
-#include "arl/IContext.h"
-#include "arl/IModelActivity.h"
-#include "arl/IModelEvaluator.h"
-#include "arl/IModelFieldComponent.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelActivity.h"
+#include "zsp/arl/dm/IModelFieldComponent.h"
+#include "zsp/arl/eval/IModelEvaluator.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class ModelEvaluator : public IModelEvaluator, public VisitorBase {
+class ModelEvaluator : 
+    public IModelEvaluator, 
+    public dm::VisitorBase {
 public:
 	ModelEvaluator(
-		IContext 				*ctxt,
-		ModelEvaluatorKind		kind);
+		dm::IContext 				*ctxt,
+		ModelEvaluatorKind		    kind);
 
 	virtual ~ModelEvaluator();
 
-	virtual IModelEvalIterator *eval(
-			const vsc::IRandState	*randstate,
-			IModelFieldComponent	*root_comp,
-			IDataTypeAction			*root_action) override;
+	virtual dm::IModelEvalIterator *eval(
+			const vsc::solvers::IRandState	*randstate,
+			dm::IModelFieldComponent	    *root_comp,
+			IDataTypeAction			        *root_action) override;
 
 private:
-	IContext						*m_ctxt;
-	IModelEvaluatorUP				m_impl;
-
-
+	dm::IContext						*m_ctxt;
+	IModelEvaluatorUP				    m_impl;
 
 
 };
 
+}
 } /* namespace arl */
+}
 

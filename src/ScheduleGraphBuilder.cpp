@@ -7,7 +7,9 @@
 
 #include "ScheduleGraphBuilder.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleGraphBuilder::ScheduleGraphBuilder() {
 	// TODO Auto-generated constructor stub
@@ -20,7 +22,7 @@ ScheduleGraphBuilder::~ScheduleGraphBuilder() {
 
 void ScheduleGraphBuilder::build(
 			std::vector<ScheduleGraphNodeUP>		&nodes,
-			const std::vector<vsc::IModelField *>	&actions,
+			const std::vector<vsc::dm::IModelField *>	&actions,
 			const ScheduleSolveDataActionRel					&schedrel) {
 	/*
 	for (uint32_t i=0; i<actions.size(); i++) {
@@ -44,4 +46,6 @@ void ScheduleGraphBuilder::build(
 	}
 }
 
+}
 } /* namespace arl */
+}

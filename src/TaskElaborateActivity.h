@@ -19,20 +19,22 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 struct ElabActivity {
-    std::vector<IModelActivityScopeUP>      activity_s;
-    IModelActivityScope                     *root;
+    std::vector<dm::IModelActivityScopeUP>      activity_s;
+    dm::IModelActivityScope                     *root;
 };
 using ElabActivityUP=std::unique_ptr<ElabActivity>;
 
-class TaskElaborateActivity : public VisitorBase {
+class TaskElaborateActivity : public dm::VisitorBase {
 public:
-    TaskElaborateActivity(IContext *ctxt);
+    TaskElaborateActivity(dm::IContext *ctxt);
 
     virtual ~TaskElaborateActivity();
 
@@ -44,11 +46,11 @@ public:
      * @return IModelActivity* 
      */
     ElabActivity *elaborate(
-        vsc::IRandState             *randstate,
-        IModelFieldComponent        *root_comp,
-        IDataTypeAction             *root_action);
+        vsc::solvers::IRandState             *randstate,
+        dm::IModelFieldComponent        *root_comp,
+        dm::IDataTypeAction             *root_action);
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
     enum class StepT {
@@ -57,13 +59,13 @@ private:
 
 private:
 
-    void process_scope(IModelActivityScope *s);
+    void process_scope(dm::IModelActivityScope *s);
 
-    void process_traversal(IModelActivityTraverse *t);
+    void process_traversal(dm::IModelActivityTraverse *t);
 
 private:
-    static vsc::IDebug              *m_dbg;
-    IContext                        *m_ctxt;
+    static dmgr::IDebug             *m_dbg;
+    dm::IContext                    *m_ctxt;
     ElabActivityUP                  m_activity;
     int32_t                         m_scope_search_depth;
     int32_t                         m_action_depth;
@@ -74,5 +76,6 @@ private:
 };
 
 }
-
+}
+}
 

@@ -19,41 +19,47 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/IModelEvaluator.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/eval/IModelEvaluator.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 
-class ModelEvaluatorIncrElab : public virtual IModelEvaluator, public VisitorBase {
+class ModelEvaluatorIncrElab : 
+    public virtual IModelEvaluator, 
+    public virtual dm::VisitorBase {
 public:
-    ModelEvaluatorIncrElab(IContext *ctxt);
+    ModelEvaluatorIncrElab(dm::IContext *ctxt);
 
     virtual ~ModelEvaluatorIncrElab();
 
-    virtual IModelEvalIterator *eval(
-        const vsc::IRandState           *randstate,
-        IModelFieldComponent            *root_comp,
-        IDataTypeAction                 *root_action) override;
+    virtual dm::IModelEvalIterator *eval(
+        const vsc::solvers::IRandState      *randstate,
+        dm::IModelFieldComponent            *root_comp,
+        dm::IDataTypeAction                 *root_action) override;
 
-	virtual IModelEvalIterator *next();
+	virtual dm::IModelEvalIterator *next();
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static vsc::IDebug              *m_dbg;
-    IContext                        *m_ctxt;
-	vsc::IRandStateUP				m_randstate;
-	IModelFieldActionUP				m_action;
-	IModelActivityTraverseUP		m_dummy_activity;
-	uint32_t						m_activity_idx;
-	std::vector<IModelActivity *>	m_activities;
-	IModelEvalIterator				*m_next;
+    static dmgr::IDebug                 *m_dbg;
+    dm::IContext                        *m_ctxt;
+	vsc::solvers::IRandStateUP		    m_randstate;
+	dm::IModelFieldActionUP			    m_action;
+	dm::IModelActivityTraverseUP	    m_dummy_activity;
+	uint32_t						    m_activity_idx;
+	std::vector<dm::IModelActivity *>	m_activities;
+	dm::IModelEvalIterator				*m_next;
 
 };
 
+}
+}
 }
 
 

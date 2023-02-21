@@ -7,7 +7,9 @@
 
 #include "ScheduleSolveProblem.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveProblem::ScheduleSolveProblem() {
 	// TODO Auto-generated constructor stub
@@ -19,7 +21,7 @@ ScheduleSolveProblem::~ScheduleSolveProblem() {
 }
 
 ScheduleSolveActionData *ScheduleSolveProblem::addActivity(
-		IModelActivity *activity) {
+		dm::IModelActivity *activity) {
 	ScheduleSolveActionData *ret = new ScheduleSolveActionData(activity, false);
 
 	m_actions.push_back(ScheduleSolveActionDataUP(ret));
@@ -27,4 +29,6 @@ ScheduleSolveActionData *ScheduleSolveProblem::addActivity(
 	return ret;
 }
 
+}
 } /* namespace arl */
+}

@@ -20,17 +20,19 @@
  */
 #pragma once
 #include <vector>
-#include "arl/IContext.h"
-#include "arl/IModelEvalIterator.h"
-#include "vsc/IRandState.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
+#include "vsc/solvers/IRandState.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class ModelEvaluatorThread : public virtual IModelEvalIterator {
+class ModelEvaluatorThread : public virtual dm::IModelEvalIterator {
 public:
     ModelEvaluatorThread(
-        IContext            *m_ctxt,
-        vsc::IRandState     *randstate);
+        dm::IContext            *m_ctxt,
+        vsc::solvers::IRandState     *randstate);
 
     virtual ~ModelEvaluatorThread();
 
@@ -38,34 +40,35 @@ public:
 
     virtual bool valid() override;
 
-	virtual bool pop() override { return false; }
+	virtual dm::ModelEvalNodeT type() const override;
 
-	virtual ModelEvalNodeT type() const override;
-
-	virtual IModelFieldAction *action() override;
+	virtual dm::IModelFieldAction *action() override;
 
 	virtual IModelEvalIterator *iterator() override;
 
-    IContext *ctxt() const { return m_ctxt; }
+    dm::IContext *ctxt() const { return m_ctxt; }
 
-    vsc::IRandState *randstate() { return m_randstate.get(); }
+    vsc::solvers::IRandState *randstate() { return m_randstate.get(); }
 
     void pushIterator(IModelEvalIterator *it);
 
-    void pushComponent(IModelFieldComponent *comp);
+    void pushComponent(dm::IModelFieldComponent *comp);
 
     void popComponent();
 
-    IModelFieldComponent *component() const {
+    dm::IModelFieldComponent *component() const {
         return m_component_s.back();
     }
 
 private:
-    IContext                                *m_ctxt;
-    std::vector<IModelFieldComponent *>     m_component_s;
-    vsc::IRandStateUP                       m_randstate;
-    std::vector<IModelEvalIterator *>       m_iter_s;
+    static dmgr::IDebug                         *m_dbg;
+    dm::IContext                                *m_ctxt;
+    std::vector<dm::IModelFieldComponent *>     m_component_s;
+    vsc::solvers::IRandStateUP                  m_randstate;
+    std::vector<IModelEvalIterator *>           m_iter_s;
 
 };
 
+}
+}
 }

@@ -8,9 +8,11 @@
 #include "ScheduleSolver.h"
 #include "ScheduleSolveEvalQueue.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-ScheduleSolver::ScheduleSolver(IContext *ctxt) : m_ctxt(ctxt) {
+ScheduleSolver::ScheduleSolver(dm::IContext *ctxt) : m_ctxt(ctxt) {
 	m_complete = false;
 
 }
@@ -20,8 +22,8 @@ ScheduleSolver::~ScheduleSolver() {
 }
 
 std::pair<ExecGraphNode *, std::string> ScheduleSolver::solve(
-			ModelFieldComponent				*root_comp,
-			IDataTypeAction					*root_action) {
+			dm::ModelFieldComponent				*root_comp,
+			dm::IDataTypeAction					*root_action) {
 	ScheduleSolveEvalQueue *qn = new ScheduleSolveEvalQueue();
 	ScheduleSolveEvalQueue *qp = new ScheduleSolveEvalQueue();
 
@@ -49,4 +51,6 @@ std::pair<ExecGraphNode *, std::string> ScheduleSolver::solve(
 
 }
 
+}
 } /* namespace arl */
+}

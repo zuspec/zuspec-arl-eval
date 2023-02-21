@@ -21,6 +21,8 @@ package:
 
   - name: default-dev
     deps:
+    - name: ivpm
+      url: https://github.com/fvutils/ivpm.git
     - name: libvsc-dm
       url: https://github.com/vsc-tools/libvsc-dm.git
       branch: dm-refactor

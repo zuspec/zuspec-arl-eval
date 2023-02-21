@@ -7,11 +7,13 @@
 
 #include "ScheduleSolveActionData.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveActionData::ScheduleSolveActionData(
-		IModelActivity				*activity,
-		bool						owned) : m_activity(activity), m_owned(owned),
+		dm::IModelActivity				*activity,
+		bool						    owned) : m_activity(activity), m_owned(owned),
 				m_node(new ScheduleGraphNode(activity, 0)) {
 
 }
@@ -22,4 +24,6 @@ ScheduleSolveActionData::~ScheduleSolveActionData() {
 	}
 }
 
+}
 } /* namespace arl */
+}

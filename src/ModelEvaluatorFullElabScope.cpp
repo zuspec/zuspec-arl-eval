@@ -18,17 +18,19 @@
  * Created on:
  *     Author:
  */
-#include "vsc/impl/DebugMacros.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "ModelEvaluatorFullElabScope.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 ModelEvaluatorFullElabScope::ModelEvaluatorFullElabScope(
-    IContext            *ctxt,
-    vsc::IRandState     *randstate,
-    IModelActivityScope *scope) : 
+    dm::IContext                *ctxt,
+    vsc::solvers::IRandState    *randstate,
+    dm::IModelActivityScope     *scope) : 
         m_ctxt(ctxt), m_randstate(randstate), m_scope(scope),
         m_idx(-1) {
     DEBUG_INIT("ModelEvaluatorFullElabScope", ctxt->getDebugMgr());
@@ -63,23 +65,19 @@ bool ModelEvaluatorFullElabScope::valid() {
     return (m_idx < m_scope->activities().size());
 }
 
-bool ModelEvaluatorFullElabScope::pop() {
-    return false;
-}
-
-ModelEvalNodeT ModelEvaluatorFullElabScope::type() const {
+dm::ModelEvalNodeT ModelEvaluatorFullElabScope::type() const {
     return m_type;
 }
 
-IModelFieldAction *ModelEvaluatorFullElabScope::action() {
+dm::IModelFieldAction *ModelEvaluatorFullElabScope::action() {
     return m_action;
 }
 
-IModelEvalIterator *ModelEvaluatorFullElabScope::iterator() {
+dm::IModelEvalIterator *ModelEvaluatorFullElabScope::iterator() {
     return m_iterator;
 }
 
-void ModelEvaluatorFullElabScope::visitModelActivityScope(IModelActivityScope *a) {
+void ModelEvaluatorFullElabScope::visitModelActivityScope(dm::IModelActivityScope *a) {
     DEBUG_ENTER("visitModelActivityScope");
     // Return a
     ModelEvaluatorFullElabScope *scope = new ModelEvaluatorFullElabScope(
@@ -87,51 +85,53 @@ void ModelEvaluatorFullElabScope::visitModelActivityScope(IModelActivityScope *a
         m_randstate->clone(), // Not sure about this
         a);
     m_iterator = scope;
-    m_type = (a->getType() == ModelActivityScopeT::Parallel)?
-        ModelEvalNodeT::Parallel:
-        ModelEvalNodeT::Sequence;
+    m_type = (a->getType() == dm::ModelActivityScopeT::Parallel)?
+        dm::ModelEvalNodeT::Parallel:
+        dm::ModelEvalNodeT::Sequence;
     DEBUG_LEAVE("visitModelActivityScope");
 }
 
-void ModelEvaluatorFullElabScope::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void ModelEvaluatorFullElabScope::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
     DEBUG_ENTER("visitModelActivityTraverse");
-    std::vector<vsc::IModelConstraint *> constraints;
+    std::vector<vsc::dm::IModelConstraint *> constraints;
 
     if (a->getWithC()) {
         constraints.push_back(a->getWithC());
     }
 
     // Add in the local action constraints
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
-        it=a->getTarget()->constraints().begin();
-        it!=a->getTarget()->constraints().end(); it++) {
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
+        it=a->getTarget()->getConstraints().begin();
+        it!=a->getTarget()->getConstraints().end(); it++) {
         constraints.push_back(it->get());
     }
 
-    vsc::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
 
     bool result = solver->solve(
         m_randstate.get(),
         {a->getTarget()},
         constraints,
-        vsc::SolveFlags::Randomize
-            | vsc::SolveFlags::RandomizeDeclRand
-            | vsc::SolveFlags::RandomizeTopFields);
+        vsc::dm::SolveFlags::Randomize
+            | vsc::dm::SolveFlags::RandomizeDeclRand
+            | vsc::dm::SolveFlags::RandomizeTopFields);
 
-    m_type = ModelEvalNodeT::Action;
+    m_type = dm::ModelEvalNodeT::Action;
     m_action = a->getTarget();
 
     if (a->getActivity()) {
         m_iterator = new ModelEvaluatorFullElabScope(
             m_ctxt,
             m_randstate->next(),
-            dynamic_cast<IModelActivityScope *>(a->getActivity())
+            dynamic_cast<dm::IModelActivityScope *>(a->getActivity())
         );
     }
 
     DEBUG_LEAVE("visitModelActivityTraverse");
 }
 
-vsc::IDebug *ModelEvaluatorFullElabScope::m_dbg = 0;
+dmgr::IDebug *ModelEvaluatorFullElabScope::m_dbg = 0;
 
+}
+}
 }

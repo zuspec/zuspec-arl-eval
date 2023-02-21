@@ -8,7 +8,9 @@
 #pragma once
 #include <string>
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ExecGraphNode;
 
@@ -41,5 +43,7 @@ private:
 	std::string			m_str;
 };
 
+}
 } /* namespace arl */
+}
 

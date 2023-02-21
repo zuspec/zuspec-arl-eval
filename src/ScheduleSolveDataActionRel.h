@@ -12,7 +12,9 @@
 #include <vector>
 #include "ScheduleSolveDataBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 enum class ScheduleRelE {
 	SeqAB = 1,
@@ -69,5 +71,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

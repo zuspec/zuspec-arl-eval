@@ -7,7 +7,9 @@
 
 #pragma once
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class IScheduleSolveChoice {
 public:
@@ -23,4 +25,6 @@ public:
 
 };
 
+}
+}
 }

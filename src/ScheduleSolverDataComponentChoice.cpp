@@ -7,10 +7,12 @@
 
 #include "ScheduleSolverDataComponentChoice.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolverDataComponentChoice::ScheduleSolverDataComponentChoice(
-		const ComponentMap		&cm) : m_comp_m(cm) {
+		const dm::ComponentMap		&cm) : m_comp_m(cm) {
 
 }
 
@@ -19,4 +21,6 @@ ScheduleSolverDataComponentChoice::~ScheduleSolverDataComponentChoice() {
 }
 
 
+}
 } /* namespace arl */
+}

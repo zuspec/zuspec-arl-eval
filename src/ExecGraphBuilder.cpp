@@ -25,7 +25,9 @@
 	fprintf(stdout, fmt, ##__VA_ARGS__); \
 	fprintf(stdout, "\n")
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ExecGraphBuilder::ExecGraphBuilder() {
 	// TODO Auto-generated constructor stub
@@ -333,4 +335,6 @@ void ExecGraphBuilder::assignMaxDepth(int depth, ScheduleGraphNode *n) {
 }
 
 
+}
 } /* namespace arl */
+}

@@ -20,18 +20,20 @@
  */
 #pragma once
 #include <memory>
-#include "arl/IContext.h"
-#include "arl/IModelActivityTraverse.h"
-#include "arl/IModelFieldComponent.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelActivityTraverse.h"
+#include "zsp/arl/dm/IModelFieldComponent.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 struct ActivitySolveModel;
 
 struct ActivityTraverseData {
-    ActivityTraverseData(IModelActivityTraverse *t) : traversal(t) {}
+    ActivityTraverseData(dm::IModelActivityTraverse *t) : traversal(t) {}
 
-    IModelActivityTraverse                            *traversal;
+    dm::IModelActivityTraverse                        *traversal;
     std::vector<uint32_t>                             comp_ctxt_l;
 
 };
@@ -41,22 +43,23 @@ using ActivityTraverseDataUP=std::unique_ptr<ActivityTraverseData>;
 class TaskBuildActivityTraverseData {
 public:
     TaskBuildActivityTraverseData(
-        IContext                *ctxt,
+        dm::IContext                *ctxt,
         ActivitySolveModel      *solve_model);
 
     virtual ~TaskBuildActivityTraverseData();
 
     ActivityTraverseData *build(
-        IModelFieldComponent        *root_comp,
-        IModelActivityTraverse      *t);
+        dm::IModelFieldComponent        *root_comp,
+        dm::IModelActivityTraverse      *t);
 
 private:
-    IContext                            *m_ctxt;
+    dm::IContext                            *m_ctxt;
     ActivitySolveModel                  *m_solve_model;
-    IModelFieldComponent                *m_root_comp;
+    dm::IModelFieldComponent                *m_root_comp;
     ActivityTraverseDataUP              m_data;
 };
 
 }
-
+}
+}
 

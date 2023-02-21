@@ -7,7 +7,9 @@
 
 #include "ScheduleSolvePropagatorSingleUni.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolvePropagatorSingleUni::ScheduleSolvePropagatorSingleUni(
 		IScheduleSolveData 		*init,
@@ -55,4 +57,6 @@ IScheduleSolveData *ScheduleSolvePropagatorSingleUni::getData() const {
 	return m_history.back().second.get();
 }
 
+}
 } /* namespace arl */
+}

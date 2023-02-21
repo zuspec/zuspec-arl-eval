@@ -20,37 +20,41 @@
  */
 #pragma once
 #include <vector>
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class TaskElaborateActivityPopluateOutRefs : public VisitorBase {
+class TaskElaborateActivityPopluateOutRefs : public dm::VisitorBase {
 public:
     TaskElaborateActivityPopluateOutRefs(
-        vsc::IModelBuildContext *ctxt);
+        vsc::dm::IModelBuildContext *ctxt);
 
     virtual ~TaskElaborateActivityPopluateOutRefs();
 
     void populate(
-        std::vector<vsc::IModelFieldUP>     &objs,
-        IModelActivity                      *root);
+        std::vector<vsc::dm::IModelFieldUP>     &objs,
+        dm::IModelActivity                      *root);
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
-	virtual void visitModelFieldRef(vsc::IModelFieldRef *f) override;
+	virtual void visitModelFieldRef(vsc::dm::IModelFieldRef *f) override;
 
-	virtual void visitModelFieldRefType(vsc::IModelFieldTypeRef *f) override;
+	virtual void visitModelFieldRefType(vsc::dm::IModelFieldTypeRef *f) override;
 
-	virtual void visitTypeFieldClaim(ITypeFieldClaim *f) override;
+	virtual void visitTypeFieldClaim(dm::ITypeFieldClaim *f) override;
 
-	virtual void visitTypeFieldInOut(ITypeFieldInOut *f) override;
+	virtual void visitTypeFieldInOut(dm::ITypeFieldInOut *f) override;
 
 private:
-    vsc::IModelBuildContext                 *m_ctxt;
-    vsc::IModelFieldRef                     *m_active_ref;
-    vsc::IModelField                        *m_obj;
-    std::vector<vsc::IModelFieldUP>         *m_objs;
+    vsc::dm::IModelBuildContext                 *m_ctxt;
+    vsc::dm::IModelFieldRef                     *m_active_ref;
+    vsc::dm::IModelField                        *m_obj;
+    std::vector<vsc::dm::IModelFieldUP>         *m_objs;
 };
 
+}
+}
 }

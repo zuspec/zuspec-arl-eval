@@ -21,11 +21,13 @@
 #include "TaskElaborateActivityCollectOutputs.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskElaborateActivityCollectOutputs::TaskElaborateActivityCollectOutputs(
-    IContext                *ctxt,
+    dm::IContext            *ctxt,
     ActivityScheduleData    *sched_data) : m_ctxt(ctxt), m_sched_data(sched_data) {
 
 }
@@ -34,12 +36,14 @@ TaskElaborateActivityCollectOutputs::~TaskElaborateActivityCollectOutputs() {
 
 }
 
-void TaskElaborateActivityCollectOutputs::collect(IModelFieldAction *action) {
+void TaskElaborateActivityCollectOutputs::collect(dm::IModelFieldAction *action) {
     action->accept(m_this);
 }
 
-void TaskElaborateActivityCollectOutputs::visitModelFieldInOut(IModelFieldInOut *f) {
+void TaskElaborateActivityCollectOutputs::visitModelFieldInOut(dm::IModelFieldInOut *f) {
 
 }
 
+}
+}
 }

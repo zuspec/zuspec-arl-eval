@@ -51,7 +51,6 @@ file(GLOB test_zsp_arl_eval_SRC
   )
 
 add_executable(test-zsp-arl-eval ${test_zsp_arl_eval_SRC})
-add_dependencies(test-zsp-arl-eval LibVSC-DM)
 target_include_directories(test-zsp-arl-eval PUBLIC
     "${source_dir}/googletest/include"
     ${LIBVSC_DM_DIR}/src/include
@@ -63,7 +62,7 @@ target_link_directories(test-zsp-arl-eval PRIVATE
     ${CMAKE_BINARY_DIR}/lib64
     ${CMAKE_BINARY_DIR}/glog/lib64
     )
-  
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(libglog glogd)
 else()

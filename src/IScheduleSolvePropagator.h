@@ -8,7 +8,9 @@
 #pragma once
 #include "IScheduleSolveData.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class IScheduleSolveEvalQueue;
 
@@ -42,4 +44,6 @@ public:
 
 };
 
+}
+}
 }

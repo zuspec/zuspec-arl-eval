@@ -9,7 +9,9 @@
 #include <memory>
 #include "IScheduleSolveDataVisitor.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class IScheduleSolvePropagator;
 
@@ -44,4 +46,6 @@ public:
 
 };
 
+}
+}
 }

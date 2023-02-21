@@ -7,7 +7,9 @@
 
 #include "ScheduleSolveDataBaseVisitor.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveDataBaseVisitor::ScheduleSolveDataBaseVisitor() {
 	// TODO Auto-generated constructor stub
@@ -18,4 +20,6 @@ ScheduleSolveDataBaseVisitor::~ScheduleSolveDataBaseVisitor() {
 	// TODO Auto-generated destructor stub
 }
 
+}
 } /* namespace arl */
+}

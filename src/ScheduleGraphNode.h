@@ -9,23 +9,25 @@
 #include <memory>
 #include <unordered_set>
 #include <vector>
-#include "arl/IModelActivity.h"
-#include "vsc/IModelField.h"
+#include "zsp/arl/dm/IModelActivity.h"
+#include "vsc/dm/IModelField.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleGraphNode;
 using ScheduleGraphNodeUP=std::unique_ptr<ScheduleGraphNode>;
 class ScheduleGraphNode {
 public:
 	ScheduleGraphNode(
-			IModelActivity			*activity,
+			dm::IModelActivity		*activity,
 			int32_t					id
 			);
 
 	virtual ~ScheduleGraphNode();
 
-	IModelActivity *activity() const { return m_activity; }
+	dm::IModelActivity *activity() const { return m_activity; }
 
 	int32_t id() const { return m_id; }
 
@@ -50,12 +52,14 @@ public:
 	}
 
 private:
-	IModelActivity										*m_activity;
+	dm::IModelActivity									*m_activity;
 	int32_t												m_id;
 	int32_t												m_depth;
 	std::unordered_set<ScheduleGraphNode *>				m_incoming_arc_s;
 	std::unordered_set<ScheduleGraphNode *>				m_outgoing_arc_s;
 };
 
+}
 } /* namespace arl */
+}
 

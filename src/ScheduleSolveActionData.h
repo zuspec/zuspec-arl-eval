@@ -7,19 +7,21 @@
 
 #pragma once
 #include <memory>
-#include "arl/IModelActivity.h"
-#include "vsc/IModelField.h"
+#include "zsp/arl/dm/IModelActivity.h"
+#include "vsc/dm/IModelField.h"
 #include "ScheduleGraphNode.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveActionData;
 using ScheduleSolveActionDataUP=std::unique_ptr<ScheduleSolveActionData>;
 class ScheduleSolveActionData {
 public:
 	ScheduleSolveActionData(
-			IModelActivity			*activity,
-			bool					owned
+			dm::IModelActivity			*activity,
+			bool	    				owned
 			);
 
 	virtual ~ScheduleSolveActionData();
@@ -27,11 +29,13 @@ public:
 	ScheduleGraphNode *node() const { return m_node.get(); }
 
 private:
-	IModelActivity				*m_activity;
+	dm::IModelActivity				*m_activity;
 	bool						m_owned;
 	ScheduleGraphNodeUP			m_node;
 
 };
 
+}
 } /* namespace arl */
+}
 

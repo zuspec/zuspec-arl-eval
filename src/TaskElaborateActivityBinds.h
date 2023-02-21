@@ -19,61 +19,63 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 #include "ActivityScheduleData.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class TaskElaborateActivityBinds : public VisitorBase {
+class TaskElaborateActivityBinds : public dm::VisitorBase {
 public:
-    TaskElaborateActivityBinds(IContext *ctxt);
+    TaskElaborateActivityBinds(dm::IContext *ctxt);
 
     virtual ~TaskElaborateActivityBinds();
 
     bool elab(
-        ActivityScheduleData    *sched_data,
-        IModelActivity          *activity);
+        ActivityScheduleData        *sched_data,
+        dm::IModelActivity          *activity);
 
-	virtual void visitModelActivityBind(IModelActivityBind *a) override;
+	virtual void visitModelActivityBind(dm::IModelActivityBind *a) override;
 
-	virtual void visitModelActivityParallel(IModelActivityParallel *a) override;
+	virtual void visitModelActivityParallel(dm::IModelActivityParallel *a) override;
 
-	virtual void visitModelActivitySchedule(IModelActivitySchedule *a) override;
+	virtual void visitModelActivitySchedule(dm::IModelActivitySchedule *a) override;
 
-	virtual void visitModelActivitySequence(IModelActivitySequence *a) override;
+	virtual void visitModelActivitySequence(dm::IModelActivitySequence *a) override;
 
-	virtual void visitModelActivityScope(IModelActivityScope *a) override;
+	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 protected:
-    void processClaim(IModelFieldClaim *f);
+    void processClaim(dm::IModelFieldClaim *f);
 
-    void processRefInput(IModelFieldInOut *f);
+    void processRefInput(dm::IModelFieldInOut *f);
 
-    void processRefOutput(IModelFieldInOut *f);
+    void processRefOutput(dm::IModelFieldInOut *f);
 
-    void processActivityParallel(IModelActivityScope *a);
+    void processActivityParallel(dm::IModelActivityScope *a);
 
-    void processActivitySchedule(IModelActivityScope *a);
+    void processActivitySchedule(dm::IModelActivityScope *a);
 
-    void processActivitySequence(IModelActivityScope *a);
+    void processActivitySequence(dm::IModelActivityScope *a);
 
 private:
     struct ResourceClaimType {
-        std::vector<vsc::IRefSelector *>        lock;
-        std::vector<vsc::IRefSelector *>        share;
+        std::vector<vsc::dm::IRefSelector *>        lock;
+        std::vector<vsc::dm::IRefSelector *>        share;
     };
 
     struct ResourceClaimM {
-        std::unordered_map<vsc::IDataType *, ResourceClaimType>     claims;
-        std::vector<vsc::IDataType *>                               types;
+        std::unordered_map<vsc::dm::IDataType *, ResourceClaimType>     claims;
+        std::vector<vsc::dm::IDataType *>                               types;
     };
     using ResourceClaimMUP=std::unique_ptr<ResourceClaimM>;
     using ResourceContentionSet=std::vector<ResourceClaimM>;
 
-    using FlowObjType2ObjM=std::unordered_map<vsc::IDataType *, std::vector<int32_t>>;
+    using FlowObjType2ObjM=std::unordered_map<vsc::dm::IDataType *, std::vector<int32_t>>;
 
 private:
     void propagateResources(
@@ -81,9 +83,9 @@ private:
         const ResourceClaimM        &src);
 
 private:
-    static vsc::IDebug                                              *m_dbg;
-    IContext                                                        *m_ctxt;
-    ActivityScheduleData                                            *m_sched_data;
+    static dmgr::IDebug                                              *m_dbg;
+    dm::IContext                                                     *m_ctxt;
+    ActivityScheduleData                                             *m_sched_data;
 
 //    std::vector<IModelActivityTraverse *>                           m_traverse_s;
 
@@ -102,5 +104,6 @@ private:
 };
 
 }
-
+}
+}
 

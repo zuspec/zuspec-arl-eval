@@ -20,86 +20,89 @@
  */
 #pragma once
 #include <unordered_map>
-#include "arl/IContext.h"
-#include "arl/IModelActivityTraverse.h"
-#include "arl/IModelEvalIterator.h"
-#include "arl/IModelFieldComponent.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelActivityTraverse.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
+#include "zsp/arl/dm/IModelFieldComponent.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
 namespace vsc {
     class ModelFieldRefConstraintData;
     using ModelFieldRefConstraintDataUP=std::unique_ptr<ModelFieldRefConstraintData>;
 }
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
-class TaskSolveActionSet : public VisitorBase {
+class TaskSolveActionSet : public dm::VisitorBase {
 public:
     TaskSolveActionSet(
-        IContext                *ctxt,
-        vsc::IRandState         *randstate,
-        IModelFieldComponent    *comp);
+        dm::IContext                *ctxt,
+        vsc::solvers::IRandState    *randstate,
+        dm::IModelFieldComponent    *comp);
 
     virtual ~TaskSolveActionSet();
 
     // TODO: need to pass in bind info?
-    bool solve(const std::vector<IModelActivityTraverse *> &traversals);
+    bool solve(const std::vector<dm::IModelActivityTraverse *> &traversals);
 
-	virtual void visitModelFieldRef(vsc::IModelFieldRef *f) override;
+	virtual void visitModelFieldRef(vsc::dm::IModelFieldRef *f) override;
 
-	virtual void visitTypeFieldClaim(ITypeFieldClaim *f) override;
+	virtual void visitTypeFieldClaim(dm::ITypeFieldClaim *f) override;
 
-	virtual void visitTypeFieldInOut(ITypeFieldInOut *f) override;
+	virtual void visitTypeFieldInOut(dm::ITypeFieldInOut *f) override;
 
 private:
-    void build_comp_map(const std::vector<IModelActivityTraverse *> &traversals);
+    void build_comp_map(const std::vector<dm::IModelActivityTraverse *> &traversals);
 
     void build_resource_constraints(
-        std::vector<vsc::IModelConstraintUP> &constraints);
+        std::vector<vsc::dm::IModelConstraintUP> &constraints);
 
 private:
 
-    using RefSelPairT=std::pair<vsc::IModelFieldRef *, vsc::ModelFieldRefConstraintDataUP>;
+    using RefSelPairT=std::pair<vsc::dm::IModelFieldRef *, vsc::dm::ModelFieldRefConstraintDataUP>;
 
     struct ActionData {
-        ActionData(IModelActivityTraverse *t) : m_traversal(t) {} 
-        IModelActivityTraverse                              *m_traversal;
+        ActionData(dm::IModelActivityTraverse *t) : m_traversal(t) {} 
+        dm::IModelActivityTraverse                              *m_traversal;
         std::vector<uint32_t>                               m_comp_ctxt_l;
     };
 
     struct ResourceClaimData {
 
-        ResourceClaimData(vsc::IDataType *t) : m_res_t(t) {}
-        vsc::IDataType                              *m_res_t;
+        ResourceClaimData(vsc::dm::IDataType *t) : m_res_t(t) {}
+        vsc::dm::IDataType                              *m_res_t;
         std::vector<std::pair<int32_t,int32_t>>     m_comp_sz_l;
-        std::vector<vsc::IModelField *>             m_resource_l;
-        std::vector<vsc::IRefSelector *>            m_lock_claims;
-        std::vector<vsc::IRefSelector *>            m_share_claims;
+        std::vector<vsc::dm::IModelField *>             m_resource_l;
+        std::vector<vsc::dm::IRefSelector *>            m_lock_claims;
+        std::vector<vsc::dm::IRefSelector *>            m_share_claims;
     };
 
-    using AllCompMapT=std::unordered_map<IModelFieldComponent *,uint32_t>;
-    using ResTypeMapT=std::unordered_map<vsc::IDataType *, ResourceClaimData>;
+    using AllCompMapT=std::unordered_map<dm::IModelFieldComponent *,uint32_t>;
+    using ResTypeMapT=std::unordered_map<vsc::dm::IDataType *, ResourceClaimData>;
 
 
 private:
-    static vsc::IDebug                                      *m_dbg;
-    IContext                                                *m_ctxt;
-    vsc::IRandState                                         *m_randstate;
-    IModelFieldComponent                                    *m_comp;
-    AllCompMapT                                              m_all_comp_m;
-    std::vector<IModelFieldComponent *>                      m_all_comp_l;
+    static dmgr::IDebug                                     *m_dbg;
+    dm::IContext                                            *m_ctxt;
+    vsc::solvers::IRandState                                *m_randstate;
+    dm::IModelFieldComponent                                *m_comp;
+    AllCompMapT                                             m_all_comp_m;
+    std::vector<dm::IModelFieldComponent *>                 m_all_comp_l;
     ActionData                                              *m_action_data;
     std::vector<ActionData>                                  m_action_data_l;
     ResTypeMapT                                             m_res_type_m;
     std::vector<ResourceClaimData *>                        m_res_type_l;
-    std::vector<vsc::IRefSelectorUP>                        m_ref_l;
+    std::vector<vsc::dm::IRefSelectorUP>                        m_ref_l;
 
-//    std::unordered_map<vsc::IDataTy
-    std::vector<IModelEvalIteratorUP>                       m_result;
-    std::vector<vsc::IModelConstraint *>                    m_constraints;
+//    std::unordered_map<vsc::dm::IDataTy
+    std::vector<dm::IModelEvalIteratorUP>                       m_result;
+    std::vector<vsc::dm::IModelConstraint *>                    m_constraints;
 
 };
 
 }
-
+}
+}

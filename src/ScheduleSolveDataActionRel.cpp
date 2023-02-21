@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include <string.h>
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveDataActionRel::ScheduleSolveDataActionRel(int32_t n_actions) : m_n_actions(n_actions) {
 
@@ -128,4 +130,6 @@ std::string ScheduleSolveDataActionRel::toString() const {
 	return ret;
 }
 
+}
 } /* namespace arl */
+}

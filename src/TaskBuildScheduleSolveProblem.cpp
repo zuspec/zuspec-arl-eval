@@ -7,7 +7,9 @@
 
 #include "TaskBuildScheduleSolveProblem.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 TaskBuildScheduleSolveProblem::TaskBuildScheduleSolveProblem() {
 	// TODO Auto-generated constructor stub
@@ -18,21 +20,21 @@ TaskBuildScheduleSolveProblem::~TaskBuildScheduleSolveProblem() {
 	// TODO Auto-generated destructor stub
 }
 
-ScheduleSolveProblem *TaskBuildScheduleSolveProblem::build(IModelActivity *activity) {
+ScheduleSolveProblem *TaskBuildScheduleSolveProblem::build(dm::IModelActivity *activity) {
 	m_problem = ScheduleSolveProblemUP(new ScheduleSolveProblem());
 	activity->accept(this);
 	return m_problem.release();
 }
 
-void TaskBuildScheduleSolveProblem::visitModelActivityParallel(IModelActivityParallel *a) {
+void TaskBuildScheduleSolveProblem::visitModelActivityParallel(dm::IModelActivityParallel *a) {
 	VisitorBase::visitModelActivityParallel(a);
 }
 
-void TaskBuildScheduleSolveProblem::visitModelActivitySchedule(IModelActivitySchedule *a) {
+void TaskBuildScheduleSolveProblem::visitModelActivitySchedule(dm::IModelActivitySchedule *a) {
 	VisitorBase::visitModelActivitySchedule(a);
 }
 
-void TaskBuildScheduleSolveProblem::visitModelActivitySequence(IModelActivitySequence *a) {
+void TaskBuildScheduleSolveProblem::visitModelActivitySequence(dm::IModelActivitySequence *a) {
 	bool push_new = false;
 
 	if (m_frame_s.size() == 0 || m_frame_s.back().kind != Sequence) {
@@ -57,12 +59,13 @@ void TaskBuildScheduleSolveProblem::visitModelActivitySequence(IModelActivitySeq
 	}
 }
 
-void TaskBuildScheduleSolveProblem::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void TaskBuildScheduleSolveProblem::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
 	if (m_frame_s.size() == 0) {
 		m_frame_s.push_back(Frame{Sequence});
 	}
 	m_frame_s.back().elems.push_back(m_problem->addActivity(a));
 }
 
-
+}
 } /* namespace arl */
+}

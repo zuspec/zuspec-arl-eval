@@ -18,18 +18,22 @@
  * Created on:
  *     Author:
  */
-#include "arl/IDataTypeResource.h"
-#include "arl/IModelFieldClaim.h"
-#include "vsc/IModelFieldType.h"
+#include "zsp/arl/dm/IDataTypeResource.h"
+#include "zsp/arl/dm/IModelFieldClaim.h"
+#include "vsc/dm/IModelFieldType.h"
 #include "ActivityScheduleData.h"
-#include "vsc/impl/DebugMacros.h"
+#include "dmgr/impl/DebugMacros.h"
 
+using namespace zsp::arl::dm;
+
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 ActivityScheduleData::ActivityScheduleData(
-    IContext                    *ctxt,
-    IModelComponentTreeData     *comp_data) : m_ctxt(ctxt), m_comp_data(comp_data) {
+    dm::IContext                    *ctxt,
+    dm::IModelComponentTreeData     *comp_data) : m_ctxt(ctxt), m_comp_data(comp_data) {
     DEBUG_INIT("ActivityScheduleData", ctxt->getDebugMgr());
 
 }
@@ -39,17 +43,17 @@ ActivityScheduleData::~ActivityScheduleData() {
 }
 
 void ActivityScheduleData::initRefSelectors() {
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=m_buffer_sel_l.begin();
         it!=m_buffer_sel_l.end(); it++) {
         (*it)->init(m_ctxt);
     }
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=m_resource_sel_l.begin();
         it!=m_resource_sel_l.end(); it++) {
         (*it)->init(m_ctxt);
     }
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=m_stream_sel_l.begin();
         it!=m_stream_sel_l.end(); it++) {
         (*it)->init(m_ctxt);
@@ -62,23 +66,23 @@ void ActivityScheduleData::initRefSelectors() {
 }
 
 void ActivityScheduleData::getSelectorsConstraints(
-        std::vector<vsc::IRefSelector *>        &refs,
-        std::vector<vsc::IModelConstraint *>    &constraints) {
+        std::vector<vsc::dm::IRefSelector *>        &refs,
+        std::vector<vsc::dm::IModelConstraint *>    &constraints) {
     // TODO: only get selectors for refs not yet resolved?
     // TODO: get soft validity constraint?
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=m_buffer_sel_l.begin();
         it!=m_buffer_sel_l.end(); it++) {
         refs.push_back(*it);
         constraints.push_back((*it)->getValidSoftC());
     }
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=m_resource_sel_l.begin();
         it!=m_resource_sel_l.end(); it++) {
         refs.push_back(*it);
         constraints.push_back((*it)->getValidSoftC());
     }
-    for (std::vector<vsc::IRefSelector *>::const_iterator
+    for (std::vector<vsc::dm::IRefSelector *>::const_iterator
         it=m_stream_sel_l.begin();
         it!=m_stream_sel_l.end(); it++) {
         refs.push_back(*it);
@@ -92,7 +96,7 @@ void ActivityScheduleData::getSelectorsConstraints(
         // Insist on valid component context
         constraints.push_back((*it)->comp_ref_sel->getValidC());
     }
-    for (std::vector<vsc::IModelConstraintUP>::const_iterator
+    for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
         it=m_constraints.begin();
         it!=m_constraints.end(); it++) {
         constraints.push_back(it->get());
@@ -113,7 +117,7 @@ ActivityScheduleData::ActionTraversalData *ActivityScheduleData::getTraversal(IM
 ActivityScheduleData::ActionTraversalData *ActivityScheduleData::addTraversal(
     IModelFieldAction       *parent,
     IModelActivityTraverse  *traversal,
-    vsc::IModelExpr         *cond) {
+    vsc::dm::IModelExpr         *cond) {
 
     ActivityScheduleData::ActionTraversalData *ret = 0;
     DEBUG_ENTER("addTraversal");
@@ -128,8 +132,8 @@ ActivityScheduleData::ActionTraversalData *ActivityScheduleData::addTraversal(
             ActionData *a_data = new ActionData();
             a_data->action = traversal->getTarget();
             IDataTypeComponent *comp_t = traversal->getTarget()->getDataTypeT<IDataTypeAction>()->getComponentType();
-            a_data->comp_ref_sel = vsc::IRefSelectorUP(m_ctxt->mkRefSelector(
-                traversal->getTarget()->getFieldT<vsc::IModelFieldRef>(0),
+            a_data->comp_ref_sel = vsc::dm::IRefSelectorUP(m_ctxt->mkRefSelector(
+                traversal->getTarget()->getFieldT<vsc::dm::IModelFieldRef>(0),
                 m_comp_data->getCompTypeInsts(comp_t)));
             m_action_l.push_back(ActionDataUP(a_data));
         }
@@ -155,8 +159,8 @@ void ActivityScheduleData::restore(const ActivityScheduleData::CheckPoint &cp) {
 
 }
 
-vsc::IRefSelector *ActivityScheduleData::getRefSelector(vsc::IModelFieldRef *ref) {
-    std::unordered_map<vsc::IModelFieldRef *,vsc::IRefSelectorUP>::const_iterator it;
+vsc::dm::IRefSelector *ActivityScheduleData::getRefSelector(vsc::dm::IModelFieldRef *ref) {
+    std::unordered_map<vsc::dm::IModelFieldRef *,vsc::dm::IRefSelectorUP>::const_iterator it;
     
     if ((it=m_ref_selector_m.find(ref)) != m_ref_selector_m.end()) {
         return it->second.get();
@@ -165,8 +169,8 @@ vsc::IRefSelector *ActivityScheduleData::getRefSelector(vsc::IModelFieldRef *ref
     }
 }
 
-vsc::IRefSelector *ActivityScheduleData::addRefSelector(
-        vsc::IModelFieldRef         *ref,
+vsc::dm::IRefSelector *ActivityScheduleData::addRefSelector(
+        vsc::dm::IModelFieldRef         *ref,
         FlowObjKindE                kind) {
     // Find (and/or add) the data for this ref type
     FlowObjTypeM::iterator it = m_objtype_m.find(ref->getDataType());
@@ -175,11 +179,11 @@ vsc::IRefSelector *ActivityScheduleData::addRefSelector(
         it = m_objtype_m.insert({ref->getDataType(), ObjData()}).first;
     }
 
-    vsc::IRefSelector *ret = m_ctxt->mkRefSelector(
+    vsc::dm::IRefSelector *ret = m_ctxt->mkRefSelector(
         ref,
         it->second.obj_l);
     
-    m_ref_selector_m.insert({ref, vsc::IRefSelectorUP(ret)});
+    m_ref_selector_m.insert({ref, vsc::dm::IRefSelectorUP(ret)});
 
     switch (ref->getDataTypeT<IDataTypeFlowObj>()->kind()) {
         case FlowObjKindE::Buffer: m_buffer_sel_l.push_back(ret); break;
@@ -192,7 +196,7 @@ vsc::IRefSelector *ActivityScheduleData::addRefSelector(
     return ret;
 }
 
-int32_t ActivityScheduleData::getFlowObjId(vsc::IModelField *obj) {
+int32_t ActivityScheduleData::getFlowObjId(vsc::dm::IModelField *obj) {
     FlowObjTypeM::iterator it = m_objtype_m.find(obj->getDataType());
 
     if (it == m_objtype_m.end()) {
@@ -200,7 +204,7 @@ int32_t ActivityScheduleData::getFlowObjId(vsc::IModelField *obj) {
     }
 
     // Check to see if a flow-object exists for this field
-    std::unordered_map<vsc::IModelField *, int32_t>::const_iterator i_it;
+    std::unordered_map<vsc::dm::IModelField *, int32_t>::const_iterator i_it;
 
     if ((i_it=it->second.obj2id_m.find(obj)) != it->second.obj2id_m.end()) {
         return i_it->second;
@@ -209,14 +213,14 @@ int32_t ActivityScheduleData::getFlowObjId(vsc::IModelField *obj) {
     }
 }
 
-int32_t ActivityScheduleData::addFlowObj(vsc::IModelField *obj) {
+int32_t ActivityScheduleData::addFlowObj(vsc::dm::IModelField *obj) {
     FlowObjTypeM::iterator it = m_objtype_m.find(obj->getDataType());
 
     if (it == m_objtype_m.end()) {
         it = m_objtype_m.insert({obj->getDataType(), ObjData()}).first;
     }
 
-    std::unordered_map<vsc::IModelField *, int32_t>::const_iterator i_it;
+    std::unordered_map<vsc::dm::IModelField *, int32_t>::const_iterator i_it;
 
     if ((i_it=it->second.obj2id_m.find(obj)) == it->second.obj2id_m.end()) {
         int32_t id = it->second.obj_l.size();
@@ -235,7 +239,7 @@ ActivityScheduleData::ClaimData *ActivityScheduleData::getClaim(
 
     if ((it=action->claim_m.find(f)) == action->claim_m.end()) {
         ActivityScheduleData::ClaimData *c = new ActivityScheduleData::ClaimData();
-        c->selector = vsc::IRefSelectorUP(m_ctxt->mkRefSelector(
+        c->selector = vsc::dm::IRefSelectorUP(m_ctxt->mkRefSelector(
             f,
             m_comp_data->getResObjects(f->getDataTypeT<IDataTypeResource>())
         ));
@@ -251,10 +255,12 @@ ActivityScheduleData::ClaimData *ActivityScheduleData::getClaim(
     return it->second.get();
 }
 
-void ActivityScheduleData::addConstraint(vsc::IModelConstraint *c) {
-    m_constraints.push_back(vsc::IModelConstraintUP(c));
+void ActivityScheduleData::addConstraint(vsc::dm::IModelConstraint *c) {
+    m_constraints.push_back(vsc::dm::IModelConstraintUP(c));
 };
 
-vsc::IDebug *ActivityScheduleData::m_dbg = 0;
+dmgr::IDebug *ActivityScheduleData::m_dbg = 0;
 
+}
+}
 }

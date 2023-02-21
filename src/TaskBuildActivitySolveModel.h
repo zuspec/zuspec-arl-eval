@@ -21,31 +21,33 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 struct ResourceClaimData {
-    ResourceClaimData(vsc::IDataType *t) : res_t(t) {}
+    ResourceClaimData(vsc::dm::IDataType *t) : res_t(t) {}
 
-    vsc::IDataType                                  *res_t;
+    vsc::dm::IDataType                                  *res_t;
     std::vector<std::pair<int32_t,int32_t>>         comp_sz_l;
-    std::vector<vsc::IModelField *>                 resource_l;
+    std::vector<vsc::dm::IModelField *>                 resource_l;
 };
 
 struct ActivityTraverseData;
 using ActivityTraverseDataUP=std::unique_ptr<ActivityTraverseData>;
 
 struct ActivitySolveModel {
-    std::vector<vsc::IModelConstraintUP>            constraints;
+    std::vector<vsc::dm::IModelConstraintUP>            constraints;
 
-    using AllCompMapT=std::unordered_map<IModelFieldComponent *, uint32_t>;
-    using ResTypeMapT=std::unordered_map<vsc::IDataType *, ResourceClaimData>;
-    using TraversalDataMapT=std::unordered_map<IModelActivityTraverse *, ActivityTraverseData *>;
+    using AllCompMapT=std::unordered_map<dm::IModelFieldComponent *, uint32_t>;
+    using ResTypeMapT=std::unordered_map<vsc::dm::IDataType *, ResourceClaimData>;
+    using TraversalDataMapT=std::unordered_map<dm::IModelActivityTraverse *, ActivityTraverseData *>;
 
     AllCompMapT                                     all_comp_m;
-    std::vector<IModelFieldComponent *>             all_comp_l;
+    std::vector<dm::IModelFieldComponent *>         all_comp_l;
 
     ResTypeMapT                                     res_type_m;
     std::vector<ResourceClaimData *>                res_type_l;
@@ -60,39 +62,40 @@ struct ActivitySolveModel {
     // TODO: need per-state-type data
 
 
-    std::vector<vsc::IRefSelectorUP>                ref_l;
+    std::vector<vsc::dm::IRefSelectorUP>                ref_l;
 
-    uint32_t getComponentId(IModelFieldComponent *c);
+    uint32_t getComponentId(dm::IModelFieldComponent *c);
 };
 using ActivitySolveModelUP=std::unique_ptr<ActivitySolveModel>;
 
-class TaskBuildActivitySolveModel : public VisitorBase {
+class TaskBuildActivitySolveModel : public dm::VisitorBase {
 public:
-    TaskBuildActivitySolveModel(IContext *ctxt);
+    TaskBuildActivitySolveModel(dm::IContext *ctxt);
 
     virtual ~TaskBuildActivitySolveModel();
 
     ActivitySolveModel *build(
-        IModelFieldComponent        *root_comp,
-        IModelActivity              *root_activity);
+        dm::IModelFieldComponent        *root_comp,
+        dm::IModelActivity              *root_activity);
 
-	virtual void visitModelActivityParallel(IModelActivityParallel *a) override;
+	virtual void visitModelActivityParallel(dm::IModelActivityParallel *a) override;
 
-	virtual void visitModelActivitySchedule(IModelActivitySchedule *a) override;
+	virtual void visitModelActivitySchedule(dm::IModelActivitySchedule *a) override;
 
-	virtual void visitModelActivitySequence(IModelActivitySequence *a) override;
+	virtual void visitModelActivitySequence(dm::IModelActivitySequence *a) override;
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 
 private:
-    IContext                                *m_ctxt;
-    ActivitySolveModelUP                    m_model;
-    IModelFieldComponent                    *m_root_comp;
-    std::vector<IModelFieldComponent *>     m_component_s;
+    dm::IContext                                *m_ctxt;
+    ActivitySolveModelUP                        m_model;
+    dm::IModelFieldComponent                    *m_root_comp;
+    std::vector<dm::IModelFieldComponent *>     m_component_s;
 
 };
 
 }
-
+}
+}
 

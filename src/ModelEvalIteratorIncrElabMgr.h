@@ -6,12 +6,14 @@
  */
 
 #pragma once
-#include "arl/IModelEvalIterator.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
 #include "ModelEvaluatorIncrElab.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class ModelEvalIteratorIncrElabMgr : public IModelEvalIterator {
+class ModelEvalIteratorIncrElabMgr : public dm::IModelEvalIterator {
 public:
 	ModelEvalIteratorIncrElabMgr(ModelEvaluatorIncrElab *eval);
 
@@ -19,19 +21,19 @@ public:
 
 	virtual bool next() override;
 
-	virtual bool pop() override { return false; }
+	virtual dm::ModelEvalNodeT type() const override;
 
-	virtual ModelEvalNodeT type() const override;
+	virtual dm::IModelFieldAction *action() override;
 
-	virtual IModelFieldAction *action() override;
-
-	virtual IModelEvalIterator *iterator() override;
+	virtual dm::IModelEvalIterator *iterator() override;
 
 private:
-	ModelEvaluatorIncrElab				*m_eval;
-	std::vector<IModelEvalIterator *>		m_eval_s;
+	ModelEvaluatorIncrElab				    *m_eval;
+	std::vector<dm::IModelEvalIterator *>	m_eval_s;
 
 };
 
+}
 } /* namespace arl */
+}
 

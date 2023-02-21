@@ -11,7 +11,9 @@
 #include "IScheduleSolvePropagator.h"
 #include "IScheduleSolveNexus.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolvePropagatorSingleUni : public IScheduleSolvePropagator {
 public:
@@ -46,5 +48,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

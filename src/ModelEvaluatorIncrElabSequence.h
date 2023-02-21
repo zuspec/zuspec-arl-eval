@@ -19,57 +19,58 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IModelEvalIterator.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 #include "ModelEvaluatorThread.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ModelEvaluatorIncrElabSequence : 
-    public virtual IModelEvalIterator,
-    public virtual VisitorBase {
+    public virtual dm::IModelEvalIterator,
+    public virtual dm::VisitorBase {
 public:
     ModelEvaluatorIncrElabSequence(ModelEvaluatorThread *thread);
 
     ModelEvaluatorIncrElabSequence(
         ModelEvaluatorThread                *thread,
-        const std::vector<IModelActivity *> &activities,
+        const std::vector<dm::IModelActivity *> &activities,
         bool                                owned=false);
 
     virtual ~ModelEvaluatorIncrElabSequence();
 
-    void addActivity(IModelActivity *activity, bool owned);
+    void addActivity(dm::IModelActivity *activity, bool owned);
 
 	virtual bool next() override;
 
     virtual bool valid() override;
 
-	virtual bool pop() override { return false; }
+	virtual dm::ModelEvalNodeT type() const override;
 
-	virtual ModelEvalNodeT type() const override;
+	virtual dm::IModelFieldAction *action() override;
 
-	virtual IModelFieldAction *action() override;
+	virtual dm::IModelEvalIterator *iterator() override;
 
-	virtual IModelEvalIterator *iterator() override;
+	virtual void visitModelActivityParallel(dm::IModelActivityParallel *a) override;
 
-	virtual void visitModelActivityParallel(IModelActivityParallel *a) override;
+	virtual void visitModelActivitySchedule(dm::IModelActivitySchedule *a) override;
 
-	virtual void visitModelActivitySchedule(IModelActivitySchedule *a) override;
+	virtual void visitModelActivitySequence(dm::IModelActivitySequence *a) override;
 
-	virtual void visitModelActivitySequence(IModelActivitySequence *a) override;
-
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static vsc::IDebug                  *m_dbg;
+    static dmgr::IDebug                  *m_dbg;
     ModelEvaluatorThread                *m_thread;
     int32_t                             m_idx;
-    std::vector<IModelActivity *>       m_activities;
-    std::vector<IModelActivityUP>       m_activities_up;
-    IModelFieldAction                   *m_action;
-    IModelEvalIterator                  *m_next_it;
-    ModelEvalNodeT                      m_type;
+    std::vector<dm::IModelActivity *>       m_activities;
+    std::vector<dm::IModelActivityUP>       m_activities_up;
+    dm::IModelFieldAction                   *m_action;
+    dm::IModelEvalIterator                  *m_next_it;
+    dm::ModelEvalNodeT                      m_type;
 };
 
 }
-
+}
+}

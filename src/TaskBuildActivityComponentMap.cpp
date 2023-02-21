@@ -21,11 +21,13 @@
 #include "TaskBuildActivityComponentMap.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskBuildActivityComponentMap::TaskBuildActivityComponentMap(
-    IModelFieldComponent        *root_comp) {
+    dm::IModelFieldComponent        *root_comp) {
 
 }
 
@@ -33,4 +35,6 @@ TaskBuildActivityComponentMap::~TaskBuildActivityComponentMap() {
 
 }
 
+}
+}
 }

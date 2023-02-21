@@ -8,7 +8,9 @@
 #pragma once
 #include <stdint.h>
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ActionSolveData {
 public:
@@ -21,5 +23,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

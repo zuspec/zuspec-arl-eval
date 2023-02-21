@@ -8,7 +8,9 @@
 #pragma once
 #include "SchedulePropResultE.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleChoiceComponent {
 public:
@@ -16,12 +18,14 @@ public:
 
 	virtual ~ScheduleChoiceComponent();
 
-	SchedulePropResultE propagate();
+	dm::SchedulePropResultE propagate();
 
 private:
 	ScheduleChoiceComponent			*m_parent;
 
 };
 
+}
 } /* namespace arl */
+}
 

@@ -18,14 +18,16 @@
  * Created on:
  *     Author:
  */
-#include "vsc/impl/DebugMacros.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorFullElabActivity.h"
 #include "ModelEvaluatorFullElabScope.h"
 #include "TaskElaborateActivity.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 ModelEvaluatorFullElab::ModelEvaluatorFullElab(IContext *ctxt) : m_ctxt(ctxt) {
@@ -38,10 +40,10 @@ ModelEvaluatorFullElab::~ModelEvaluatorFullElab() {
 }
 
 IModelEvalIterator *ModelEvaluatorFullElab::eval(
-        const vsc::IRandState           *randstate,
+        const vsc::dm::IRandState           *randstate,
         IModelFieldComponent            *root_comp,
         IDataTypeAction                 *root_action) {
-    vsc::IRandState *randstate_l = randstate->clone();
+    vsc::dm::IRandState *randstate_l = randstate->clone();
     ElabActivity *exec_activity = TaskElaborateActivity(m_ctxt).elaborate(
         randstate_l,
         root_comp,
@@ -53,6 +55,8 @@ IModelEvalIterator *ModelEvaluatorFullElab::eval(
         exec_activity->root);
 }
 
-vsc::IDebug *ModelEvaluatorFullElab::m_dbg = 0;
+dmgr::IDebug *ModelEvaluatorFullElab::m_dbg = 0;
 
+}
+}
 }

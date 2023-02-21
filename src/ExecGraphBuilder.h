@@ -10,7 +10,9 @@
 #include "ExecGraphNode.h"
 #include "ScheduleGraphNode.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ExecGraphBuilder {
 public:
@@ -48,5 +50,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

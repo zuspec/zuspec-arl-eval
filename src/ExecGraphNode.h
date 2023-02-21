@@ -7,10 +7,12 @@
 
 #pragma once
 #include <memory>
-#include "arl/IModelActivity.h"
-#include "vsc/IModelField.h"
+#include "zsp/arl/dm/IModelActivity.h"
+#include "vsc/dm/IModelField.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 enum class ExecGraphNodeKindE {
 	Sequence,
@@ -25,15 +27,15 @@ public:
 
 	ExecGraphNode(ExecGraphNodeKindE kind);
 
-	ExecGraphNode(IModelActivity *activity);
+	ExecGraphNode(dm::IModelActivity *activity);
 
-	ExecGraphNode(ExecGraphNodeKindE kind, IModelActivity *activity);
+	ExecGraphNode(ExecGraphNodeKindE kind, dm::IModelActivity *activity);
 
 	virtual ~ExecGraphNode();
 
 	const ExecGraphNodeKindE kind() const { return m_kind; }
 
-	IModelActivity *activity() const { return m_activity; }
+	dm::IModelActivity *activity() const { return m_activity; }
 
 	void addChild(ExecGraphNode *c) {
 		m_children.push_back(ExecGraphNodeUP(c));
@@ -47,9 +49,10 @@ public:
 
 protected:
 	ExecGraphNodeKindE				m_kind;
-	IModelActivity					*m_activity;
+	dm::IModelActivity				*m_activity;
 	std::vector<ExecGraphNodeUP>	m_children;
 };
 
+}
 } /* namespace arl */
-
+}

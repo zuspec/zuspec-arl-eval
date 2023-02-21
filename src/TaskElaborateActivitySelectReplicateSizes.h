@@ -20,38 +20,41 @@
  */
 #pragma once
 #include <unordered_set>
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
-#include "vsc/impl/DebugMacros.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
+#include "dmgr/impl/DebugMacros.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 
-class TaskElaborateActivitySelectReplicateSizes : public VisitorBase {
+class TaskElaborateActivitySelectReplicateSizes : public dm::VisitorBase {
 public:
-    TaskElaborateActivitySelectReplicateSizes(IContext *ctxt);
+    TaskElaborateActivitySelectReplicateSizes(dm::IContext *ctxt);
 
     virtual ~TaskElaborateActivitySelectReplicateSizes();
 
     bool eval(
-        vsc::IRandState     *randstate,
-        IModelActivity      *root);
+        vsc::solvers::IRandState     *randstate,
+        IModelActivity               *dm::root);
 
-	virtual void visitModelActivityReplicate(IModelActivityReplicate *a) override;
+	virtual void visitModelActivityReplicate(dm::IModelActivityReplicate *a) override;
 
-	virtual void visitModelActivityScope(IModelActivityScope *a) override;
+	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static vsc::IDebug                          *m_dbg;
-    IContext                                    *m_ctxt;
-    std::vector<vsc::IModelField *>             m_count_fields;
-    std::unordered_set<vsc::IModelConstraint *> m_constraint_s;
-    std::vector<vsc::IModelConstraint *>        m_constraints;
+    static dmgr::IDebug                               *m_dbg;
+    dm::IContext                                      *m_ctxt;
+    std::vector<vsc::dm::IModelField *>               m_count_fields;
+    std::unordered_set<vsc::dm::IModelConstraint *>   m_constraint_s;
+    std::vector<vsc::dm::IModelConstraint *>          m_constraints;
 };
 
 }
-
+}
+}
 

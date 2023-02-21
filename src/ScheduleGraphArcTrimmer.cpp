@@ -7,7 +7,9 @@
 
 #include "ScheduleGraphArcTrimmer.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleGraphArcTrimmer::ScheduleGraphArcTrimmer() {
 	// TODO Auto-generated constructor stub
@@ -78,4 +80,6 @@ bool ScheduleGraphArcTrimmer::canReachVia(
 	return false;
 }
 
+}
 } /* namespace arl */
+}

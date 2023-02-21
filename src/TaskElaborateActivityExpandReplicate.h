@@ -20,37 +20,40 @@
  */
 #pragma once
 #include <vector>
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 
-class TaskElaborateActivityExpandReplicate : public VisitorBase {
+class TaskElaborateActivityExpandReplicate : public dm::VisitorBase {
 public:
-    TaskElaborateActivityExpandReplicate(IContext *ctxt);
+    TaskElaborateActivityExpandReplicate(dm::IContext *ctxt);
 
     virtual ~TaskElaborateActivityExpandReplicate();
 
     IModelActivityScope *elab(
-        vsc::IRandState     *randstate,
-        IModelActivityScope *root);
+        vsc::solvers::IRandState     *randstate,
+        dm::IModelActivityScope *root);
 
-	virtual void visitModelActivityReplicate(IModelActivityReplicate *a) override;
+	virtual void visitModelActivityReplicate(dm::IModelActivityReplicate *a) override;
 
-	virtual void visitModelActivityScope(IModelActivityScope *a) override;
+	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static vsc::IDebug                  *m_dbg;
-    IContext                            *m_ctxt;
-    IModelActivityScopeUP               m_result;
-    std::vector<IModelActivityScope *>  m_scope_s;
+    static dmgr::IDebug                  *m_dbg;
+    dm::IContext                            *m_ctxt;
+    dm::IModelActivityScopeUP               m_result;
+    std::vector<dm::IModelActivityScope *>  m_scope_s;
 
 };
 
 }
-
+}
+}
 

@@ -9,7 +9,9 @@
 #include "IScheduleSolveData.h"
 #include "ScheduleSolveDataBaseVisitor.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveDataBase :
 		public ScheduleSolveDataBaseVisitor,
@@ -37,5 +39,7 @@ protected:
 
 };
 
+}
 } /* namespace arl */
+}
 

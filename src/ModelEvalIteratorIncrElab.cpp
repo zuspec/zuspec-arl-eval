@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include "ModelEvalIteratorIncrElab.h"
 
+using namespace zsp::arl::dm;
+
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ModelEvalIteratorIncrElab::ModelEvalIteratorIncrElab(const ModelEvalIteratorIncrElab::Elem &elem) {
 	m_idx = -1;
@@ -58,4 +62,6 @@ IModelEvalIterator *ModelEvalIteratorIncrElab::iterator() {
 }
 
 
+}
 } /* namespace arl */
+}

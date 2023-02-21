@@ -8,7 +8,9 @@
 #pragma once
 #include "IScheduleSolveDataVisitor.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveDataBaseVisitor : public IScheduleSolveDataVisitor {
 public:
@@ -18,5 +20,7 @@ public:
 
 };
 
+}
 } /* namespace arl */
+}
 

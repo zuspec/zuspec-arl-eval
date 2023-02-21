@@ -7,10 +7,12 @@
 
 #include "ScheduleGraphNode.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleGraphNode::ScheduleGraphNode(
-		IModelActivity			*activity,
+		dm::IModelActivity		*activity,
 		int32_t					id) : m_activity(activity), m_id(id), m_depth(0) {
 	// TODO Auto-generated constructor stub
 
@@ -44,4 +46,6 @@ void ScheduleGraphNode::delIncomingArc(ScheduleGraphNode *dep) {
 	}
 }
 
+}
 } /* namespace arl */
+}

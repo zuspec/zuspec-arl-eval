@@ -10,7 +10,11 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+using namespace zsp::arl::dm;
+
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ExecGraph2String::ExecGraph2String() {
 	// TODO Auto-generated constructor stub
@@ -98,4 +102,6 @@ const char *ExecGraph2String::get_indent() {
 	return m_ind.c_str();
 }
 
+}
 } /* namespace arl */
+}

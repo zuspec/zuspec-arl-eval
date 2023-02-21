@@ -20,11 +20,13 @@
  */
 #include "TaskElaborateActivityPopluateOutRefs.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskElaborateActivityPopluateOutRefs::TaskElaborateActivityPopluateOutRefs(
-    vsc::IModelBuildContext *ctxt) : m_ctxt(ctxt) {
+    vsc::dm::IModelBuildContext *ctxt) : m_ctxt(ctxt) {
 
 }
 
@@ -32,7 +34,7 @@ TaskElaborateActivityPopluateOutRefs::~TaskElaborateActivityPopluateOutRefs() {
 
 }
 
-void TaskElaborateActivityPopluateOutRefs::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void TaskElaborateActivityPopluateOutRefs::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
     a->getTarget()->accept(m_this);
 
     if (a->getActivity()) {
@@ -40,11 +42,11 @@ void TaskElaborateActivityPopluateOutRefs::visitModelActivityTraverse(IModelActi
     }
 }
 
-void TaskElaborateActivityPopluateOutRefs::visitModelFieldRef(vsc::IModelFieldRef *f) {
+void TaskElaborateActivityPopluateOutRefs::visitModelFieldRef(vsc::dm::IModelFieldRef *f) {
 
 }
 
-void TaskElaborateActivityPopluateOutRefs::visitModelFieldRefType(vsc::IModelFieldTypeRef *f) {
+void TaskElaborateActivityPopluateOutRefs::visitModelFieldRefType(vsc::dm::IModelFieldTypeRef *f) {
     if (!f->getRef()) {
         m_active_ref = f;
         f->getTypeField()->accept(m_this);
@@ -52,17 +54,19 @@ void TaskElaborateActivityPopluateOutRefs::visitModelFieldRefType(vsc::IModelFie
     }
 }
 
-void TaskElaborateActivityPopluateOutRefs::visitTypeFieldClaim(ITypeFieldClaim *f) {
+void TaskElaborateActivityPopluateOutRefs::visitTypeFieldClaim(dm::ITypeFieldClaim *f) {
 
 }
 
-void TaskElaborateActivityPopluateOutRefs::visitTypeFieldInOut(ITypeFieldInOut *f) {
+void TaskElaborateActivityPopluateOutRefs::visitTypeFieldInOut(dm::ITypeFieldInOut *f) {
     if (m_active_ref) {
         // TODO: use full path to name?
-        vsc::IModelField *obj = f->getDataType()->mkRootField(m_ctxt, "xxxx", false);
+        vsc::dm::IModelField *obj = f->getDataType()->mkRootField(m_ctxt, "xxxx", false);
         m_active_ref->setRef(obj);
-        m_objs->push_back(vsc::IModelFieldUP(obj));
+        m_objs->push_back(vsc::dm::IModelFieldUP(obj));
     }
 }
 
+}
+}
 }

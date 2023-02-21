@@ -7,7 +7,9 @@
 
 #include "ScheduleSolveDataCompSel.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveDataCompSel::ScheduleSolveDataCompSel(
 		const std::vector<int32_t> &comp_id_l) :
@@ -34,4 +36,6 @@ bool ScheduleSolveDataCompSel::applyMut(IScheduleSolvePropagator *d) {
 
 }
 
+}
 } /* namespace arl */
+}

@@ -8,7 +8,11 @@
 #include "ExecGraphNode.h"
 #include "ExecGraph2String.h"
 
+using namespace zsp::arl::dm;
+
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ExecGraphNode::ExecGraphNode(ExecGraphNodeKindE kind) : m_kind(kind), m_activity(0) {
 
@@ -32,4 +36,6 @@ std::string ExecGraphNode::toString() {
 	return ExecGraph2String().toString(this);
 }
 
+}
 } /* namespace arl */
+}

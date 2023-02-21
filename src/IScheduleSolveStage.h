@@ -8,7 +8,9 @@
 #pragma once
 #include <vector>
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class IScheduleSolveStage;
 using IScheduleSolveStageUP=std::unique_ptr<IScheduleSolveStage>;
@@ -34,4 +36,6 @@ public:
 
 };
 
+}
+}
 }

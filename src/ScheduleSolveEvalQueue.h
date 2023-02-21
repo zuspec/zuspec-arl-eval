@@ -12,7 +12,9 @@
 #include "IScheduleSolveEvalQueue.h"
 #include "IScheduleSolvePropagator.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveEvalQueue : public IScheduleSolveEvalQueue {
 public:
@@ -36,5 +38,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

@@ -7,7 +7,9 @@
 
 #include "ScheduleSolveDataBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveDataBase::ScheduleSolveDataBase() {
 	// TODO Auto-generated constructor stub
@@ -38,4 +40,6 @@ bool ScheduleSolveDataBase::applyMut(IScheduleSolvePropagator *d) {
 	return false;
 }
 
+}
 } /* namespace arl */
+}

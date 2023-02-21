@@ -19,28 +19,31 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/IModelEvaluator.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/eval/IModelEvaluator.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 class ModelEvaluatorFullElab : public virtual IModelEvaluator {
 public:
-    ModelEvaluatorFullElab(IContext *ctxt);
+    ModelEvaluatorFullElab(dm::IContext *ctxt);
 
     virtual ~ModelEvaluatorFullElab();
 
-    virtual IModelEvalIterator *eval(
-        const vsc::IRandState           *randstate,
-        IModelFieldComponent            *root_comp,
-        IDataTypeAction                 *root_action) override;
+    virtual dm::IModelEvalIterator *eval(
+        const vsc::solvers::IRandState      *randstate,
+        dm::IModelFieldComponent            *root_comp,
+        dm::IDataTypeAction                 *root_action) override;
 
 private:
-    static vsc::IDebug          *m_dbg;
-    IContext                    *m_ctxt;
+    static dmgr::IDebug          *m_dbg;
+    dm::IContext                 *m_ctxt;
 };
 
 }
-
+}
+}
 

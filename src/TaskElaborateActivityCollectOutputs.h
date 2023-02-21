@@ -19,32 +19,35 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/impl/VisitorBase.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 #include "ActivityScheduleData.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
-class TaskElaborateActivityCollectOutputs : public VisitorBase {
+class TaskElaborateActivityCollectOutputs : public dm::VisitorBase {
 public:
     TaskElaborateActivityCollectOutputs(
-        IContext                *ctxt,
+        dm::IContext                *ctxt,
         ActivityScheduleData     *sched_data
     );
 
     virtual ~TaskElaborateActivityCollectOutputs();
 
-    void collect(IModelFieldAction *action);
+    void collect(dm::IModelFieldAction *action);
 
-	virtual void visitModelFieldInOut(IModelFieldInOut *f) override;
+	virtual void visitModelFieldInOut(dm::IModelFieldInOut *f) override;
 
 private:
-    IContext                    *m_ctxt;
+    dm::IContext                *m_ctxt;
     ActivityScheduleData        *m_sched_data;
 
 };
 
 }
-
+}
+}
 

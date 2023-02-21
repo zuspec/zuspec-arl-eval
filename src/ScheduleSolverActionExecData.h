@@ -7,7 +7,9 @@
 
 #pragma once
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolverActionExecData {
 public:
@@ -16,5 +18,7 @@ public:
 	virtual ~ScheduleSolverActionExecData();
 };
 
+}
 } /* namespace arl */
+}
 

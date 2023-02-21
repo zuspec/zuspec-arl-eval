@@ -18,8 +18,8 @@
  * Created on:
  *     Author:
  */
-#include "arl/impl/ModelBuildContext.h"
-#include "vsc/impl/DebugMacros.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "ModelActivityTraverse.h"
 #include "ModelEvaluatorIncrElab.h"
 #include "ModelEvalIteratorIncrElab.h"
@@ -27,10 +27,12 @@
 #include "ModelEvaluatorIncrElabSequence.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
-ModelEvaluatorIncrElab::ModelEvaluatorIncrElab(IContext *ctxt) : m_ctxt(ctxt) {
+ModelEvaluatorIncrElab::ModelEvaluatorIncrElab(dm::IContext *ctxt) : m_ctxt(ctxt) {
     DEBUG_INIT("ModelEvaluatorIncrElab", ctxt->getDebugMgr());
 	m_activity_idx = 0;
 	m_next = 0;
@@ -41,18 +43,18 @@ ModelEvaluatorIncrElab::~ModelEvaluatorIncrElab() {
 
 }
 
-IModelEvalIterator *ModelEvaluatorIncrElab::eval(
-    const vsc::IRandState           *randstate,
-    IModelFieldComponent            *root_comp,
-    IDataTypeAction                 *root_action) {
+dm::IModelEvalIterator *ModelEvaluatorIncrElab::eval(
+    const vsc::solvers::IRandState      *randstate,
+    dm::IModelFieldComponent            *root_comp,
+    dm::IDataTypeAction                 *root_action) {
 	DEBUG_ENTER("eval");
-	ModelBuildContext ctxt_b(m_ctxt);
-	m_randstate = vsc::IRandStateUP(randstate->clone());
+	dm::ModelBuildContext ctxt_b(m_ctxt);
+	m_randstate = vsc::solvers::IRandStateUP(randstate->clone());
 
 	// Create a sequence containing a traversal of the 
 	// root action
-	m_action = IModelFieldActionUP(
-		root_action->mkRootFieldT<IModelFieldAction>(
+	m_action = dm::IModelFieldActionUP(
+		root_action->mkRootFieldT<dm::IModelFieldAction>(
 			&ctxt_b,
 			root_action->name(),
 			false));
@@ -60,12 +62,12 @@ IModelEvalIterator *ModelEvaluatorIncrElab::eval(
 		m_ctxt, m_randstate->next());
 	root_thread->pushComponent(root_comp);
 	ModelEvaluatorIncrElabSequence *root_seq = new ModelEvaluatorIncrElabSequence(root_thread);
-	root_seq->addActivity(new ModelActivityTraverse(
-		m_action.get(), 
-		0, 
-		false,
-		0, 
-		false), true);
+	root_seq->addActivity(m_ctxt->mkModelActivityTraverse(
+        m_action.get(),
+        0,
+        false,
+        0,
+        false), true);
 	root_thread->pushIterator(root_seq);
 
 	
@@ -78,7 +80,7 @@ IModelEvalIterator *ModelEvaluatorIncrElab::eval(
 	return root_thread;
 }
 
-IModelEvalIterator *ModelEvaluatorIncrElab::next() {
+dm::IModelEvalIterator *ModelEvaluatorIncrElab::next() {
 	DEBUG_ENTER("next idx=%d size=%d", m_activity_idx, m_activities.size());
 	if (m_activity_idx >= m_activities.size()) {
 		DEBUG_LEAVE("next -- no more activities");
@@ -95,12 +97,12 @@ IModelEvalIterator *ModelEvaluatorIncrElab::next() {
 	return m_next;
 }
 
-void ModelEvaluatorIncrElab::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void ModelEvaluatorIncrElab::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
 	DEBUG_ENTER("visitModelActivityTraverse");
 
 	// Randomize action
-	vsc::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
-	std::vector<vsc::IModelConstraint *> constraints;
+	vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+	std::vector<vsc::dm::IModelConstraint *> constraints;
 
 	if (a->getWithC()) {
 		constraints.push_back(a->getWithC());
@@ -110,15 +112,17 @@ void ModelEvaluatorIncrElab::visitModelActivityTraverse(IModelActivityTraverse *
 		m_randstate.get(),
 		{a->getTarget()},
 		constraints,
-		vsc::SolveFlags::Randomize|vsc::SolveFlags::RandomizeDeclRand|vsc::SolveFlags::RandomizeTopFields
+		vsc::dm::SolveFlags::Randomize|vsc::dm::SolveFlags::RandomizeDeclRand|vsc::dm::SolveFlags::RandomizeTopFields
 	);
 
 	DEBUG("ModelActivityTraverse: target=%p", a->getTarget());
 
-	m_next = new ModelEvalIteratorIncrElab({ModelEvalNodeT::Action, a->getTarget()});
+	m_next = new ModelEvalIteratorIncrElab({dm::ModelEvalNodeT::Action, a->getTarget()});
 	DEBUG_LEAVE("visitModelActivityTraverse");
 }
 
-vsc::IDebug *ModelEvaluatorIncrElab::m_dbg = 0;
+dmgr::IDebug *ModelEvaluatorIncrElab::m_dbg = 0;
 
+}
+}
 }

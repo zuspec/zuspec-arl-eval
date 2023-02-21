@@ -18,17 +18,19 @@
  * Created on:
  *     Author:
  */
-#include "vsc/impl/DebugMacros.h"
-#include "arl/impl/CopyVisitor.h"
+#include "dmgr/impl/DebugMacros.h"
+#include "zsp/arl/dm/impl/CopyVisitor.h"
 #include "TaskElaborateActivityExpandReplicate.h"
 #include "TaskElaborateActivitySelectReplicateSizes.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskElaborateActivityExpandReplicate::TaskElaborateActivityExpandReplicate(
-    IContext *ctxt) : m_ctxt(ctxt) {
+    dm::IContext *ctxt) : m_ctxt(ctxt) {
     DEBUG_INIT("TaskElaborateActivityExpandReplicate", m_ctxt->getDebugMgr());
 
 }
@@ -38,8 +40,8 @@ TaskElaborateActivityExpandReplicate::~TaskElaborateActivityExpandReplicate() {
 }
 
 IModelActivityScope *TaskElaborateActivityExpandReplicate::elab(
-    vsc::IRandState         *randstate,
-    IModelActivityScope     *root) {
+    vsc::solvers::IRandState         *randstate,
+    dm::IModelActivityScope     *root) {
     DEBUG_ENTER("elab");
 
     // Before expanding, take a pass through the tree to select 
@@ -50,8 +52,8 @@ IModelActivityScope *TaskElaborateActivityExpandReplicate::elab(
 
     DEBUG("Result of ReplicateSizes: %d", ret);
 
-    m_result = IModelActivityScopeUP(
-        m_ctxt->mkModelActivityScope(ModelActivityScopeT::Sequence));
+    m_result = dm::IModelActivityScopeUP(
+        m_ctxt->mkModelActivityScope(dm::ModelActivityScopeT::Sequence));
     m_scope_s.push_back(m_result.get());
 
     root->accept(m_this);
@@ -61,10 +63,10 @@ IModelActivityScope *TaskElaborateActivityExpandReplicate::elab(
 }
 
 void TaskElaborateActivityExpandReplicate::visitModelActivityScope(
-    IModelActivityScope *a) {
+    dm::IModelActivityScope *a) {
     DEBUG_ENTER("visitModelActivityScope %d", a->getType());
     // Construct a duplicate scope to contain the elements inside
-    IModelActivityScope *scope = m_ctxt->mkModelActivityScope(a->getType());
+    dm::IModelActivityScope *scope = m_ctxt->mkModelActivityScope(a->getType());
     m_scope_s.back()->addActivity(scope, true);
     m_scope_s.push_back(scope);
     for (std::vector<IModelActivity *>::const_iterator
@@ -77,7 +79,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityScope(
 }
 
 void TaskElaborateActivityExpandReplicate::visitModelActivityTraverse(
-    IModelActivityTraverse *a) {
+    dm::IModelActivityTraverse *a) {
     DEBUG_ENTER("visitModelActivityTraverse");
     // Just gets added 
 
@@ -85,9 +87,9 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityTraverse(
         // We need to clone a compound activity, since we will be
         // changing the contained compound activity
 
-        IModelActivityScope *scope = m_ctxt->mkModelActivityScope(
+        dm::IModelActivityScope *scope = m_ctxt->mkModelActivityScope(
             a->getTarget()->getActivity()->getType());
-        IModelActivityTraverse *traverse = m_ctxt->mkModelActivityTraverse(
+        dm::IModelActivityTraverse *traverse = m_ctxt->mkModelActivityTraverse(
             a->getTarget(),
             a->getWithC(),
             false,
@@ -104,7 +106,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityTraverse(
 }
 
 void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
-    IModelActivityReplicate *a) {
+    dm::IModelActivityReplicate *a) {
     DEBUG_ENTER("visitModelActivityReplicate");
 
     // IModelActivityScope *scope = m_ctxt->mkModelActivityScope(a->getType());
@@ -123,7 +125,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
     // Copy any local fields, skipping __count and __index
     for (uint32_t i=2; i<a->fields().size(); i++) {
         m_scope_s.back()->addField(
-            cv.copyT<vsc::IModelField>(a->fields().at(i).get()));
+            cv.copyT<vsc::dm::IModelField>(a->fields().at(i).get()));
     }
 
     // TODO: need to propagate the replicate constraint such that 
@@ -133,7 +135,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
 
         // Sub-elements must be replicated N times and added to the
         // containing scope
-        for (std::vector<IModelActivity *>::const_iterator
+        for (std::vector<dm::IModelActivity *>::const_iterator
             it=a->activities().begin();
             it!=a->activities().end(); it++) {
 
@@ -150,6 +152,8 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
     DEBUG_LEAVE("visitModelActivityReplicate");
 }
 
-vsc::IDebug *TaskElaborateActivityExpandReplicate::m_dbg = 0;
+dmgr::IDebug *TaskElaborateActivityExpandReplicate::m_dbg = 0;
 
+}
+}
 }

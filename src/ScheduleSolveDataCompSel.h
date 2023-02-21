@@ -9,7 +9,9 @@
 #include <vector>
 #include "IScheduleSolveData.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveDataCompSel : public IScheduleSolveData {
 public:
@@ -39,5 +41,7 @@ private:
 	std::vector<int32_t>		m_comp_id_l;
 };
 
+}
 } /* namespace arl */
+}
 

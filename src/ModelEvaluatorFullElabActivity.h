@@ -19,23 +19,25 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/IModelEvalIterator.h"
-#include "arl/impl/VisitorBase.h"
-#include "vsc/IRandState.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
+#include "vsc/solvers/IRandState.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 
 class ModelEvaluatorFullElabActivity : 
-    public virtual IModelEvalIterator,
-    public virtual VisitorBase {
+    public virtual dm::IModelEvalIterator,
+    public virtual dm::VisitorBase {
 public:
     ModelEvaluatorFullElabActivity(
-        IContext                    *ctxt,
-        vsc::IRandState             *randstate,
-        IModelActivity              *activity);
+        dm::IContext                    *ctxt,
+        vsc::solvers::IRandState             *randstate,
+        dm::IModelActivity              *activity);
 
     virtual ~ModelEvaluatorFullElabActivity();
 
@@ -43,39 +45,38 @@ public:
 
 	virtual bool valid() override { return !m_taken; }
 
-	virtual bool pop() override { return false; }
-
-	virtual ModelEvalNodeT type() const override {
+	virtual dm::ModelEvalNodeT type() const override {
         return m_type;
     }
 
-	virtual IModelFieldAction *action() override {
+	virtual dm::IModelFieldAction *action() override {
         return m_action;
     }
 
-	virtual IModelEvalIterator *iterator() override {
+	virtual dm::IModelEvalIterator *iterator() override {
         return m_iterator;
     }
 
-    virtual void visitModelActivityParallel(IModelActivityParallel *a) override;
+    virtual void visitModelActivityParallel(dm::IModelActivityParallel *a) override;
 
-	virtual void visitModelActivitySequence(IModelActivitySequence *a) override;
+	virtual void visitModelActivitySequence(dm::IModelActivitySequence *a) override;
 
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static vsc::IDebug              *m_dbg;
-    IContext                        *m_ctxt;
-    vsc::IRandStateUP               m_randstate;
-    IModelActivity                  *m_activity;
-    bool                            m_taken;
+    static dmgr::IDebug              *m_dbg;
+    dm::IContext                     *m_ctxt;
+    vsc::solvers::IRandStateUP       m_randstate;
+    dm::IModelActivity               *m_activity;
+    bool                             m_taken;
 
-    ModelEvalNodeT                  m_type;
-    IModelFieldAction               *m_action;
-    IModelEvalIterator              *m_iterator;
+    dm::ModelEvalNodeT               m_type;
+    dm::IModelFieldAction            *m_action;
+    dm::IModelEvalIterator           *m_iterator;
 
 };
 
 }
-
+}
+}
 

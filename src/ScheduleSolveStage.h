@@ -10,7 +10,9 @@
 #include <vector>
 #include "IScheduleSolveChoice.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveStage;
 using ScheduleSolveStageUP=std::unique_ptr<ScheduleSolveStage>;
@@ -26,5 +28,6 @@ private:
 
 };
 
+}
 } /* namespace arl */
-
+}

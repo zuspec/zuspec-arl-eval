@@ -7,19 +7,21 @@
 
 #pragma once
 #include <vector>
-#include "arl/IModelEvalIterator.h"
-#include "arl/IModelFieldAction.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
+#include "zsp/arl/dm/IModelFieldAction.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
-class ModelEvalIteratorIncrElab : public IModelEvalIterator {
+class ModelEvalIteratorIncrElab : public dm::IModelEvalIterator {
 public:
 	struct Elem {
-		ModelEvalNodeT		type;
+		dm::ModelEvalNodeT		type;
 		union {
-			IModelFieldAction	*action;
-			IModelEvalIterator	*iterator;
+			dm::IModelFieldAction	*action;
+			dm::IModelEvalIterator	*iterator;
 		};
 	};
 public:
@@ -33,13 +35,11 @@ public:
 
 	virtual bool valid() override;
 
-	virtual bool pop() override { return false; }
+	virtual dm::ModelEvalNodeT type() const override;
 
-	virtual ModelEvalNodeT type() const override;
+	virtual dm::IModelFieldAction *action() override;
 
-	virtual IModelFieldAction *action() override;
-
-	virtual IModelEvalIterator *iterator() override;
+	virtual dm::IModelEvalIterator *iterator() override;
 
 private:
 	std::vector<Elem>						m_seq;
@@ -48,5 +48,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

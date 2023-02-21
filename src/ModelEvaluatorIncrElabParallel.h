@@ -19,13 +19,15 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IModelEvalIterator.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ModelEvaluatorThread;
 
-class ModelEvaluatorIncrElabParallel : public virtual IModelEvalIterator {
+class ModelEvaluatorIncrElabParallel : public virtual dm::IModelEvalIterator {
 public:
     ModelEvaluatorIncrElabParallel(const std::vector<ModelEvaluatorThread *> &branches);
 
@@ -35,15 +37,14 @@ public:
 
 	virtual bool valid() override;
 
-	virtual bool pop() override;
+	virtual dm::ModelEvalNodeT type() const override;
 
-	virtual ModelEvalNodeT type() const override;
+	virtual dm::IModelFieldAction *action() override;
 
-	virtual IModelFieldAction *action() override;
-
-	virtual IModelEvalIterator *iterator() override;
+	virtual dm::IModelEvalIterator *iterator() override;
 
 private:
+    static dmgr::IDebug                         *m_dbg;
     int32_t                                     m_idx;
     std::vector<ModelEvaluatorThread *>         m_branches;
 
@@ -51,4 +52,5 @@ private:
 };
 
 }
-
+}
+}

@@ -8,7 +8,9 @@
 #include <vector>
 #include "ScheduleGraphNode.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 /**
  * Removes redundant arcs from the graph
@@ -31,5 +33,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

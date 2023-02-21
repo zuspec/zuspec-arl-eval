@@ -10,7 +10,9 @@
 #include "IScheduleSolvePropagator.h"
 #include "ScheduleGraphNode.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolvePropagatorActivityPairRel;
 using ScheduleSolvePropagatorActivityPairRelUP=std::unique_ptr<ScheduleSolvePropagatorActivityPairRel>;
@@ -36,5 +38,7 @@ private:
 
 };
 
+}
 } /* namespace arl */
+}
 

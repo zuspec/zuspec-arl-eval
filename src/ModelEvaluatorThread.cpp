@@ -18,15 +18,17 @@
  * Created on:
  *     Author:
  */
-#include "DebugMacros.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "ModelEvaluatorThread.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ModelEvaluatorThread::ModelEvaluatorThread(
-    IContext            *ctxt,
-    vsc::IRandState     *randstate) : m_ctxt(ctxt), m_randstate(randstate) {
-    DEBUG_INIT("ModelEvaluatorThread");
+    dm::IContext                 *ctxt,
+    vsc::solvers::IRandState     *randstate) : m_ctxt(ctxt), m_randstate(randstate) {
+    DEBUG_INIT("ModelEvaluatorThread", ctxt->getDebugMgr());
 }
 
 ModelEvaluatorThread::~ModelEvaluatorThread() {
@@ -38,7 +40,7 @@ bool ModelEvaluatorThread::next() {
     bool ret = false;
 
     // First, get rid of any entries that have expired
-    while (m_iter_s.size() && m_iter_s.back()->pop()) {
+    while (m_iter_s.size() /*&& m_iter_s.back()->pop()*/) {
         DEBUG("pop element");
         m_iter_s.pop_back();
     }
@@ -64,17 +66,17 @@ bool ModelEvaluatorThread::valid() {
     return (m_iter_s.size() && m_iter_s.back()->valid());
 }
 
-ModelEvalNodeT ModelEvaluatorThread::type() const {
+dm::ModelEvalNodeT ModelEvaluatorThread::type() const {
     DEBUG("type");
     return m_iter_s.back()->type();
 }
 
-IModelFieldAction *ModelEvaluatorThread::action() {
+dm::IModelFieldAction *ModelEvaluatorThread::action() {
     DEBUG("action");
     return m_iter_s.back()->action();
 }
 
-IModelEvalIterator *ModelEvaluatorThread::iterator() {
+dm::IModelEvalIterator *ModelEvaluatorThread::iterator() {
     DEBUG("iterator");
     return m_iter_s.back()->iterator();
 }
@@ -83,7 +85,7 @@ void ModelEvaluatorThread::pushIterator(IModelEvalIterator *it) {
     m_iter_s.push_back(it);
 }
 
-void ModelEvaluatorThread::pushComponent(IModelFieldComponent *comp) {
+void ModelEvaluatorThread::pushComponent(dm::IModelFieldComponent *comp) {
     m_component_s.push_back(comp);
 }
 
@@ -91,4 +93,8 @@ void ModelEvaluatorThread::popComponent() {
     m_component_s.pop_back();
 }
 
+dmgr::IDebug *ModelEvaluatorThread::m_dbg = 0;
+
+}
+}
 }

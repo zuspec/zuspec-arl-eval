@@ -7,7 +7,9 @@
 
 #include "ScheduleSolveEvalQueue.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolveEvalQueue::ScheduleSolveEvalQueue() {
 	// TODO Auto-generated constructor stub
@@ -46,4 +48,6 @@ void ScheduleSolveEvalQueue::queueForEval(
 	m_eval_q.push_back(PropPair(src,dst));
 }
 
+}
 } /* namespace arl */
+}

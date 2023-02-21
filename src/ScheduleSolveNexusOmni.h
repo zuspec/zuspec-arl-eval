@@ -8,7 +8,9 @@
 #pragma once
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolveNexusOmni {
 public:
@@ -16,5 +18,7 @@ public:
 	virtual ~ScheduleSolveNexusOmni();
 };
 
+}
 } /* namespace arl */
+}
 

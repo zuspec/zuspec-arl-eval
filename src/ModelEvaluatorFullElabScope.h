@@ -19,23 +19,25 @@
  *     Author: 
  */
 #pragma once
-#include "arl/IContext.h"
-#include "arl/IModelActivityScope.h"
-#include "arl/IModelEvalIterator.h"
-#include "arl/impl/VisitorBase.h"
-#include "vsc/IRandState.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IModelActivityScope.h"
+#include "zsp/arl/dm/IModelEvalIterator.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
+#include "vsc/solvers/IRandState.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 class ModelEvaluatorFullElabScope :
-    public virtual IModelEvalIterator,
-    public virtual VisitorBase {
+    public virtual dm::IModelEvalIterator,
+    public virtual dm::VisitorBase {
 public:
     ModelEvaluatorFullElabScope(
-        IContext                *ctxt,
-        vsc::IRandState         *randstat,
-        IModelActivityScope     *scope
+        dm::IContext                *ctxt,
+        vsc::solvers::IRandState    *randstat,
+        dm::IModelActivityScope     *scope
     );
 
     virtual ~ModelEvaluatorFullElabScope();
@@ -44,31 +46,30 @@ public:
 
 	virtual bool valid() override;
 
-	virtual bool pop() override;
+	virtual dm::ModelEvalNodeT type() const override;
 
-	virtual ModelEvalNodeT type() const override;
+	virtual dm::IModelFieldAction *action() override;
 
-	virtual IModelFieldAction *action() override;
+	virtual dm::IModelEvalIterator *iterator() override;
 
-	virtual IModelEvalIterator *iterator() override;
+	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
-	virtual void visitModelActivityScope(IModelActivityScope *a) override;
-
-	virtual void visitModelActivityTraverse(IModelActivityTraverse *a) override;
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static vsc::IDebug              *m_dbg;
-    IContext                        *m_ctxt;
-    vsc::IRandStateUP               m_randstate;
-    IModelActivityScope             *m_scope;
-    int32_t                         m_idx;
+    static dmgr::IDebug              *m_dbg;
+    dm::IContext                     *m_ctxt;
+    vsc::solvers::IRandStateUP       m_randstate;
+    dm::IModelActivityScope          *m_scope;
+    int32_t                          m_idx;
 
-    ModelEvalNodeT                  m_type;
-    IModelFieldAction               *m_action;
-    IModelEvalIterator              *m_iterator;
+    dm::ModelEvalNodeT               m_type;
+    dm::IModelFieldAction            *m_action;
+    dm::IModelEvalIterator           *m_iterator;
 
 };
 
 }
-
+}
+}
 

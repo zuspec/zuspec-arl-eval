@@ -18,9 +18,9 @@
  * Created on:
  *     Author:
  */
-#include "vsc/impl/DebugMacros.h"
-#include "vsc/impl/PrettyPrinter.h"
-#include "vsc/impl/TaskUnrollModelFieldRefConstraints.h"
+#include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/PrettyPrinter.h"
+#include "vsc/dm/impl/TaskUnrollModelFieldRefConstraints.h"
 
 #include "ModelEvaluatorIncrElabParallel.h"
 #include "ModelEvaluatorIncrElabSequence.h"
@@ -28,7 +28,9 @@
 #include "TaskSolveActionSet.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 ModelEvaluatorIncrElabSequence::ModelEvaluatorIncrElabSequence(ModelEvaluatorThread *thread) 
     : m_idx(-1), m_thread(thread), m_action(0), m_next_it(0) {
     DEBUG_INIT("ModelEvaluatorIncrElabSequence", thread->ctxt()->getDebugMgr());
@@ -36,16 +38,16 @@ ModelEvaluatorIncrElabSequence::ModelEvaluatorIncrElabSequence(ModelEvaluatorThr
 }
 
 ModelEvaluatorIncrElabSequence::ModelEvaluatorIncrElabSequence(
-        ModelEvaluatorThread                *thread,
-        const std::vector<IModelActivity *> &activities,
+        ModelEvaluatorThread                    *thread,
+        const std::vector<dm::IModelActivity *> &activities,
         bool                                owned) : m_idx(-1), m_thread(thread),
         m_activities(activities.begin(), activities.end()) {
 
     if (owned) {
-        for (std::vector<IModelActivity *>::const_iterator
+        for (std::vector<dm::IModelActivity *>::const_iterator
             it=activities.begin();
             it!=activities.end(); it++) {
-            m_activities_up.push_back(IModelActivityUP(*it));
+            m_activities_up.push_back(dm::IModelActivityUP(*it));
         }
     }
 }
@@ -54,10 +56,10 @@ ModelEvaluatorIncrElabSequence::~ModelEvaluatorIncrElabSequence() {
 
 }
 
-void ModelEvaluatorIncrElabSequence::addActivity(IModelActivity *activity, bool owned) {
+void ModelEvaluatorIncrElabSequence::addActivity(dm::IModelActivity *activity, bool owned) {
     m_activities.push_back(activity);
     if (owned) {
-        m_activities_up.push_back(IModelActivityUP(activity));
+        m_activities_up.push_back(dm::IModelActivityUP(activity));
     }
 }
 
@@ -80,7 +82,7 @@ bool ModelEvaluatorIncrElabSequence::next() {
 
     if (m_action) {
         DEBUG_LEAVE("next - action to execute");
-        m_type = ModelEvalNodeT::Action;
+        m_type = dm::ModelEvalNodeT::Action;
         return true;
     } else if (m_next_it) {
         IModelEvalIterator *it = m_next_it;
@@ -90,7 +92,7 @@ bool ModelEvaluatorIncrElabSequence::next() {
         DEBUG_LEAVE("next - pushed new iterator");
         m_action = 0;
         m_next_it = 0;
-        m_type = ModelEvalNodeT::Action;
+        m_type = dm::ModelEvalNodeT::Action;
         bool ret = it->next();
 
         if (ret) {
@@ -110,34 +112,34 @@ bool ModelEvaluatorIncrElabSequence::valid() {
     return (m_idx >= 0 && m_idx < m_activities.size());
 }
 
-ModelEvalNodeT ModelEvaluatorIncrElabSequence::type() const {
+dm::ModelEvalNodeT ModelEvaluatorIncrElabSequence::type() const {
     DEBUG("type: %d", static_cast<int32_t>(m_type));
     return m_type;
 }
 
-IModelFieldAction *ModelEvaluatorIncrElabSequence::action() {
+dm::IModelFieldAction *ModelEvaluatorIncrElabSequence::action() {
     DEBUG("action: %p", m_action);
     return m_action;
 }
 
-IModelEvalIterator *ModelEvaluatorIncrElabSequence::iterator() {
+dm::IModelEvalIterator *ModelEvaluatorIncrElabSequence::iterator() {
     DEBUG("iterator: %p", m_next_it);
     return m_next_it;
 }
 
-void ModelEvaluatorIncrElabSequence::visitModelActivityParallel(IModelActivityParallel *a) {
+void ModelEvaluatorIncrElabSequence::visitModelActivityParallel(dm::IModelActivityParallel *a) {
     DEBUG_ENTER("visitModelActivityParallel");
     std::vector<ModelEvaluatorThread *>     branches;
-    IModelFieldComponent *comp = m_thread->component();
+    dm::IModelFieldComponent *comp = m_thread->component();
 
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->branches().begin();
         it!=a->branches().end(); it++) {
         ModelEvaluatorThread *thread = new ModelEvaluatorThread(
             m_thread->ctxt(), m_thread->randstate()->next());
         thread->pushComponent(comp);
-        std::vector<IModelActivity *> activities;
-        TaskCollectTopLevelActivities().collect(activities, *it);
+        std::vector<dm::IModelActivity *> activities;
+        dm::TaskCollectTopLevelActivities().collect(activities, *it);
         DEBUG("Branch has %d activities", activities.size());
         ModelEvaluatorIncrElabSequence *seq = new ModelEvaluatorIncrElabSequence(thread, activities);
         thread->pushIterator(seq);
@@ -148,20 +150,20 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityParallel(IModelActivityPa
     DEBUG_LEAVE("visitModelActivityParallel");
 }
 
-void ModelEvaluatorIncrElabSequence::visitModelActivitySchedule(IModelActivitySchedule *a) {
+void ModelEvaluatorIncrElabSequence::visitModelActivitySchedule(dm::IModelActivitySchedule *a) {
     DEBUG_ENTER("visitModelActivitySchedule");
     DEBUG_LEAVE("visitModelActivitySchedule");
 }
 
-void ModelEvaluatorIncrElabSequence::visitModelActivitySequence(IModelActivitySequence *a) {
+void ModelEvaluatorIncrElabSequence::visitModelActivitySequence(dm::IModelActivitySequence *a) {
     DEBUG_ENTER("visitModelActivitySequence");
     // Unclear if we'll really hit this...
     DEBUG_LEAVE("visitModelActivitySequence");
 }
 
-void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTraverse *a) {
+void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
     DEBUG_ENTER("visitModelActivityTraverse");
-    IModelFieldAction *action = a->getTarget();
+    dm::IModelFieldAction *action = a->getTarget();
 
 #ifdef UNDEFINED
     if (action->activities().size() == 1) {
@@ -177,7 +179,7 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTr
         DEBUG("TODO: need to schedule activities");
     } else {
         DEBUG("Just a single leaf-level action");
-        std::vector<vsc::IModelConstraint *> constraints;
+        std::vector<vsc::dm::IModelConstraint *> constraints;
 
 
         // Get the active component
@@ -193,7 +195,7 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTr
         }
 
         // Add in the local action constraints
-        for (std::vector<vsc::IModelConstraintUP>::const_iterator
+        for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
             it=action->constraints().begin();
             it!=action->constraints().end(); it++) {
             constraints.push_back(it->get());
@@ -206,17 +208,17 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTr
             action->getDataTypeT<IDataTypeAction>()->getComponentType()->name().c_str(),
             comp_p->name().c_str());
 
-        std::vector<vsc::IModelField *> comp_candidates(comp_l.begin(), comp_l.end());
+        std::vector<vsc::dm::IModelField *> comp_candidates(comp_l.begin(), comp_l.end());
 
-        vsc::ModelFieldRefConstraintDataUP comp_data(
-            vsc::TaskUnrollModelFieldRefConstraints(m_thread->ctxt()).build(
-                action->getFieldT<vsc::IModelFieldRef>(0),
+        vsc::dm::ModelFieldRefConstraintDataUP comp_data(
+            vsc::dm::TaskUnrollModelFieldRefConstraints(m_thread->ctxt()).build(
+                action->getFieldT<vsc::dm::IModelFieldRef>(0),
                 comp_candidates,
                 {},
                 constraints
             ));
-        std::vector<vsc::IModelConstraint *> comp_constraints;
-        for (std::vector<vsc::IModelConstraintUP>::const_iterator
+        std::vector<vsc::dm::IModelConstraint *> comp_constraints;
+        for (std::vector<vsc::dm::IModelConstraintUP>::const_iterator
             it=comp_data->getSelectConstraints().begin();
             it!=comp_data->getSelectConstraints().end(); it++) {
             if (it->get()) {
@@ -225,19 +227,19 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTr
         }
         comp_constraints.push_back(comp_data->getValidC());
 
-        for (std::vector<vsc::IModelConstraint *>::const_iterator
+        for (std::vector<vsc::dm::IModelConstraint *>::const_iterator
             it=comp_constraints.begin();
             it!=comp_constraints.end(); it++) {
-            DEBUG("CompConstraint: %s", vsc::PrettyPrinter().print(*it));
+            DEBUG("CompConstraint: %s", vsc::dm::PrettyPrinter().print(*it));
         }
 
         bool result = solver->solve(
             m_thread->randstate(),
             {comp_data->getSelector()},
             comp_constraints,
-            vsc::SolveFlags::Randomize
-                | vsc::SolveFlags::RandomizeDeclRand
-                | vsc::SolveFlags::RandomizeTopFields);
+            vsc::dm::SolveFlags::Randomize
+                | vsc::dm::SolveFlags::RandomizeDeclRand
+                | vsc::dm::SolveFlags::RandomizeTopFields);
 
         fprintf(stdout, "Result: %d ; select=%lld\n",
             result, comp_data->getSelector()->val()->val_i());
@@ -246,10 +248,10 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTr
             m_thread->randstate(),
             {action},
             constraints,
-            vsc::SolveFlags::Randomize
-                | vsc::SolveFlags::RandomizeDeclRand
-                | vsc::SolveFlags::RandomizeTopFields);
-        action->getFieldT<vsc::IModelFieldRef>(0)->setRef(
+            vsc::dm::SolveFlags::Randomize
+                | vsc::dm::SolveFlags::RandomizeDeclRand
+                | vsc::dm::SolveFlags::RandomizeTopFields);
+        action->getFieldT<vsc::dm::IModelFieldRef>(0)->setRef(
             comp_l.at(comp_data->getSelector()->val()->val_i()));
 
         m_action = action;
@@ -262,7 +264,8 @@ void ModelEvaluatorIncrElabSequence::visitModelActivityTraverse(IModelActivityTr
     DEBUG_LEAVE("visitModelActivityTraverse");
 }
 
-vsc::IDebug *ModelEvaluatorIncrElabSequence::m_dbg = 0;
+dmgr::IDebug *ModelEvaluatorIncrElabSequence::m_dbg = 0;
 
 }
-
+}
+}

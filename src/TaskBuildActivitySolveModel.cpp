@@ -22,10 +22,12 @@
 #include "TaskBuildActivityTraverseData.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
-TaskBuildActivitySolveModel::TaskBuildActivitySolveModel(IContext *ctxt) : m_ctxt(ctxt) {
+TaskBuildActivitySolveModel::TaskBuildActivitySolveModel(dm::IContext *ctxt) : m_ctxt(ctxt) {
     m_root_comp = 0;
 }
 
@@ -34,8 +36,8 @@ TaskBuildActivitySolveModel::~TaskBuildActivitySolveModel() {
 }
 
 ActivitySolveModel *TaskBuildActivitySolveModel::build(
-    IModelFieldComponent           *root_comp,
-    IModelActivity                 *root_activity) {
+    dm::IModelFieldComponent           *root_comp,
+    dm::IModelActivity                 *root_activity) {
     m_model = ActivitySolveModelUP(new ActivitySolveModel());
     m_root_comp = root_comp;
 
@@ -48,7 +50,7 @@ ActivitySolveModel *TaskBuildActivitySolveModel::build(
 
 
 void TaskBuildActivitySolveModel::visitModelActivityParallel(
-    IModelActivityParallel *a) {
+    dm::IModelActivityParallel *a) {
     
     // Traverse branches while managing flow objects
     // 1.) Must collect resources from each branch to ensure uniqueness
@@ -56,7 +58,7 @@ void TaskBuildActivitySolveModel::visitModelActivityParallel(
     // 
 
 
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->branches().begin();
         it!=a->branches().end(); it++) {
         (*it)->accept(m_this);
@@ -71,7 +73,7 @@ void TaskBuildActivitySolveModel::visitModelActivityParallel(
 }
 
 void TaskBuildActivitySolveModel::visitModelActivitySchedule(
-    IModelActivitySchedule *a) {
+    dm::IModelActivitySchedule *a) {
     // Focus on schedule and nested non-parallel elements
     // Consider parallel to be a carve-out that doesn't 
     // dissolve when included in a schedule 
@@ -87,18 +89,18 @@ void TaskBuildActivitySolveModel::visitModelActivitySchedule(
 }
 
 void TaskBuildActivitySolveModel::visitModelActivitySequence(
-    IModelActivitySequence *a) {
+    dm::IModelActivitySequence *a) {
     // If we are inside a schedule block, must record the
     // relationships
     VisitorBase::visitModelActivitySequence(a);
 }
 
 void TaskBuildActivitySolveModel::visitModelActivityTraverse(
-    IModelActivityTraverse *a) {
+    dm::IModelActivityTraverse *a) {
     // Update the component map with information for this traversal
     ActivityTraverseData *t_data = TaskBuildActivityTraverseData(
         m_ctxt, m_model.get()).build(m_root_comp, a);
-    IDataTypeAction *action_t = a->getTarget()->getDataTypeT<IDataTypeAction>();
+    dm::IDataTypeAction *action_t = a->getTarget()->getDataTypeT<dm::IDataTypeAction>();
 
 
 
@@ -107,7 +109,7 @@ void TaskBuildActivitySolveModel::visitModelActivityTraverse(
 
 }
 
-uint32_t ActivitySolveModel::getComponentId(IModelFieldComponent *c) {
+uint32_t ActivitySolveModel::getComponentId(dm::IModelFieldComponent *c) {
     ActivitySolveModel::AllCompMapT::const_iterator it = all_comp_m.find(c);
 
     if (it != all_comp_m.end()) {
@@ -120,4 +122,6 @@ uint32_t ActivitySolveModel::getComponentId(IModelFieldComponent *c) {
     }
 } 
 
+}
+}
 }

@@ -22,11 +22,13 @@
 #include "TaskBuildActivityTraverseData.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TaskBuildActivityTraverseData::TaskBuildActivityTraverseData(
-    IContext                *ctxt,
+    dm::IContext                *ctxt,
     ActivitySolveModel      *solve_model) : m_ctxt(ctxt), m_solve_model(solve_model) {
     m_root_comp = 0;
 }
@@ -36,12 +38,12 @@ TaskBuildActivityTraverseData::~TaskBuildActivityTraverseData() {
 }
 
 ActivityTraverseData *TaskBuildActivityTraverseData::build(
-    IModelFieldComponent        *root_comp,
-    IModelActivityTraverse      *t) {
+    dm::IModelFieldComponent        *root_comp,
+    dm::IModelActivityTraverse      *t) {
     // Get all the component instances where this action could execute
     m_root_comp = root_comp;
 
-    IDataTypeAction *action_t = t->getTarget()->getDataTypeT<IDataTypeAction>();
+    dm::IDataTypeAction *action_t = t->getTarget()->getDataTypeT<dm::IDataTypeAction>();
 #ifdef UNDEFINED
     std::vector<IModelFieldComponent *> contexts = m_root_comp->getCompMap()->getSubContexts(
         action_t->getComponentType());
@@ -67,4 +69,6 @@ ActivityTraverseData *TaskBuildActivityTraverseData::build(
 //    ActivitySolveModel::AllCompMapT::const_iterator it = m_model->all_comp_m.find()
 }
 
+}
+}
 }

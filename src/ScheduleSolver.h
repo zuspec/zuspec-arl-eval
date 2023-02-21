@@ -7,18 +7,20 @@
 
 #pragma once
 #include <vector>
-#include "arl/IContext.h"
+#include "zsp/arl/dm/IContext.h"
 #include "ExecGraphNode.h"
 #include "IScheduleSolveStage.h"
 #include "ModelFieldComponent.h"
 #include "IScheduleSolvePropagator.h"
 #include "ScheduleSolveStage.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 class ScheduleSolver {
 public:
-	ScheduleSolver(IContext *ctxt);
+	ScheduleSolver(dm::IContext *ctxt);
 
 	virtual ~ScheduleSolver();
 
@@ -27,16 +29,18 @@ public:
 	 * The graph owns all action instances
 	 */
 	std::pair<ExecGraphNode *, std::string> solve(
-			ModelFieldComponent				*root_comp,
-			IDataTypeAction					*root_action);
+			dm::ModelFieldComponent				*root_comp,
+			dm::IDataTypeAction					*root_action);
 
 
 private:
-	IContext								*m_ctxt;
+	dm::IContext								*m_ctxt;
 	std::vector<IScheduleSolvePropagatorUP>	m_stage_stack;
 	bool									m_complete;
 
 };
 
+}
 } /* namespace arl */
+}
 

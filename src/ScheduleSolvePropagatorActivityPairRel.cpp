@@ -7,7 +7,9 @@
 
 #include "ScheduleSolvePropagatorActivityPairRel.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 ScheduleSolvePropagatorActivityPairRel::ScheduleSolvePropagatorActivityPairRel() {
 	// TODO Auto-generated constructor stub
@@ -26,4 +28,6 @@ ScheduleSolvePropagatorActivityPairRel::NextResult ScheduleSolvePropagatorActivi
 
 }
 
+}
 } /* namespace arl */
+}
