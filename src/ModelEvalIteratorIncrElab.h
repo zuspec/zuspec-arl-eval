@@ -41,6 +41,10 @@ public:
 
 	virtual dm::IModelEvalIterator *iterator() override;
 
+    virtual void addListener(dm::IModelEvalIteratorListener *l) override { }
+
+    virtual void remListener(dm::IModelEvalIteratorListener *l) override { }
+
 private:
 	std::vector<Elem>						m_seq;
 	int32_t									m_idx;

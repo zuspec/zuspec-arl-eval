@@ -29,7 +29,7 @@ public:
 	virtual dm::IModelEvalIterator *eval(
 			const vsc::solvers::IRandState	*randstate,
 			dm::IModelFieldComponent	    *root_comp,
-			IDataTypeAction			        *root_action) override;
+			dm::IDataTypeAction		        *root_action) override;
 
 private:
 	dm::IContext						*m_ctxt;

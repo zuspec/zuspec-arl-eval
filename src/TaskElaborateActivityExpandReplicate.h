@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <vector>
+#include "vsc/solvers/IRandState.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 
@@ -35,7 +36,7 @@ public:
 
     virtual ~TaskElaborateActivityExpandReplicate();
 
-    IModelActivityScope *elab(
+    dm::IModelActivityScope *elab(
         vsc::solvers::IRandState     *randstate,
         dm::IModelActivityScope *root);
 

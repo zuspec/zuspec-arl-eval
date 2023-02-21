@@ -22,6 +22,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/TaskSetUsedRand.h"
 #include "vsc/dm/impl/TaskUnrollModelFieldRefConstraints.h"
+#include "vsc/solvers/ICompoundSolver.h"
 #include "TaskBuildActivitySolveModel.h"
 #include "TaskBuildActivityTraverseData.h"
 #include "TaskElaborateActivity.h"
@@ -74,7 +75,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
     m_activity->activity_s.push_back(dm::IModelActivityScopeUP(seq));
 
     // Gen2: expand all replicate scopes
-    m_activity->activity_s.push_back(IModelActivityScopeUP(
+    m_activity->activity_s.push_back(dm::IModelActivityScopeUP(
         TaskElaborateActivityExpandReplicate(m_ctxt).elab(
             randstate,
             m_activity->activity_s.back().get()
@@ -109,7 +110,9 @@ ElabActivity *TaskElaborateActivity::elaborate(
         selectors,
         constraints_i);
 
-    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    // TODO:
+//    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::solvers::ICompoundSolverUP solver;
 
     std::vector<vsc::dm::IModelField *> selector_fields;
     std::vector<vsc::dm::IModelConstraint *> selector_constraints;
@@ -135,9 +138,9 @@ ElabActivity *TaskElaborateActivity::elaborate(
         randstate,
         selector_fields,
         selector_constraints,
-        vsc::dm::SolveFlags::Randomize
-        | vsc::dm::SolveFlags::RandomizeDeclRand
-        | vsc::dm::SolveFlags::RandomizeTopFields);
+        vsc::solvers::SolveFlags::Randomize
+        | vsc::solvers::SolveFlags::RandomizeDeclRand
+        | vsc::solvers::SolveFlags::RandomizeTopFields);
 
     // Gen3: Assign flow-object claims and infer actions as needed
 

@@ -12,7 +12,7 @@ namespace arl {
 namespace eval {
 
 ScheduleSolverDataComponentChoice::ScheduleSolverDataComponentChoice(
-		const dm::ComponentMap		&cm) : m_comp_m(cm) {
+		/*const dm::ComponentMap		&cm*/) /*: m_comp_m(cm)*/ {
 
 }
 

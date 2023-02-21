@@ -52,6 +52,10 @@ public:
 
 	virtual dm::IModelEvalIterator *iterator() override;
 
+    virtual void addListener(dm::IModelEvalIteratorListener *l) override { }
+
+    virtual void remListener(dm::IModelEvalIteratorListener *l) override { }
+
 	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
 	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;

@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/solvers/ICompoundSolver.h"
 #include "ModelEvaluatorFullElabScope.h"
 
 
@@ -106,15 +107,17 @@ void ModelEvaluatorFullElabScope::visitModelActivityTraverse(dm::IModelActivityT
         constraints.push_back(it->get());
     }
 
-    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    // TODO:
+//    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::solvers::ICompoundSolverUP solver;
 
     bool result = solver->solve(
         m_randstate.get(),
         {a->getTarget()},
         constraints,
-        vsc::dm::SolveFlags::Randomize
-            | vsc::dm::SolveFlags::RandomizeDeclRand
-            | vsc::dm::SolveFlags::RandomizeTopFields);
+        vsc::solvers::SolveFlags::Randomize
+            | vsc::solvers::SolveFlags::RandomizeDeclRand
+            | vsc::solvers::SolveFlags::RandomizeTopFields);
 
     m_type = dm::ModelEvalNodeT::Action;
     m_action = a->getTarget();

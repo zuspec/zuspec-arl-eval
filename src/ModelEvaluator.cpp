@@ -9,7 +9,7 @@
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
 #include "ModelEvaluatorThread.h"
-#include "TaskCollectTopLevelActivities.h"
+#include "zsp/arl/dm/impl/TaskCollectTopLevelActivities.h"
 
 namespace zsp {
 namespace arl {
@@ -17,12 +17,12 @@ namespace eval {
 
 ModelEvaluator::ModelEvaluator(
 	dm::IContext 			*ctxt,
-	dm::ModelEvaluatorKind	kind) : m_ctxt(ctxt) {
+	ModelEvaluatorKind	    kind) : m_ctxt(ctxt) {
 	switch (kind) {
-		case dm::ModelEvaluatorKind::FullElab:
+		case ModelEvaluatorKind::FullElab:
 			m_impl = IModelEvaluatorUP(new ModelEvaluatorFullElab(ctxt));
 			break;
-		case dm::ModelEvaluatorKind::IncrElab:
+		case ModelEvaluatorKind::IncrElab:
 			m_impl = IModelEvaluatorUP(new ModelEvaluatorIncrElab(ctxt));
 			break;
 	}

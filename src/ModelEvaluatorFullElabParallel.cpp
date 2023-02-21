@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/solvers/ICompoundSolver.h"
 #include "ModelEvaluatorFullElabParallel.h"
 #include "ModelEvaluatorFullElabSequence.h"
 
@@ -76,7 +77,7 @@ void ModelEvaluatorFullElabParallel::visitModelActivityParallel(
 
 void ModelEvaluatorFullElabParallel::visitModelActivitySequence(
     dm::IModelActivitySequence *a) {
-    DEBUG_ENTER(k"visitModelActivitySequence");
+    DEBUG_ENTER("visitModelActivitySequence");
     ModelEvaluatorFullElabSequence *seq = new ModelEvaluatorFullElabSequence(
         m_ctxt,
         m_randstate->next(), // Not sure about this
@@ -102,16 +103,18 @@ void ModelEvaluatorFullElabParallel::visitModelActivityTraverse(
         constraints.push_back(it->get());
     }
 
-    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    // TODO:
+//    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::solvers::ICompoundSolverUP solver;
 
-    vsc::dm::IRandStateUP state(m_randstate->next());
+    vsc::solvers::IRandStateUP state(m_randstate->next());
     bool result = solver->solve(
         state.get(),
         {a->getTarget()},
         constraints,
-        vsc::dm::SolveFlags::Randomize
-            | vsc::dm::SolveFlags::RandomizeDeclRand
-            | vsc::dm::SolveFlags::RandomizeTopFields);
+        vsc::solvers::SolveFlags::Randomize
+            | vsc::solvers::SolveFlags::RandomizeDeclRand
+            | vsc::solvers::SolveFlags::RandomizeTopFields);
 
     m_type = dm::ModelEvalNodeT::Action;
     m_action = a->getTarget();

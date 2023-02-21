@@ -43,6 +43,10 @@ public:
 
 	virtual dm::IModelEvalIterator *iterator() override;
 
+    virtual void addListener(dm::IModelEvalIteratorListener *l) override { }
+
+    virtual void remListener(dm::IModelEvalIteratorListener *l) override { }
+
 private:
     static dmgr::IDebug                         *m_dbg;
     int32_t                                     m_idx;

@@ -18,9 +18,9 @@
  * Created on:
  *     Author:
  */
+#include "vsc/solvers/ICompoundSolver.h"
 #include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "dmgr/impl/DebugMacros.h"
-#include "ModelActivityTraverse.h"
 #include "ModelEvaluatorIncrElab.h"
 #include "ModelEvalIteratorIncrElab.h"
 #include "ModelEvalIteratorIncrElabMgr.h"
@@ -101,7 +101,9 @@ void ModelEvaluatorIncrElab::visitModelActivityTraverse(dm::IModelActivityTraver
 	DEBUG_ENTER("visitModelActivityTraverse");
 
 	// Randomize action
-	vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    // TODO:
+//	vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+	vsc::solvers::ICompoundSolverUP solver;
 	std::vector<vsc::dm::IModelConstraint *> constraints;
 
 	if (a->getWithC()) {
@@ -112,7 +114,9 @@ void ModelEvaluatorIncrElab::visitModelActivityTraverse(dm::IModelActivityTraver
 		m_randstate.get(),
 		{a->getTarget()},
 		constraints,
-		vsc::dm::SolveFlags::Randomize|vsc::dm::SolveFlags::RandomizeDeclRand|vsc::dm::SolveFlags::RandomizeTopFields
+		vsc::solvers::SolveFlags::Randomize
+        | vsc::solvers::SolveFlags::RandomizeDeclRand
+        | vsc::solvers::SolveFlags::RandomizeTopFields
 	);
 
 	DEBUG("ModelActivityTraverse: target=%p", a->getTarget());

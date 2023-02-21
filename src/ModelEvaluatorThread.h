@@ -46,6 +46,10 @@ public:
 
 	virtual IModelEvalIterator *iterator() override;
 
+    virtual void addListener(dm::IModelEvalIteratorListener *l) override { }
+
+    virtual void remListener(dm::IModelEvalIteratorListener *l) override { }
+
     dm::IContext *ctxt() const { return m_ctxt; }
 
     vsc::solvers::IRandState *randstate() { return m_randstate.get(); }

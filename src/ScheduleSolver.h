@@ -10,7 +10,6 @@
 #include "zsp/arl/dm/IContext.h"
 #include "ExecGraphNode.h"
 #include "IScheduleSolveStage.h"
-#include "ModelFieldComponent.h"
 #include "IScheduleSolvePropagator.h"
 #include "ScheduleSolveStage.h"
 
@@ -29,7 +28,7 @@ public:
 	 * The graph owns all action instances
 	 */
 	std::pair<ExecGraphNode *, std::string> solve(
-			dm::ModelFieldComponent				*root_comp,
+			dm::IModelFieldComponent			*root_comp,
 			dm::IDataTypeAction					*root_action);
 
 

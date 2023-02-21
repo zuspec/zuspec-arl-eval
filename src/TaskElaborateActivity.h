@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "vsc/solvers/ICompoundSolver.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 
