@@ -3,7 +3,7 @@
 #****************************************************************************
 import os
 import sys
-from ctypes import CDLL
+import ctypes
 from libc.stdint cimport intptr_t
 from libcpp cimport bool
 from libcpp.cast cimport dynamic_cast, static_cast
