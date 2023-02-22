@@ -32,13 +32,13 @@ else:
     cmake_build_tool = "Ninja"
 
 # First need to establish where things are
-zuspec_arl_dm_dir = os.path.dirname(os.path.abspath(__file__))
+zuspec_arl_eval_dir = os.path.dirname(os.path.abspath(__file__))
 
-if os.path.isdir(os.path.join(zuspec_arl_dm_dir, "packages")):
+if os.path.isdir(os.path.join(zuspec_arl_eval_dir, "packages")):
     print("Packages are inside this directory")
-    packages_dir = os.path.join(zuspec_arl_dm_dir, "packages")
+    packages_dir = os.path.join(zuspec_arl_eval_dir, "packages")
 else:
-    parent = os.path.dirname(zuspec_arl_dm_dir)
+    parent = os.path.dirname(zuspec_arl_eval_dir)
     
     if os.path.isdir(os.path.join(parent, "zuspec-arl-eval")):
         print("zuspec-arl-eval is a peer")
@@ -66,7 +66,7 @@ else:
 # Run configure...
 result = subprocess.run(
     ["cmake", 
-     zuspec_arl_dm_dir,
+     zuspec_arl_eval_dir,
      "-G%s" % cmake_build_tool,
      "-DCMAKE_BUILD_TYPE=Debug",
      "-DPACKAGES_DIR=%s" % packages_dir,
@@ -243,18 +243,17 @@ print("extra_compile_args=" + str(extra_compile_args))
 ext = Extension("zsp_arl_eval.core",
             extra_compile_args=extra_compile_args,
             sources=[
-                os.path.join(zuspec_arl_dm_dir, 'python', "core.pyx"), 
-#                os.path.join(zuspec_arl_dm_dir, 'python', "py_get_arl.cpp"),
-#                os.path.join(zuspec_arl_dm_dir, 'python', 'VisitorProxy.cpp'),
-#                os.path.join(zuspec_arl_dm_dir, 'python', 'MkModelBuildContextArl.cpp'),
+                os.path.join(zuspec_arl_eval_dir, 'python', "core.pyx"), 
             ],
             language="c++",
             include_dirs=[
-#                os.path.join(zuspec_arl_dm_dir, 'src'),
-                os.path.join(zuspec_arl_dm_dir, 'python'),
-                os.path.join(zuspec_arl_dm_dir, 'src', 'include'),
+#                os.path.join(zuspec_arl_eval_dir, 'src'),
+                os.path.join(zuspec_arl_eval_dir, 'python'),
+                os.path.join(zuspec_arl_eval_dir, 'src', 'include'),
                 os.path.join(packages_dir, 'libvsc-dm', 'src', 'include'),
                 os.path.join(packages_dir, 'libvsc-dm', 'python'),
+                os.path.join(packages_dir, 'libvsc-solvers', 'src', 'include'),
+                os.path.join(packages_dir, 'libvsc-solvers', 'python'),
                 os.path.join(packages_dir, 'zuspec-arl-dm', 'src', 'include'),
                 os.path.join(packages_dir, 'zuspec-arl-dm', 'python'),
                 os.path.join(packages_dir, 'debug-mgr', 'src', 'include'),
