@@ -36,7 +36,7 @@ cdef class Factory(object):
                 raise Exception("Extension library core \"%s\" desn't exist" % core_lib)
             so = ctypes.cdll.LoadLibrary(core_lib)
 
-            func = so.zsp_arl_dm_getFactory
+            func = so.zsp_arl_eval_getFactory
             func.restype = ctypes.c_void_p
 
             hndl = <decl.IFactoryP>(<intptr_t>(func()))

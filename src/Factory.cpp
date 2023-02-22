@@ -41,12 +41,14 @@ IFactory *Factory::inst() {
     }
 };
 
-IFactory *zsp_arl_eval_getFactory() {
-    return Factory::inst();
-}
-
 FactoryUP Factory::m_inst;
 
+
 }
 }
 }
+
+zsp::arl::eval::IFactory *zsp_arl_eval_getFactory() {
+    return zsp::arl::eval::Factory::inst();
+}
+
