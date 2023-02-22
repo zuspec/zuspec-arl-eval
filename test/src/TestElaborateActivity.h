@@ -21,7 +21,9 @@
 #pragma once
 #include "TestBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 class TestElaborateActivity : public TestBase {
@@ -32,6 +34,8 @@ public:
 
 };
 
+}
+}
 }
 
 

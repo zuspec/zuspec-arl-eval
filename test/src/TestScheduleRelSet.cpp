@@ -9,7 +9,9 @@
 
 #include "../src/ScheduleSolveDataActionRel.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 TestScheduleRelSet::TestScheduleRelSet() {
 	// TODO Auto-generated constructor stub
@@ -57,4 +59,6 @@ TEST_F(TestScheduleRelSet, contradiction_1) {
 	fprintf(stdout, "RelSet:\n%s\n", set.toString().c_str());
 }
 
+}
 } /* namespace arl */
+}

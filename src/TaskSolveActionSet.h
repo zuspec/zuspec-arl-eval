@@ -20,6 +20,8 @@
  */
 #pragma once
 #include <unordered_map>
+#include "vsc/solvers/ICompoundSolver.h"
+#include "vsc/solvers/IRandState.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/IModelActivityTraverse.h"
 #include "zsp/arl/dm/IModelEvalIterator.h"

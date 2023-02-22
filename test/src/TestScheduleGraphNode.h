@@ -6,16 +6,19 @@
  */
 
 #pragma once
-#include "gtest/gtest.h"
+#include "TestBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class TestScheduleGraphNode : public ::testing::Test {
+class TestScheduleGraphNode : public TestBase {
 public:
 	TestScheduleGraphNode();
 
 	virtual ~TestScheduleGraphNode();
 };
 
+}
 } /* namespace arl */
-
+}

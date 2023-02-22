@@ -11,7 +11,9 @@
 #include "ExecGraph2String.h"
 #include "TestScheduleGraphNode.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 TestScheduleGraphNode::TestScheduleGraphNode() {
 	// TODO Auto-generated constructor stub
@@ -113,4 +115,6 @@ TEST_F(TestScheduleGraphNode, test_smoke) {
 	fprintf(stdout, "Graph:\n%s\n", ExecGraph2String().toString(root.get()).c_str());
 }
 
+}
 } /* namespace arl */
+}

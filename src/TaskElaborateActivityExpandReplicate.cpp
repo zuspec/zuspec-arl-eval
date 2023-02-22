@@ -39,8 +39,8 @@ TaskElaborateActivityExpandReplicate::~TaskElaborateActivityExpandReplicate() {
 
 }
 
-IModelActivityScope *TaskElaborateActivityExpandReplicate::elab(
-    vsc::solvers::IRandState         *randstate,
+dm::IModelActivityScope *TaskElaborateActivityExpandReplicate::elab(
+    vsc::solvers::IRandState    *randstate,
     dm::IModelActivityScope     *root) {
     DEBUG_ENTER("elab");
 
@@ -69,7 +69,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityScope(
     dm::IModelActivityScope *scope = m_ctxt->mkModelActivityScope(a->getType());
     m_scope_s.back()->addActivity(scope, true);
     m_scope_s.push_back(scope);
-    for (std::vector<IModelActivity *>::const_iterator
+    for (std::vector<dm::IModelActivity *>::const_iterator
         it=a->activities().begin();
         it!=a->activities().end(); it++) {
         (*it)->accept(m_this);
@@ -118,14 +118,14 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
     //     (*it)->accept(m_this);
     // }
     // m_scope_s.pop_back();
-    CopyVisitor cv(m_ctxt);
+    dm::CopyVisitor cv(m_ctxt);
 
     DEBUG("Replicate size: %lld\n", a->getCountField()->val()->val_u());
 
     // Copy any local fields, skipping __count and __index
-    for (uint32_t i=2; i<a->fields().size(); i++) {
+    for (uint32_t i=2; i<a->getFields().size(); i++) {
         m_scope_s.back()->addField(
-            cv.copyT<vsc::dm::IModelField>(a->fields().at(i).get()));
+            cv.copyT<vsc::dm::IModelField>(a->getFields().at(i).get()));
     }
 
     // TODO: need to propagate the replicate constraint such that 
@@ -145,7 +145,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
             // TODO: Likely need a stack of these variables
 
             DEBUG("copying activity");
-            m_scope_s.back()->addActivity(cv.copyT<IModelActivity>(*it), true);
+            m_scope_s.back()->addActivity(cv.copyT<dm::IModelActivity>(*it), true);
         }
     }
 

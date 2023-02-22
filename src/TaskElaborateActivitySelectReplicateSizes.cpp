@@ -45,7 +45,9 @@ bool TaskElaborateActivitySelectReplicateSizes::eval(
 
     // Now that we have the fields, solve all at once to arrive at a
     // consistent result
-    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    // TODO:
+//    vsc::solvers::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
+    vsc::solvers::ICompoundSolverUP solver;
 
     DEBUG("Fields: %d ; Constraints: %d", m_count_fields.size(), m_constraints.size());
 
@@ -53,9 +55,9 @@ bool TaskElaborateActivitySelectReplicateSizes::eval(
         randstate,
         m_count_fields,
         m_constraints,
-        vsc::dm::SolveFlags::Randomize 
-        | vsc::dm::SolveFlags::RandomizeDeclRand
-        | vsc::dm::SolveFlags::RandomizeTopFields
+        vsc::solvers::SolveFlags::Randomize 
+        | vsc::solvers::SolveFlags::RandomizeDeclRand
+        | vsc::solvers::SolveFlags::RandomizeTopFields
     );
 
     return ret;

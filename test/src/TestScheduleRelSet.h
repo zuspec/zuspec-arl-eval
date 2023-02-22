@@ -6,15 +6,19 @@
  */
 
 #pragma once
-#include "gtest/gtest.h"
+#include "TestBase.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
-class TestScheduleRelSet : public ::testing::Test {
+class TestScheduleRelSet : public TestBase {
 public:
 	TestScheduleRelSet();
+
 	virtual ~TestScheduleRelSet();
 };
 
+}
 } /* namespace arl */
-
+}

@@ -22,7 +22,9 @@
 #include "TestBase.h"
 #include "gtest/gtest.h"
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 class TestModelEvalIterator : public TestBase {
@@ -36,4 +38,5 @@ public:
 };
 
 }
-
+}
+}

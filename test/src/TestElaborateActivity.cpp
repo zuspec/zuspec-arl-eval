@@ -19,12 +19,12 @@
  *     Author:
  */
 #include "TestElaborateActivity.h"
-#include "arl/impl/ModelBuildContext.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "TaskElaborateActivity.h"
 
-
+namespace zsp {
 namespace arl {
-
+namespace eval {
 
 TestElaborateActivity::TestElaborateActivity() {
 
@@ -37,20 +37,22 @@ TestElaborateActivity::~TestElaborateActivity() {
 TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
     enableDebug(true);
 
-    vsc::ITypeExprFieldRef *ref;
-    IDataTypeFlowObjUP rsrc_t(m_ctxt->mkDataTypeFlowObj("rsrc_t", FlowObjKindE::Resource));
+    vsc::dm::ITypeExprFieldRef *ref;
+    dm::IDataTypeFlowObjUP rsrc_t(m_ctxt->mkDataTypeFlowObj("rsrc_t", dm::FlowObjKindE::Resource));
 
     // component pss_top {
     //   pool [2] rsrc_t   rsrc_p;
     // }
     // 
-    IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
-    pss_top_t->addField(m_ctxt->mkTypeFieldPool("rsrc_p", rsrc_t.get(), false, vsc::TypeFieldAttr::NoAttr, 2));
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
+    pss_top_t->addField(m_ctxt->mkTypeFieldPool("rsrc_p", rsrc_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 2));
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        -1
+    );
+    ref->addPathElem(1);
     pss_top_t->addPoolBindDirective(m_ctxt->mkPoolBindDirective(
-        PoolBindKind::All,
+        dm::PoolBindKind::All,
         ref,
         0));
 
@@ -59,7 +61,7 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
     //   lock rsrc_t   r1;
     // }
     //
-    IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
+    dm::IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
     action1_t->addField(m_ctxt->mkTypeFieldClaim("l1", rsrc_t.get(), true));
     action1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(action1_t.get());
@@ -74,27 +76,31 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
     //       a2;
     //     }
     //  }
-    IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
+    dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
-    IDataTypeActivityParallel *par = m_ctxt->mkDataTypeActivityParallel();
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeActivityParallel *par = m_ctxt->mkDataTypeActivityParallel();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(1);
     par->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(2);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(2);
     par->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
     // Root activity is always expected to be a scope
-    IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
+    dm::IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
     activity_root->addActivity(m_ctxt->mkTypeFieldActivity(
         "", 
         par,
@@ -105,8 +111,8 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
         activity_root,
         true));
 
-    ModelBuildContext build_ctxt(m_ctxt.get());
-    IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<IModelFieldComponentRoot>(
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
         &build_ctxt,
         "pss_top", 
         false));
@@ -114,13 +120,13 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
     pss_top->initCompTree();
 
     ASSERT_EQ(pss_top->getPools(rsrc_t.get()).size(), 1);
-    ASSERT_EQ(pss_top->getResObjects(dynamic_cast<IDataTypeResource *>(rsrc_t.get())).size(), 2);
+    ASSERT_EQ(pss_top->getResObjects(dynamic_cast<dm::IDataTypeResource *>(rsrc_t.get())).size(), 2);
     std::pair<int32_t,int32_t> pool_r = pss_top->getResPoolObjRange(pss_top->getPools(rsrc_t.get()).at(0));
     ASSERT_EQ(pool_r.first, 0);
     ASSERT_EQ(pool_r.second, 1);
     ASSERT_EQ(pool_r.second, 1);
-    const std::vector<std::pair<int32_t,IModelFieldPool *>> &claim_m = pss_top->getClaimBoundCompPool(
-        action1_t->getFieldT<ITypeFieldClaim>(1));
+    const std::vector<std::pair<int32_t,dm::IModelFieldPool *>> &claim_m = pss_top->getClaimBoundCompPool(
+        action1_t->getFieldT<dm::ITypeFieldClaim>(1));
     ASSERT_EQ(claim_m.size(), 1);
     ASSERT_EQ(claim_m.at(0).first, 0);
 
@@ -134,20 +140,22 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
 TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
     enableDebug(true);
 
-    vsc::ITypeExprFieldRef *ref;
-    IDataTypeFlowObjUP buf_t(m_ctxt->mkDataTypeFlowObj("buf_t", FlowObjKindE::Buffer));
+    vsc::dm::ITypeExprFieldRef *ref;
+    dm::IDataTypeFlowObjUP buf_t(m_ctxt->mkDataTypeFlowObj("buf_t", dm::FlowObjKindE::Buffer));
 
     // component pss_top {
     //   pool [2] buf_t   buf_p;
     // }
     // 
-    IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
-    pss_top_t->addField(m_ctxt->mkTypeFieldPool("buf_p", buf_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
+    pss_top_t->addField(m_ctxt->mkTypeFieldPool("buf_p", buf_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(1);
     pss_top_t->addPoolBindDirective(m_ctxt->mkPoolBindDirective(
-        PoolBindKind::All,
+        dm::PoolBindKind::All,
         ref,
         0));
 
@@ -156,7 +164,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
     //   output buf_t   dat_o;
     // }
     //
-    IDataTypeActionUP prod1_t(m_ctxt->mkDataTypeAction("prod1_t"));
+    dm::IDataTypeActionUP prod1_t(m_ctxt->mkDataTypeAction("prod1_t"));
     prod1_t->addField(m_ctxt->mkTypeFieldInOut("dat_o", buf_t.get(), false));
     prod1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(prod1_t.get());
@@ -166,7 +174,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
     //   output buf_t   dat_o;
     // }
     //
-    IDataTypeActionUP prod2_t(m_ctxt->mkDataTypeAction("prod2_t"));
+    dm::IDataTypeActionUP prod2_t(m_ctxt->mkDataTypeAction("prod2_t"));
     prod2_t->addField(m_ctxt->mkTypeFieldInOut("dat_o", buf_t.get(), false));
     prod2_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(prod2_t.get());
@@ -176,7 +184,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
     //   input buf_t   dat_i;
     // }
     //
-    IDataTypeActionUP cons1_t(m_ctxt->mkDataTypeAction("cons1_t"));
+    dm::IDataTypeActionUP cons1_t(m_ctxt->mkDataTypeAction("cons1_t"));
     cons1_t->addField(m_ctxt->mkTypeFieldInOut("dat_i", buf_t.get(), true));
     cons1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(cons1_t.get());
@@ -191,34 +199,40 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
     //     p2;
     //     c1;
     //  }
-    IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
+    dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
-    IDataTypeActivitySequence *seq = m_ctxt->mkDataTypeActivitySequence();
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeActivitySequence *seq = m_ctxt->mkDataTypeActivitySequence();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(1);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(2);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(2);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(3);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(3);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
     // Root activity is always expected to be a scope
-    IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
+    dm::IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
     activity_root->addActivity(m_ctxt->mkTypeFieldActivity(
         "", 
         seq,
@@ -229,8 +243,8 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
         activity_root,
         true));
 
-    ModelBuildContext build_ctxt(m_ctxt.get());
-    IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<IModelFieldComponentRoot>(
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
         &build_ctxt,
         "pss_top", 
         false));
@@ -247,20 +261,22 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
 TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     enableDebug(true);
 
-    vsc::ITypeExprFieldRef *ref;
-    IDataTypeFlowObjUP buf_t(m_ctxt->mkDataTypeFlowObj("buf_t", FlowObjKindE::Buffer));
+    vsc::dm::ITypeExprFieldRef *ref;
+    dm::IDataTypeFlowObjUP buf_t(m_ctxt->mkDataTypeFlowObj("buf_t", dm::FlowObjKindE::Buffer));
 
     // component pss_top {
     //   pool [2] buf_t   buf_p;
     // }
     // 
-    IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
-    pss_top_t->addField(m_ctxt->mkTypeFieldPool("buf_p", buf_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
+    pss_top_t->addField(m_ctxt->mkTypeFieldPool("buf_p", buf_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(1);
     pss_top_t->addPoolBindDirective(m_ctxt->mkPoolBindDirective(
-        PoolBindKind::All,
+        dm::PoolBindKind::All,
         ref,
         0));
 
@@ -269,7 +285,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     //   output buf_t   dat_o;
     // }
     //
-    IDataTypeActionUP prod1_t(m_ctxt->mkDataTypeAction("prod1_t"));
+    dm::IDataTypeActionUP prod1_t(m_ctxt->mkDataTypeAction("prod1_t"));
     prod1_t->addField(m_ctxt->mkTypeFieldInOut("dat_o", buf_t.get(), false));
     prod1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(prod1_t.get());
@@ -279,7 +295,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     //   output buf_t   dat_o;
     // }
     //
-    IDataTypeActionUP prod2_t(m_ctxt->mkDataTypeAction("prod2_t"));
+    dm::IDataTypeActionUP prod2_t(m_ctxt->mkDataTypeAction("prod2_t"));
     prod2_t->addField(m_ctxt->mkTypeFieldInOut("dat_o", buf_t.get(), false));
     prod2_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(prod2_t.get());
@@ -289,7 +305,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     //   input buf_t   dat_i;
     // }
     //
-    IDataTypeActionUP cons1_t(m_ctxt->mkDataTypeAction("cons1_t"));
+    dm::IDataTypeActionUP cons1_t(m_ctxt->mkDataTypeAction("cons1_t"));
     cons1_t->addField(m_ctxt->mkTypeFieldInOut("dat_i", buf_t.get(), true));
     cons1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(cons1_t.get());
@@ -306,41 +322,46 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     //     c1;
     //     c2;
     //  }
-    IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("c2", cons1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
+    dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("c2", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
-    IDataTypeActivitySequence *seq = m_ctxt->mkDataTypeActivitySequence();
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeActivitySequence *seq = m_ctxt->mkDataTypeActivitySequence();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0  
+    );
+    ref->addPathElem(1);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(2);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0);
+    ref->addPathElem(2);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(3);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0);
+    ref->addPathElem(2);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(4);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0);
+    ref->addPathElem(4);
     seq->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
     // Root activity is always expected to be a scope
-    IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
+    dm::IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
     activity_root->addActivity(m_ctxt->mkTypeFieldActivity(
         "", 
         seq,
@@ -351,8 +372,8 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
         activity_root,
         true));
 
-    ModelBuildContext build_ctxt(m_ctxt.get());
-    IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<IModelFieldComponentRoot>(
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
         &build_ctxt,
         "pss_top", 
         false));
@@ -366,4 +387,6 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     );
 }
 
+}
+}
 }

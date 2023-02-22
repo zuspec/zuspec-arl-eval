@@ -18,12 +18,13 @@
  * Created on:
  *     Author:
  */
-#include "arl/impl/ModelBuildContext.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "TestActivitySolveModel.h"
 #include "TaskElaborateActivity.h"
 
-
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TestActivitySolveModel::TestActivitySolveModel() {
@@ -35,15 +36,17 @@ TestActivitySolveModel::~TestActivitySolveModel() {
 }
 
 TEST_F(TestActivitySolveModel, par_single_resource) {
-    vsc::ITypeExprFieldRef *ref;
-    IDataTypeFlowObjUP rsrc_t(m_ctxt->mkDataTypeFlowObj("rsrc_t", FlowObjKindE::Resource));
+    vsc::dm::ITypeExprFieldRef *ref;
+    dm::IDataTypeFlowObjUP rsrc_t(m_ctxt->mkDataTypeFlowObj("rsrc_t", dm::FlowObjKindE::Resource));
 
     // component pss_top {
     //   pool [2] rsrc_t   rsrc_p;
     // }
     // 
-    IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
-    pss_top_t->addField(m_ctxt->mkTypeFieldPool("rsrc_p", rsrc_t.get(), false, vsc::TypeFieldAttr::NoAttr, 2));
+    dm::IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
+    pss_top_t->addField(m_ctxt->mkTypeFieldPool("rsrc_p", rsrc_t.get(), false, 
+        vsc::dm::TypeFieldAttr::NoAttr, 2));
+    /* TODO:
     ref = m_ctxt->mkTypeExprFieldRef();
     ref->addIdxRef(1);
     ref->addRootRef();
@@ -51,13 +54,14 @@ TEST_F(TestActivitySolveModel, par_single_resource) {
         PoolBindKind::All,
         ref,
         0));
+     */
 
     // action_t
     // action action_t {
     //   lock rsrc_t   r1;
     // }
     //
-    IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
+    dm::IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
     action1_t->addField(m_ctxt->mkTypeFieldClaim("l1", rsrc_t.get(), true));
     action1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(action1_t.get());
@@ -72,27 +76,31 @@ TEST_F(TestActivitySolveModel, par_single_resource) {
     //       a2;
     //     }
     //  }
-    IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::TypeFieldAttr::NoAttr, 0));
+    dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
-    IDataTypeActivityParallel *par = m_ctxt->mkDataTypeActivityParallel();
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(1);
-    ref->addRootRef();
+    dm::IDataTypeActivityParallel *par = m_ctxt->mkDataTypeActivityParallel();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(1);
     par->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
-    ref = m_ctxt->mkTypeExprFieldRef();
-    ref->addIdxRef(2);
-    ref->addRootRef();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(2);
     par->addActivity(m_ctxt->mkTypeFieldActivity(
         "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
 
     // Root activity is always expected to be a scope
-    IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
+    dm::IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
     activity_root->addActivity(m_ctxt->mkTypeFieldActivity(
         "", 
         par,
@@ -103,8 +111,8 @@ TEST_F(TestActivitySolveModel, par_single_resource) {
         activity_root,
         true));
 
-    ModelBuildContext build_ctxt(m_ctxt.get());
-    IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<IModelFieldComponentRoot>(
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
         &build_ctxt,
         "pss_top", 
         false));
@@ -117,17 +125,19 @@ TEST_F(TestActivitySolveModel, par_single_resource) {
         entry_t.get()));
     ASSERT_TRUE(activity.get());
     {
-        IModelActivitySequence *seq = dynamic_cast<IModelActivitySequence *>(activity->root);
+        dm::IModelActivitySequence *seq = dynamic_cast<dm::IModelActivitySequence *>(activity->root);
         ASSERT_TRUE(seq);
         ASSERT_EQ(seq->activities().size(), 1);
         // TODO: Really shouldn't have two levels of 'sequence' here...
-        seq = dynamic_cast<IModelActivitySequence *>(seq->activities().at(0));
+        seq = dynamic_cast<dm::IModelActivitySequence *>(seq->activities().at(0));
         ASSERT_TRUE(seq);
-        IModelActivityParallel *par = dynamic_cast<IModelActivityParallel *>(seq->activities().at(0));
+        dm::IModelActivityParallel *par = dynamic_cast<dm::IModelActivityParallel *>(seq->activities().at(0));
 //        ASSERT_TRUE(par);
         ASSERT_EQ(par->branches().size(), 2);
     }
 
 }
 
+}
+}
 }

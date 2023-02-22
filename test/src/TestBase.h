@@ -1,5 +1,5 @@
 /**
- * TestStaticBind.h
+ * TestBase.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,21 +19,38 @@
  *     Author: 
  */
 #pragma once
-#include "TestBase.h"
+#include "gtest/gtest.h"
+#include "vsc/solvers/IRandState.h"
+#include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/dm/IFactory.h"
+#include "zsp/arl/eval/IFactory.h"
+
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
-class TestStaticBind : public TestBase {
+
+class TestBase : public ::testing::Test {
 public:
-    TestStaticBind();
+    TestBase();
 
-    virtual ~TestStaticBind();
+    virtual ~TestBase();
 
+    virtual void SetUp() override;
+
+    virtual void TearDown() override;
+
+    void enableDebug(bool en);
+
+protected:
+    dm::IFactory                *m_arl_dm_factory;
+    dm::IContextUP              m_ctxt;
+    vsc::solvers::IRandStateUP  m_randstate;
 };
 
 }
 }
 }
+
 

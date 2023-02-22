@@ -20,6 +20,7 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
+#include "zsp/arl/eval/IModelEvaluator.h"
 
 namespace zsp {
 namespace arl {

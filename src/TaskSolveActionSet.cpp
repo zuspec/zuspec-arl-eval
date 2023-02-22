@@ -25,8 +25,8 @@
 #include "vsc/dm/impl/PrettyPrinter.h"
 #include "vsc/dm/impl/TaskUnrollModelFieldRefConstraints.h"
 #include "vsc/dm/impl/TaskBuildRefConstraintMap.h"
-#include "TaskCollectFlowObjFields.h"
-#include "TaskIsDataTypeFlowObj.h"
+#include "zsp/arl/dm/impl/TaskCollectTopLevelActivities.h"
+#include "zsp/arl/dm/impl/TaskIsDataTypeFlowObj.h"
 #include "TaskSolveActionSet.h"
 
 

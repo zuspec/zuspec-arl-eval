@@ -40,9 +40,15 @@ set_target_properties(libgmock PROPERTIES
     )
     
 include_directories(
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/include
 	"${source_dir}/googletest/include"
 	"${source_dir}/googlemock/include"
     ${JSON_DIR}/include
+    "${zsp_arl_dm_INCDIR}"
+    "${vsc_dm_INCDIR}"
+    "${vsc_solvers_INCDIR}"
+    "${debug_mgr_INCDIR}"
 	)
 
 file(GLOB test_zsp_arl_eval_SRC
@@ -53,14 +59,21 @@ file(GLOB test_zsp_arl_eval_SRC
 add_executable(test-zsp-arl-eval ${test_zsp_arl_eval_SRC})
 target_include_directories(test-zsp-arl-eval PUBLIC
     "${source_dir}/googletest/include"
-    ${LIBVSC_DM_DIR}/src/include
-    ${LIBVSC_DM_DIR}/src
+    "${zsp_arl_dm_INCDIR}"
+    "${vsc_dm_INCDIR}"
+    "${vsc_solvers_INCDIR}"
+    "${debug_mgr_INCDIR}"
     )
    
 target_link_directories(test-zsp-arl-eval PRIVATE
     ${CMAKE_BINARY_DIR}/lib
     ${CMAKE_BINARY_DIR}/lib64
-    ${CMAKE_BINARY_DIR}/glog/lib64
+    ${CMAKE_CURRENT_BINARY_DIR}/lib
+    ${CMAKE_CURRENT_BINARY_DIR}/lib64
+    "${zsp_arl_dm_LIBDIR}"
+    "${vsc_dm_LIBDIR}"
+    "${vsc_solvers_LIBDIR}"
+    "${debug_mgr_LIBDIR}"
     )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -70,10 +83,13 @@ else()
 endif()
 
 target_link_libraries(test-zsp-arl-eval 
-	zuspec-arl-dm
+    zsp-arl-eval
+	zsp-arl-dm
     vsc-dm
+    debug-mgr
 	libgtest 
 	libgmock
+	gtest_main 
 	)
 add_dependencies(test-zsp-arl-eval GTEST)
 #set_property(TARGET test_libvsc PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)

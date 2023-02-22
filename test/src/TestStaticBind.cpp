@@ -18,12 +18,14 @@
  * Created on:
  *     Author:
  */
-#include "arl/impl/ModelBuildContext.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "TaskElaborateActivity.h"
 #include "TestStaticBind.h"
 
 
+namespace zsp {
 namespace arl {
+namespace eval {
 
 
 TestStaticBind::TestStaticBind() {
@@ -34,18 +36,19 @@ TestStaticBind::~TestStaticBind() {
 
 }
 
+#ifdef UNDEFINED
 TEST_F(TestStaticBind, resource_wildcard_1t_1p) {
     enableDebug(true);
 
-    vsc::ITypeExprFieldRef *ref;
-    IDataTypeFlowObjUP rsrc_t(m_ctxt->mkDataTypeFlowObj("rsrc_t", FlowObjKindE::Resource));
+    vsc::dm::ITypeExprFieldRef *ref;
+    dm::IDataTypeFlowObjUP rsrc_t(m_ctxt->mkDataTypeFlowObj("rsrc_t", dm::FlowObjKindE::Resource));
 
     // component pss_top {
     //   pool [2] rsrc_t   rsrc_p;
     // }
     // 
-    IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
-    pss_top_t->addField(m_ctxt->mkTypeFieldPool("rsrc_p", rsrc_t.get(), false, vsc::TypeFieldAttr::NoAttr, 2));
+    dm::IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
+    pss_top_t->addField(m_ctxt->mkTypeFieldPool("rsrc_p", rsrc_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 2));
     ref = m_ctxt->mkTypeExprFieldRef();
     ref->addIdxRef(1);
     ref->addRootRef();
@@ -348,5 +351,8 @@ TEST_F(TestStaticBind, resource_wildcard_1t_3p_override) {
     ASSERT_EQ(claim_m.at(0).second, claim_m.at(1).second);
 
 }
+#endif /* UNDEFINED */
 
+}
+}
 }

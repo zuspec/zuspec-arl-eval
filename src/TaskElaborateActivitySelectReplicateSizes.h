@@ -20,6 +20,8 @@
  */
 #pragma once
 #include <unordered_set>
+#include "vsc/solvers/ICompoundSolver.h"
+#include "vsc/solvers/IRandState.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "dmgr/impl/DebugMacros.h"
@@ -38,7 +40,7 @@ public:
 
     bool eval(
         vsc::solvers::IRandState     *randstate,
-        IModelActivity               *dm::root);
+        dm::IModelActivity           *root);
 
 	virtual void visitModelActivityReplicate(dm::IModelActivityReplicate *a) override;
 
