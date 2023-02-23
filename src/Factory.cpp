@@ -39,6 +39,7 @@ IFactory *Factory::inst() {
     if (!m_inst.get()) {
         m_inst = FactoryUP(new Factory());
     }
+    return m_inst.get();
 };
 
 FactoryUP Factory::m_inst;
