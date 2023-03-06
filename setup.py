@@ -51,9 +51,6 @@ cwd = os.getcwd()
 if not os.path.isdir(os.path.join(cwd, "build")):
     os.makedirs(os.path.join(cwd, "build"))
 
-#if not os.path.isdir(os.path.join(libvsc_dir, "python/libvsc")):
-#    os.makedirs(os.path.join(tblink_vsc, "python/libvsc"))
-
 env = os.environ.copy()
 python_bindir = os.path.dirname(sys.executable)
 print("python_bindir: %s" % str(python_bindir))
@@ -76,6 +73,11 @@ result = subprocess.run(
 
 if result.returncode != 0:
     raise Exception("cmake configure failed")
+
+# Collect package paths for any Python deps
+for d in {"debug-mgr", "vsc-dm", "vsc-solvers", "zuspec-arl-dm"}:
+    if os.path.isdir(os.path.join(packages_dir, d, "python")):
+        sys.path.insert(0, os.path.join(packages_dir, d, "python"))
 
 if cmake_build_tool == "Ninja":
     result = subprocess.run(
@@ -250,10 +252,10 @@ ext = Extension("zsp_arl_eval.core",
 #                os.path.join(zuspec_arl_eval_dir, 'src'),
                 os.path.join(zuspec_arl_eval_dir, 'python'),
                 os.path.join(zuspec_arl_eval_dir, 'src', 'include'),
-                os.path.join(packages_dir, 'libvsc-dm', 'src', 'include'),
-                os.path.join(packages_dir, 'libvsc-dm', 'python'),
-                os.path.join(packages_dir, 'libvsc-solvers', 'src', 'include'),
-                os.path.join(packages_dir, 'libvsc-solvers', 'python'),
+                os.path.join(packages_dir, 'vsc-dm', 'src', 'include'),
+                os.path.join(packages_dir, 'vsc-dm', 'python'),
+                os.path.join(packages_dir, 'vsc-solvers', 'src', 'include'),
+                os.path.join(packages_dir, 'vsc-solvers', 'python'),
                 os.path.join(packages_dir, 'zuspec-arl-dm', 'src', 'include'),
                 os.path.join(packages_dir, 'zuspec-arl-dm', 'python'),
                 os.path.join(packages_dir, 'debug-mgr', 'src', 'include'),
@@ -277,14 +279,14 @@ setup(
   keywords = ["SystemVerilog", "Verilog", "RTL", "Python"],
   url = "https://github.com/zuspec/zuspec-arl-eval",
   install_requires=[
-    'libvsc-dm',
-    'libvsc-solvers',
+    'vsc-dm',
+    'vsc-solvers',
     'zuspec-arl-dm',
     'debug-mgr'
   ],
   setup_requires=[
     'setuptools_scm',
-    'libvsc-dm',
+    'vsc-dm',
     'debug-mgr',
     'cython',
   ],

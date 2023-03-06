@@ -2,8 +2,8 @@
 #* arl_dm_eval decl.pxd
 #*
 #****************************************************************************
-cimport libvsc_dm.decl as vsc
-cimport libvsc_solvers.decl as vsc_solvers
+cimport vsc_dm.decl as vsc
+cimport vsc_solvers.decl as vsc_solvers
 cimport zsp_arl_dm.decl as arl_dm
 cimport debug_mgr.decl as dm
 

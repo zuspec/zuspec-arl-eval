@@ -28,8 +28,8 @@ include(ivpm)
 
 Ivpm_AddPythonExtProject(debug-mgr debug_mgr)
 Ivpm_AddPythonExtProject(zuspec-arl-dm zsp_arl_dm)
-Ivpm_AddPythonExtProject(libvsc-dm vsc_dm)
-Ivpm_AddPythonExtProject(libvsc-solvers vsc_solvers)
+Ivpm_AddPythonExtProject(vsc-dm vsc_dm)
+Ivpm_AddPythonExtProject(vsc-solvers vsc_solvers)
 
 if(NOT WIN32)
   add_compile_options(-fPIC)

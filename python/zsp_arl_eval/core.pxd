@@ -8,8 +8,8 @@ from zsp_arl_eval cimport decl
 
 from libc.stdint cimport int32_t
 from libcpp cimport bool
-cimport libvsc_dm.core as vsc
-cimport libvsc_dm.decl as vsc_decl
+cimport vsc_dm.core as vsc
+cimport vsc_dm.decl as vsc_decl
 
 cdef class Factory(object):
     cdef decl.IFactory      *_hndl
