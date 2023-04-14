@@ -20,7 +20,16 @@ cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
     cdef cppclass IFactory:
         void init(dm.IDebugMgr *)
 
+        IModelEvaluator *mkModelEvaluator(
+            ModelEvaluatorKind      kind,
+            vsc_solvers.IFactory    *solvers_f,
+            arl_dm.IContext         *ctxt)
+
 cdef extern from "zsp/arl/eval/IModelEvaluator.h" namespace "zsp::arl::eval":
+    cdef enum ModelEvaluatorKind "zsp::arl::eval::ModelEvaluatorKind" :
+        ModelEvaluatorKind_FullElab "zsp::arl::eval::ModelEvaluatorKind::FullElab"
+        ModelEvaluatorKind_IncrElab "zsp::arl::eval::ModelEvaluatorKind::IncrElab"
+
     cdef cppclass IModelEvaluator:
         arl_dm.IModelEvalIterator *eval(
             const vsc_solvers.IRandState    *randstate,
