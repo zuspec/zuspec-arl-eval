@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/IModelActivity.h"
@@ -21,6 +22,7 @@ class ModelEvaluator :
     public dm::VisitorBase {
 public:
 	ModelEvaluator(
+        vsc::solvers::IFactory      *solvers_f,
 		dm::IContext 				*ctxt,
 		ModelEvaluatorKind		    kind);
 
@@ -32,6 +34,7 @@ public:
 			dm::IDataTypeAction		        *root_action) override;
 
 private:
+    vsc::solvers::IFactory              *m_solvers_f;
 	dm::IContext						*m_ctxt;
 	IModelEvaluatorUP				    m_impl;
 

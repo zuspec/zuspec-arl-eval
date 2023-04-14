@@ -20,6 +20,8 @@
  */
 #include "zsp/arl/eval/FactoryExt.h"
 #include "Factory.h"
+#include "ModelEvaluatorFullElab.h"
+#include "ModelEvaluatorIncrElab.h"
 
 
 namespace zsp {
@@ -33,6 +35,22 @@ Factory::Factory() : m_dmgr(0) {
 
 Factory::~Factory() {
 
+}
+
+IModelEvaluator *Factory::mkModelEvaluator(
+    ModelEvaluatorKind          kind,
+    vsc::solvers::IFactory      *solvers_f,
+    arl::dm::IContext           *ctxt) {
+    switch (kind) {
+        case ModelEvaluatorKind::FullElab:
+            return new ModelEvaluatorFullElab(solvers_f, ctxt);
+            break;
+        case ModelEvaluatorKind::IncrElab:
+            return new ModelEvaluatorIncrElab(ctxt);
+            break;
+        default:
+            fprintf(stdout, "Error: unhandled evaluator\n");
+    }
 }
 
 IFactory *Factory::inst() {

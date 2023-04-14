@@ -130,10 +130,11 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
     ASSERT_EQ(claim_m.size(), 1);
     ASSERT_EQ(claim_m.at(0).first, 0);
 
-    TaskElaborateActivity(m_ctxt.get()).elaborate(
-        m_randstate.get(),
-        pss_top.get(),
-        entry_t.get()
+    TaskElaborateActivity(
+            m_solvers_f, m_ctxt.get()).elaborate(
+                m_randstate.get(),
+                pss_top.get(),
+                entry_t.get()
     );
 }
 
@@ -251,7 +252,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
 
     pss_top->initCompTree();
 
-    TaskElaborateActivity(m_ctxt.get()).elaborate(
+    TaskElaborateActivity(m_solvers_f, m_ctxt.get()).elaborate(
         m_randstate.get(),
         pss_top.get(),
         entry_t.get()
@@ -380,7 +381,7 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
 
     pss_top->initCompTree();
 
-    TaskElaborateActivity(m_ctxt.get()).elaborate(
+    TaskElaborateActivity(m_solvers_f, m_ctxt.get()).elaborate(
         m_randstate.get(),
         pss_top.get(),
         entry_t.get()

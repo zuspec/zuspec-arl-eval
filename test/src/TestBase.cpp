@@ -22,6 +22,7 @@
 #include "zsp/arl/dm/FactoryExt.h"
 #include "zsp/arl/eval/FactoryExt.h"
 #include "vsc/dm/FactoryExt.h"
+#include "vsc/solvers/FactoryExt.h"
 #include "TestBase.h"
 
 
@@ -45,8 +46,15 @@ void TestBase::SetUp() {
     vsc_dm_factory->init(dmgr_factory->getDebugMgr());
     m_arl_dm_factory->init(dmgr_factory->getDebugMgr());
 
+    m_eval_f = zsp_arl_eval_getFactory();
+    m_eval_f->init(dmgr_factory->getDebugMgr());
+
     m_ctxt = dm::IContextUP(m_arl_dm_factory->mkContext(
         vsc_dm_factory->mkContext()));
+    m_solvers_f = vsc_solvers_getFactory();
+
+    m_randstate = vsc::solvers::IRandStateUP(
+        m_solvers_f->mkRandState(""));
 
 //    ArlImpl::inst()->init(vsc::VscImpl::inst()->getDebugMgr());
 //    m_ctxt = IContextUP(

@@ -21,6 +21,7 @@
 #pragma once
 #include <unordered_set>
 #include "vsc/solvers/ICompoundSolver.h"
+#include "vsc/solvers/IFactory.h"
 #include "vsc/solvers/IRandState.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
@@ -34,7 +35,9 @@ namespace eval {
 
 class TaskElaborateActivitySelectReplicateSizes : public dm::VisitorBase {
 public:
-    TaskElaborateActivitySelectReplicateSizes(dm::IContext *ctxt);
+    TaskElaborateActivitySelectReplicateSizes(
+        vsc::solvers::IFactory      *solvers_f,
+        zsp::arl::dm::IContext      *ctxt);
 
     virtual ~TaskElaborateActivitySelectReplicateSizes();
 
@@ -50,7 +53,8 @@ public:
 
 private:
     static dmgr::IDebug                               *m_dbg;
-    dm::IContext                                      *m_ctxt;
+    vsc::solvers::IFactory                            *m_solvers_f;
+    arl::dm::IContext                                 *m_ctxt;
     std::vector<vsc::dm::IModelField *>               m_count_fields;
     std::unordered_set<vsc::dm::IModelConstraint *>   m_constraint_s;
     std::vector<vsc::dm::IModelConstraint *>          m_constraints;

@@ -16,11 +16,13 @@ namespace arl {
 namespace eval {
 
 ModelEvaluator::ModelEvaluator(
-	dm::IContext 			*ctxt,
-	ModelEvaluatorKind	    kind) : m_ctxt(ctxt) {
+    vsc::solvers::IFactory      *solvers_f,
+	dm::IContext 			    *ctxt,
+	ModelEvaluatorKind	        kind) : m_solvers_f(solvers_f), m_ctxt(ctxt) {
 	switch (kind) {
 		case ModelEvaluatorKind::FullElab:
-			m_impl = IModelEvaluatorUP(new ModelEvaluatorFullElab(ctxt));
+			m_impl = IModelEvaluatorUP(new ModelEvaluatorFullElab(
+                m_solvers_f, ctxt));
 			break;
 		case ModelEvaluatorKind::IncrElab:
 			m_impl = IModelEvaluatorUP(new ModelEvaluatorIncrElab(ctxt));

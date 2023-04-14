@@ -29,11 +29,12 @@ namespace eval {
 
 
 ModelEvaluatorFullElabScope::ModelEvaluatorFullElabScope(
+    vsc::solvers::IFactory      *solvers_f,
     dm::IContext                *ctxt,
     vsc::solvers::IRandState    *randstate,
     dm::IModelActivityScope     *scope) : 
-        m_ctxt(ctxt), m_randstate(randstate), m_scope(scope),
-        m_idx(-1) {
+        m_solvers_f(solvers_f), m_ctxt(ctxt), m_randstate(randstate), 
+        m_scope(scope), m_idx(-1) {
     DEBUG_INIT("ModelEvaluatorFullElabScope", ctxt->getDebugMgr());
 
     m_action = 0;
@@ -82,6 +83,7 @@ void ModelEvaluatorFullElabScope::visitModelActivityScope(dm::IModelActivityScop
     DEBUG_ENTER("visitModelActivityScope");
     // Return a
     ModelEvaluatorFullElabScope *scope = new ModelEvaluatorFullElabScope(
+        m_solvers_f,
         m_ctxt,
         m_randstate->clone(), // Not sure about this
         a);
@@ -107,9 +109,7 @@ void ModelEvaluatorFullElabScope::visitModelActivityTraverse(dm::IModelActivityT
         constraints.push_back(it->get());
     }
 
-    // TODO:
-//    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
-    vsc::solvers::ICompoundSolverUP solver;
+    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver(m_ctxt));
 
     bool result = solver->solve(
         m_randstate.get(),
@@ -124,6 +124,7 @@ void ModelEvaluatorFullElabScope::visitModelActivityTraverse(dm::IModelActivityT
 
     if (a->getActivity()) {
         m_iterator = new ModelEvaluatorFullElabScope(
+            m_solvers_f,
             m_ctxt,
             m_randstate->next(),
             dynamic_cast<dm::IModelActivityScope *>(a->getActivity())

@@ -1,6 +1,6 @@
 
 package:
-  name: libarl
+  name: zuspec-arl-eval
 
   setup-deps:
   - ninja

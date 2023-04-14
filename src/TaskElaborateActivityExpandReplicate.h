@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <vector>
+#include "vsc/solvers/IFactory.h"
 #include "vsc/solvers/IRandState.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
@@ -32,7 +33,9 @@ namespace eval {
 
 class TaskElaborateActivityExpandReplicate : public dm::VisitorBase {
 public:
-    TaskElaborateActivityExpandReplicate(dm::IContext *ctxt);
+    TaskElaborateActivityExpandReplicate(
+        vsc::solvers::IFactory      *solvers_f,
+        dm::IContext                *ctxt);
 
     virtual ~TaskElaborateActivityExpandReplicate();
 
@@ -47,7 +50,8 @@ public:
 	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
 
 private:
-    static dmgr::IDebug                  *m_dbg;
+    static dmgr::IDebug                     *m_dbg;
+    vsc::solvers::IFactory                  *m_solvers_f;
     dm::IContext                            *m_ctxt;
     dm::IModelActivityScopeUP               m_result;
     std::vector<dm::IModelActivityScope *>  m_scope_s;

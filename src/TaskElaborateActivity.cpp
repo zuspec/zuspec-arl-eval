@@ -35,7 +35,9 @@ namespace arl {
 namespace eval {
 
 
-TaskElaborateActivity::TaskElaborateActivity(dm::IContext *ctxt) : m_ctxt(ctxt) {
+TaskElaborateActivity::TaskElaborateActivity(
+    vsc::solvers::IFactory      *solvers_f,
+    dm::IContext                *ctxt) : m_solvers_f(solvers_f), m_ctxt(ctxt) {
     DEBUG_INIT("TaskElaborateActivity", ctxt->getDebugMgr());
 }
 
@@ -76,7 +78,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
 
     // Gen2: expand all replicate scopes
     m_activity->activity_s.push_back(dm::IModelActivityScopeUP(
-        TaskElaborateActivityExpandReplicate(m_ctxt).elab(
+        TaskElaborateActivityExpandReplicate(m_solvers_f, m_ctxt).elab(
             randstate,
             m_activity->activity_s.back().get()
         )));
@@ -111,8 +113,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
         constraints_i);
 
     // TODO:
-//    vsc::dm::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
-    vsc::solvers::ICompoundSolverUP solver;
+    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver(m_ctxt));
 
     std::vector<vsc::dm::IModelField *> selector_fields;
     std::vector<vsc::dm::IModelConstraint *> selector_constraints;

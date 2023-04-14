@@ -23,6 +23,7 @@
 #include "zsp/arl/dm/IModelActivityScope.h"
 #include "zsp/arl/dm/IModelEvalIterator.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
+#include "vsc/solvers/IFactory.h"
 #include "vsc/solvers/IRandState.h"
 
 namespace zsp {
@@ -35,6 +36,7 @@ class ModelEvaluatorFullElabScope :
     public virtual dm::VisitorBase {
 public:
     ModelEvaluatorFullElabScope(
+        vsc::solvers::IFactory      *solvers_f,
         dm::IContext                *ctxt,
         vsc::solvers::IRandState    *randstat,
         dm::IModelActivityScope     *scope
@@ -62,6 +64,7 @@ public:
 
 private:
     static dmgr::IDebug              *m_dbg;
+    vsc::solvers::IFactory           *m_solvers_f;
     dm::IContext                     *m_ctxt;
     vsc::solvers::IRandStateUP       m_randstate;
     dm::IModelActivityScope          *m_scope;

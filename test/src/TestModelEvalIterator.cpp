@@ -97,8 +97,7 @@ TEST_F(TestModelEvalIterator, two_branch_parallel) {
         false));
 
 // TODO:
-//    vsc::solvers::IRandStateUP rs(new vsc::RandState("0"));
-    vsc::solvers::IRandStateUP rs;
+    vsc::solvers::IRandStateUP rs(m_solvers_f->mkRandState("0"));
 
     dm::IModelFieldComponentRootUP pss_top(comp_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
         &build_ctxt,
@@ -244,12 +243,10 @@ TEST_F(TestModelEvalIterator, par_single_resource) {
 
     pss_top->initCompTree();
 
-// TODO:
-//    vsc::solvers::IRandStateUP randstate(m_ctxt->mkRandState(""));
-    vsc::solvers::IRandStateUP randstate;
-    // TODO:
-//    IModelEvaluatorUP evaluator(m_ctxt->mkModelEvaluator(ModelEvaluatorKind::FullElab));
-    IModelEvaluatorUP evaluator;
+    vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
+    IModelEvaluatorUP evaluator(m_eval_f->mkModelEvaluator(
+        ModelEvaluatorKind::FullElab, m_solvers_f, m_ctxt.get()));
+
     dm::IModelEvalIterator *it = evaluator->eval(
         randstate->next(),
         pss_top.get(),

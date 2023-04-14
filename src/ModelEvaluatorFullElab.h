@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/eval/IModelEvaluator.h"
 
@@ -29,7 +30,9 @@ namespace eval {
 
 class ModelEvaluatorFullElab : public virtual IModelEvaluator {
 public:
-    ModelEvaluatorFullElab(dm::IContext *ctxt);
+    ModelEvaluatorFullElab(
+        vsc::solvers::IFactory      *solvers_f,
+        dm::IContext                *ctxt);
 
     virtual ~ModelEvaluatorFullElab();
 
@@ -40,6 +43,7 @@ public:
 
 private:
     static dmgr::IDebug          *m_dbg;
+    vsc::solvers::IFactory       *m_solvers_f;
     dm::IContext                 *m_ctxt;
 };
 

@@ -32,9 +32,11 @@ namespace eval {
 
 
 ModelEvaluatorFullElabActivity::ModelEvaluatorFullElabActivity(
+    vsc::solvers::IFactory      *solvers_f,
     dm::IContext                *ctxt,
     vsc::solvers::IRandState    *randstate,
-    dm::IModelActivity          *activity) : m_ctxt(ctxt), m_randstate(randstate) {
+    dm::IModelActivity          *activity) : 
+        m_solvers_f(solvers_f), m_ctxt(ctxt), m_randstate(randstate) {
     DEBUG_INIT("ModelEvaluatorFullElabActivity", m_ctxt->getDebugMgr());
     m_activity = activity;
     m_taken = false;
@@ -132,6 +134,7 @@ void ModelEvaluatorFullElabActivity::visitModelActivityTraverse(dm::IModelActivi
 
     if (a->getActivity()) {
         m_iterator = new ModelEvaluatorFullElabScope(
+            m_solvers_f,
             m_ctxt, 
             m_randstate->next(),
             dynamic_cast<dm::IModelActivityScope *>(a->getActivity()));

@@ -119,7 +119,9 @@ TEST_F(TestActivitySolveModel, par_single_resource) {
 
     pss_top->initCompTree();
 
-    ElabActivityUP activity(TaskElaborateActivity(m_ctxt.get()).elaborate(
+    ElabActivityUP activity(TaskElaborateActivity(
+        m_solvers_f,
+        m_ctxt.get()).elaborate(
         m_randstate->clone(),
         pss_top.get(),
         entry_t.get()));

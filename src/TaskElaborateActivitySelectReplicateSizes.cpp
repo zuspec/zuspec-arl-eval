@@ -28,9 +28,11 @@ namespace eval {
 
 
 TaskElaborateActivitySelectReplicateSizes::TaskElaborateActivitySelectReplicateSizes(
-    dm::IContext *ctxt) : m_ctxt(ctxt) {
+    vsc::solvers::IFactory  *solvers_f,
+    arl::dm::IContext       *ctxt) : m_solvers_f(solvers_f), m_ctxt(ctxt) {
     
-    DEBUG_INIT("TaskElaborateActivitySelectReplicateSizes", m_ctxt->getDebugMgr());
+    DEBUG_INIT("TaskElaborateActivitySelectReplicateSizes", 
+        solvers_f->getDebugMgr());
 
 }
 
@@ -39,15 +41,14 @@ TaskElaborateActivitySelectReplicateSizes::~TaskElaborateActivitySelectReplicate
 }
 
 bool TaskElaborateActivitySelectReplicateSizes::eval(
-    vsc::solvers::IRandState         *randstate,
+    vsc::solvers::IRandState    *randstate,
     dm::IModelActivity          *root) {
     root->accept(m_this);
 
     // Now that we have the fields, solve all at once to arrive at a
     // consistent result
     // TODO:
-//    vsc::solvers::ICompoundSolverUP solver(m_ctxt->mkCompoundSolver());
-    vsc::solvers::ICompoundSolverUP solver;
+    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver(m_ctxt));
 
     DEBUG("Fields: %d ; Constraints: %d", m_count_fields.size(), m_constraints.size());
 

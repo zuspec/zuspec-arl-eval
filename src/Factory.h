@@ -40,6 +40,11 @@ public:
         m_dmgr = dmgr;
     }
 
+    virtual IModelEvaluator *mkModelEvaluator(
+        ModelEvaluatorKind          kind,
+        vsc::solvers::IFactory      *solvers_f,
+        arl::dm::IContext           *ctxt) override;
+
     static IFactory *inst();
 
 private:

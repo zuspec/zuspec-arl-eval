@@ -30,9 +30,10 @@ namespace eval {
 
 
 TaskElaborateActivityExpandReplicate::TaskElaborateActivityExpandReplicate(
-    dm::IContext *ctxt) : m_ctxt(ctxt) {
-    DEBUG_INIT("TaskElaborateActivityExpandReplicate", m_ctxt->getDebugMgr());
-
+    vsc::solvers::IFactory  *solvers_f,
+    dm::IContext            *ctxt) : m_solvers_f(solvers_f), m_ctxt(ctxt) {
+    DEBUG_INIT("TaskElaborateActivityExpandReplicate", 
+        m_solvers_f->getDebugMgr());
 }
 
 TaskElaborateActivityExpandReplicate::~TaskElaborateActivityExpandReplicate() {
@@ -46,9 +47,10 @@ dm::IModelActivityScope *TaskElaborateActivityExpandReplicate::elab(
 
     // Before expanding, take a pass through the tree to select 
     // replicate sizes
-    bool ret = TaskElaborateActivitySelectReplicateSizes(m_ctxt).eval(
-        randstate,
-        root);
+    bool ret = TaskElaborateActivitySelectReplicateSizes(
+            m_solvers_f, m_ctxt).eval(
+                randstate,
+                root);
 
     DEBUG("Result of ReplicateSizes: %d", ret);
 

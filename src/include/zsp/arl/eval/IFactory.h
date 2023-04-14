@@ -20,6 +20,8 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
+#include "vsc/solvers/IFactory.h"
+#include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/eval/IModelEvaluator.h"
 
 namespace zsp {
@@ -34,6 +36,11 @@ public:
     virtual ~IFactory() { }
 
     virtual void init(dmgr::IDebugMgr *dmgr) = 0;
+
+    virtual IModelEvaluator *mkModelEvaluator(
+        ModelEvaluatorKind          kind,
+        vsc::solvers::IFactory      *solvers_f,
+        arl::dm::IContext           *ctxt) = 0;
 
 };
 

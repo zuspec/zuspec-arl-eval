@@ -7,7 +7,7 @@
 
 #include "TestScheduleRelSet.h"
 
-#include "../src/ScheduleSolveDataActionRel.h"
+#include "ScheduleSolveDataActionRel.h"
 
 namespace zsp {
 namespace arl {

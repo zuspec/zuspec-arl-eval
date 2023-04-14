@@ -20,6 +20,7 @@
  */
 #pragma once
 #include "vsc/solvers/ICompoundSolver.h"
+#include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 
@@ -35,7 +36,9 @@ using ElabActivityUP=std::unique_ptr<ElabActivity>;
 
 class TaskElaborateActivity : public dm::VisitorBase {
 public:
-    TaskElaborateActivity(dm::IContext *ctxt);
+    TaskElaborateActivity(
+        vsc::solvers::IFactory  *solvers_f,
+        dm::IContext            *ctxt);
 
     virtual ~TaskElaborateActivity();
 
@@ -66,6 +69,7 @@ private:
 
 private:
     static dmgr::IDebug             *m_dbg;
+    vsc::solvers::IFactory          *m_solvers_f;
     dm::IContext                    *m_ctxt;
     ElabActivityUP                  m_activity;
     int32_t                         m_scope_search_depth;

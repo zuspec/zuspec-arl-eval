@@ -30,7 +30,9 @@ namespace arl {
 namespace eval {
 
 
-ModelEvaluatorFullElab::ModelEvaluatorFullElab(dm::IContext *ctxt) : m_ctxt(ctxt) {
+ModelEvaluatorFullElab::ModelEvaluatorFullElab(
+    vsc::solvers::IFactory      *solvers_f,
+    dm::IContext                *ctxt) : m_solvers_f(solvers_f), m_ctxt(ctxt) {
     DEBUG_INIT("ModelEvaluatorFullElab", ctxt->getDebugMgr());
 
 }
@@ -44,12 +46,14 @@ dm::IModelEvalIterator *ModelEvaluatorFullElab::eval(
         dm::IModelFieldComponent            *root_comp,
         dm::IDataTypeAction                 *root_action) {
     vsc::solvers::IRandState *randstate_l = randstate->clone();
-    ElabActivity *exec_activity = TaskElaborateActivity(m_ctxt).elaborate(
-        randstate_l,
-        root_comp,
-        root_action);
+    ElabActivity *exec_activity = TaskElaborateActivity(
+        m_solvers_f, m_ctxt).elaborate(
+            randstate_l,
+            root_comp,
+            root_action);
 
     return new ModelEvaluatorFullElabScope(
+        m_solvers_f,
         m_ctxt, 
         randstate_l,
         exec_activity->root);

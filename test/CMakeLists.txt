@@ -85,6 +85,7 @@ endif()
 target_link_libraries(test-zsp-arl-eval 
     zsp-arl-eval
 	zsp-arl-dm
+    vsc-solvers
     vsc-dm
     debug-mgr
 	libgtest 

@@ -20,6 +20,7 @@
  */
 #pragma once
 #include "gtest/gtest.h"
+#include "vsc/solvers/IFactory.h"
 #include "vsc/solvers/IRandState.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/IFactory.h"
@@ -45,7 +46,9 @@ public:
 
 protected:
     dm::IFactory                *m_arl_dm_factory;
+    eval::IFactory              *m_eval_f;
     dm::IContextUP              m_ctxt;
+    vsc::solvers::IFactory      *m_solvers_f;
     vsc::solvers::IRandStateUP  m_randstate;
 };
 
