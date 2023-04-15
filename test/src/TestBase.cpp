@@ -69,7 +69,7 @@ void TestBase::TearDown() {
 }
 
 void TestBase::enableDebug(bool en) {
-    m_ctxt->getDebugMgr()->enable(true);
+    m_ctxt->getDebugMgr()->enable(en);
 }
 
 }
