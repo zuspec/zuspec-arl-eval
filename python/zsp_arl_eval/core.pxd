@@ -26,6 +26,7 @@ cdef class Factory(object):
 
 cdef class ModelEvaluator(object):
     cdef decl.IModelEvaluator       *_hndl
+    cdef bool                       _owned
 
     cpdef arl_dm.ModelEvalIterator eval(
         self,
