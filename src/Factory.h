@@ -45,6 +45,14 @@ public:
         vsc::solvers::IFactory      *solvers_f,
         arl::dm::IContext           *ctxt) override;
 
+    virtual IEvalContext *mkEvalContextFullElab(
+        vsc::solvers::IFactory          *solvers_f,
+        arl::dm::IContext               *ctxt,
+        const vsc::solvers::IRandState  *randstate,
+        dm::IModelFieldComponent        *root_comp,
+        dm::IDataTypeAction             *root_action,
+        IEvalBackend                    *backend) override;
+
     static IFactory *inst();
 
 private:

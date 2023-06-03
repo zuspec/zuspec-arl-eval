@@ -22,7 +22,8 @@
 #include "Factory.h"
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
-
+#include "ModelEvaluatorFullElabActivity.h"
+#include "TaskElaborateActivity.h"
 
 namespace zsp {
 namespace arl {
@@ -51,6 +52,22 @@ IModelEvaluator *Factory::mkModelEvaluator(
         default:
             fprintf(stdout, "Error: unhandled evaluator\n");
     }
+}
+
+IEvalContext *Factory::mkEvalContextFullElab(
+        vsc::solvers::IFactory          *solvers_f,
+        arl::dm::IContext               *ctxt,
+        const vsc::solvers::IRandState  *randstate,
+        dm::IModelFieldComponent        *root_comp,
+        dm::IDataTypeAction             *root_action,
+        IEvalBackend                    *backend) {
+    vsc::solvers::IRandState *randstate_l = randstate->clone();
+    ElabActivity *exec_activity = TaskElaborateActivity(
+        solvers_f, 
+        ctxt).elaborate(
+            randstate_l,
+            root_comp,
+            root_action);
 }
 
 IFactory *Factory::inst() {

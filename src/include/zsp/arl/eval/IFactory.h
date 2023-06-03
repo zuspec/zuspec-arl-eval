@@ -23,6 +23,8 @@
 #include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/eval/IModelEvaluator.h"
+#include "zsp/arl/eval/IEvalBackend.h"
+#include "zsp/arl/eval/IEvalContext.h"
 
 namespace zsp {
 namespace arl {
@@ -41,6 +43,14 @@ public:
         ModelEvaluatorKind          kind,
         vsc::solvers::IFactory      *solvers_f,
         arl::dm::IContext           *ctxt) = 0;
+
+    virtual IEvalContext *mkEvalContextFullElab(
+        vsc::solvers::IFactory          *solvers_f,
+        arl::dm::IContext               *ctxt,
+        const vsc::solvers::IRandState  *randstate,
+        dm::IModelFieldComponent        *root_comp,
+        dm::IDataTypeAction             *root_action,
+        IEvalBackend                    *backend) = 0;
 
 };
 
