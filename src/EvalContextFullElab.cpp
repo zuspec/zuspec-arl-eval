@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "EvalActivityScopeFullElab.h"
 #include "EvalContextFullElab.h"
 
@@ -27,8 +28,11 @@ namespace arl {
 namespace eval {
 
 
-EvalContextFullElab::EvalContextFullElab(ElabActivity *activity) :
-    m_initial(true) {
+EvalContextFullElab::EvalContextFullElab(
+    dmgr::IDebugMgr     *dmgr,
+    ElabActivity        *activity) : 
+        m_dmgr(dmgr), m_backend(0), m_initial(true), m_activity(activity) {
+    DEBUG_INIT("EvalContextFullElab", dmgr);
 }
 
 EvalContextFullElab::~EvalContextFullElab() {
@@ -37,6 +41,7 @@ EvalContextFullElab::~EvalContextFullElab() {
 
 bool EvalContextFullElab::eval() {
     bool ret = false;
+    DEBUG_ENTER("eval");
 
     if (m_initial) {
         // Add an eval scope for the top-level activity
@@ -61,16 +66,58 @@ bool EvalContextFullElab::eval() {
         }
     }
 
+    DEBUG_LEAVE("eval (%d)", ret);
     return ret;
 }
 
 bool EvalContextFullElab::isBlocked() {
-    return (m_subthreads.size() 
-        && m_subthreads.back()->isBlocked());
+    return (m_eval_s.size() && m_eval_s.back()->isBlocked());
 }
 
+void EvalContextFullElab::pushEval(IEval *e, bool owned) {
+    e->setIdx(m_eval_s.size());
+    m_eval_s.push_back(IEvalUP(e, owned));
+}
 
+void EvalContextFullElab::suspendEval(IEval *e) {
+    m_eval_s.at(e->getIdx()) = IEvalUP(e->clone(), true);
+}
 
+void EvalContextFullElab::popEval(IEval *e) {
+    if (e->haveResult()) {
+        DEBUG("hasResult (%d)", m_eval_s.size());
+        if (m_eval_s.size() > 1) {
+            m_eval_s.at(m_eval_s.size()-2)->setResult(
+                e->moveResult(),
+                e->getResultKind());
+        } else {
+            setResult(
+                e->moveResult(),
+                e->getResultKind());
+        }
+    } else {
+        DEBUG("NOT hasResult");
+    }
+    m_eval_s.pop_back();
+}
+
+void EvalContextFullElab::setFunctionData(
+        dm::IDataTypeFunction       *func_t,
+        IEvalFunctionData           *data) {
+
+}
+
+void EvalContextFullElab::callListener(
+    const std::function<void (IEvalListener *)> &f) {
+
+    for (std::vector<IEvalListener *>::const_iterator
+        it=m_listeners.begin();
+        it!=m_listeners.end(); it++) {
+        f(*it);
+    }
+}
+
+dmgr::IDebug *EvalContextFullElab::m_dbg = 0;
 
 
 }

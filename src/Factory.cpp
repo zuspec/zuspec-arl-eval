@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "zsp/arl/eval/FactoryExt.h"
+#include "EvalContextFullElab.h"
 #include "Factory.h"
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
@@ -52,6 +53,7 @@ IModelEvaluator *Factory::mkModelEvaluator(
         default:
             fprintf(stdout, "Error: unhandled evaluator\n");
     }
+    return 0;
 }
 
 IEvalContext *Factory::mkEvalContextFullElab(
@@ -68,6 +70,9 @@ IEvalContext *Factory::mkEvalContextFullElab(
             randstate_l,
             root_comp,
             root_action);
+    return new EvalContextFullElab(
+        m_dmgr,
+        exec_activity);
 }
 
 IFactory *Factory::inst() {

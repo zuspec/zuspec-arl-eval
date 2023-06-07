@@ -26,6 +26,13 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
+enum class EvalResultKind {
+    Default,
+    Break,
+    Continue,
+    Return
+};
+
 class IEval;
 using IEvalUP=vsc::dm::UP<IEval>;
 class IEval {
@@ -57,9 +64,15 @@ public:
 
     virtual vsc::dm::IModelVal *getResult() = 0;
 
+    virtual EvalResultKind getResultKind() = 0;
+
     virtual vsc::dm::IModelVal *moveResult() = 0;
 
-    virtual void setResult(vsc::dm::IModelVal *val) = 0;
+    virtual void setResult(
+        vsc::dm::IModelVal      *val,
+        EvalResultKind          kind) = 0;
+
+    virtual void clrResult() = 0;
 
     virtual bool haveResult() const = 0;
 

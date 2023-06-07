@@ -1,5 +1,5 @@
 /**
- * IEvalListener.h
+ * EvalBackendBase.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
+#include "zsp/arl/eval/IEvalBackend.h"
 
 namespace zsp {
 namespace arl {
@@ -29,31 +27,30 @@ namespace eval {
 
 
 
-class IEvalListener {
+class EvalBackendBase : public virtual IEvalBackend {
 public:
+    EvalBackendBase() { }
 
-    virtual ~IEvalListener() { }
+    virtual ~EvalBackendBase() { }
 
-    virtual void enterThreads(const std::vector<IEvalThread *> &threads) = 0;
+    virtual void startThreads(
+        const std::vector<IEvalThread *>    &threads) override { }
+    
+    virtual void startThread(IEvalThread *thread) override { }
 
-    virtual void enterThread(IEvalThread *t) = 0;
+    virtual void endThread(IEvalThread *thread) override { }
 
-    virtual void enterAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
+    virtual void endThreads(
+        const std::vector<IEvalThread *>    &threads) override { }
 
-    virtual void leaveAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveThread(IEvalThread *t) = 0;
-
-    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) = 0;
+    virtual void callFuncReq(
+            IEvalThread                 *thread,
+            dm::IDataTypeFunction       *func_t) override { }
 
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

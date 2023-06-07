@@ -22,8 +22,6 @@
 #include <vector>
 #include "vsc/dm/impl/UP.h"
 #include "zsp/arl/eval/IEval.h"
-#include "zsp/arl/eval/IEvalListener.h"
-#include "zsp/arl/eval/IEvalThreadEventListener.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
 
 namespace zsp {
@@ -52,21 +50,6 @@ public:
     virtual IEvalThreadId *getThreadId() const = 0;
 
     virtual void setThreadId(IEvalThreadId *tid) = 0;
-
-    /*
-    virtual void init(IEvalThread *parent) = 0;
-
-    virtual IEvalThread *getParent() = 0;
-
-
-    virtual void setEventListener(IEvalThreadEventListener *l) = 0;
-
-    virtual IEvalThreadEventListener *getEventListener() = 0;
-
-    virtual void addEvalListener(IEvalListener *l) = 0;
-
-    virtual const std::vector<IEvalListener *> &getListeners() const = 0;
-     */
 
 };
 

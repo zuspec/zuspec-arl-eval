@@ -18,7 +18,10 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "EvalActivityFullElab.h"
+#include "EvalActivityScopeFullElab.h"
+#include "EvalTypeExecList.h"
 
 
 namespace zsp {
@@ -30,8 +33,9 @@ EvalActivityFullElab::EvalActivityFullElab(
     IEvalContext        *ctxt,
     IEvalThread         *thread,
     dm::IModelActivity  *activity) : 
-        EvalBase(ctxt, thread), m_activity(activity) {
-
+        EvalBase(ctxt, thread), m_activity(activity), m_idx(0) {
+    
+    DEBUG_INIT("EvalActivityFullElab", ctxt->getDebugMgr());
 }
 
 EvalActivityFullElab::~EvalActivityFullElab() {
@@ -39,7 +43,27 @@ EvalActivityFullElab::~EvalActivityFullElab() {
 }
 
 bool EvalActivityFullElab::eval() {
+    DEBUG_ENTER("eval");
+    if (m_initial) {
+        m_thread->pushEval(this);
+    }
 
+    m_activity->accept(m_this);
+
+    bool ret = !haveResult();
+
+    if (m_initial) {
+        m_initial = false;
+
+        if (!haveResult()) {
+            m_thread->suspendEval(this);
+        } else {
+            m_thread->popEval(this);
+        }
+    }
+
+    DEBUG_LEAVE("eval (%d)", ret);
+    return ret;
 }
 
 IEval *EvalActivityFullElab::clone() {
@@ -47,8 +71,81 @@ IEval *EvalActivityFullElab::clone() {
 }
 
 bool EvalActivityFullElab::isBlocked() {
-
+    return false;
 }
+
+void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
+    DEBUG_ENTER("visitModelActivityScope");
+
+    EvalActivityScopeFullElab evaluator(m_ctxt, m_thread, a);
+    evaluator.eval();
+
+    DEBUG_LEAVE("visitModelActivityScope (%d)", haveResult());
+}
+
+void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
+    bool ret = false;
+    DEBUG_ENTER("visitModelActivityTraverse %s",
+        a->getTarget()->getDataTypeT<vsc::dm::IDataTypeStruct>()->name().c_str());
+
+    switch (m_idx) {
+        case 0: {
+            // After solving?
+            m_ctxt->callListener([&](IEvalListener *l) { 
+                l->enterAction(m_thread, a->getTarget());});
+
+            // TODO: Evaluate non-blocking 'pre_solve' if it exists
+
+            // TODO: Perform solving first
+
+            // TODO: Evaluate non-blocking 'post_solve' if it exists
+
+            if (a->getTarget()->getActivity()) {
+                // Compound activity
+                EvalActivityScopeFullElab evaluator(
+                    m_ctxt, 
+                    m_thread, 
+                    a->getTarget()->getActivity());
+
+                if (evaluator.eval()) {
+                    break;
+                }
+            } else {
+                // Need to evaluate exec blocks
+                dm::IDataTypeAction *action_t = a->getTarget()->getDataTypeT<dm::IDataTypeAction>();
+
+                if (action_t->getExecs(dm::ExecKindT::Body).size()) {
+                    EvalTypeExecList evaluator(
+                        m_ctxt, 
+                        m_thread, 
+                        action_t->getExecs(dm::ExecKindT::Body));
+                    
+                    if (evaluator.eval()) {
+                        break;
+                    }
+                }
+            }
+            m_idx = 1;
+        }
+        
+        case 1: {
+            DEBUG("case 1: setResult");
+            setResult(0, EvalResultKind::Default);
+
+        } break;
+    }
+
+    if (haveResult()) {
+        m_ctxt->callListener([&](IEvalListener *l) { 
+            l->leaveAction(m_thread, a->getTarget());});
+    }
+
+    DEBUG_LEAVE("visitModelActivityTraverse %s (%d)",
+        a->getTarget()->getDataTypeT<vsc::dm::IDataTypeStruct>()->name().c_str(),
+        haveResult());
+}
+
+dmgr::IDebug *EvalActivityFullElab::m_dbg = 0;
 
 }
 }

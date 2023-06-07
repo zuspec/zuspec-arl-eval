@@ -1,5 +1,5 @@
 /**
- * IEvalListener.h
+ * EvalMultiStepClosure.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,9 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
+#include <functional>
+#include "zsp/arl/eval/IEval.h"
+#include "EvalBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,31 +29,31 @@ namespace eval {
 
 
 
-class IEvalListener {
+class EvalMultiStepClosure :
+    public virtual IEval,
+    public virtual EvalBase {
 public:
+    EvalMultiStepClosure(
+        IEvalContext                            *ctxt,
+        IEvalThread                             *thread,
+        const std::function<bool(EvalMultiStepClosure *, uint32_t &)> &func,
+        uint32_t                                idx=0
+    );
 
-    virtual ~IEvalListener() { }
+    virtual ~EvalMultiStepClosure();
 
-    virtual void enterThreads(const std::vector<IEvalThread *> &threads) = 0;
+    virtual bool eval() override;
 
-    virtual void enterThread(IEvalThread *t) = 0;
+    virtual IEval *clone() override;
 
-    virtual void enterAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveThread(IEvalThread *t) = 0;
-
-    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) = 0;
+protected:
+    std::function<bool(EvalMultiStepClosure *, uint32_t &)> m_func;
+    uint32_t                                                m_idx;
 
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

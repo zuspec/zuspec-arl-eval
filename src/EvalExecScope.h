@@ -19,6 +19,9 @@
  *     Author: 
  */
 #pragma once
+#include "zsp/arl/dm/impl/VisitorBase.h"
+#include "zsp/arl/eval/IEval.h"
+#include "EvalBase.h"
 
 namespace zsp {
 namespace arl {
@@ -26,11 +29,40 @@ namespace eval {
 
 
 
-class EvalExecScope {
+class EvalExecScope : 
+    public virtual IEval,
+    public virtual EvalBase,
+    public virtual dm::VisitorBase {
 public:
     EvalExecScope();
 
     virtual ~EvalExecScope();
+
+	virtual void visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) override;
+
+	virtual void visitTypeProcStmtBreak(dm::ITypeProcStmtBreak *s) override;
+
+	virtual void visitTypeProcStmtContinue(dm::ITypeProcStmtContinue *s) override;
+
+	virtual void visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) override;
+
+	virtual void visitTypeProcStmtForeach(dm::ITypeProcStmtForeach *s) override;
+
+	virtual void visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) override;
+
+	virtual void visitTypeProcStmtMatch(dm::ITypeProcStmtMatch *s) override;
+
+	virtual void visitTypeProcStmtRepeat(dm::ITypeProcStmtRepeat *s) override;
+
+	virtual void visitTypeProcStmtRepeatWhile(dm::ITypeProcStmtRepeatWhile *s) override;
+
+	virtual void visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) override;
+
+	virtual void visitTypeProcStmtScope(dm::ITypeProcStmtScope *s) override;
+
+	virtual void visitTypeProcStmtVarDecl(dm::ITypeProcStmtVarDecl *s) override;
+
+	virtual void visitTypeProcStmtWhile(dm::ITypeProcStmtWhile *s) override;
 
 };
 

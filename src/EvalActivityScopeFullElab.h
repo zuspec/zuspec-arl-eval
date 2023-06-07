@@ -49,6 +49,7 @@ public:
     virtual bool isBlocked() override;
 
 private:
+    static dmgr::IDebug              *m_dbg;
     dm::IModelActivityScope          *m_scope;
     int32_t                          m_idx;
 

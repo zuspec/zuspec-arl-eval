@@ -1,5 +1,5 @@
 /**
- * EvalTypeExpr.h
+ * EvalTypeExecList.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -29,38 +29,30 @@ namespace eval {
 
 
 
-class EvalTypeExpr :
+class EvalTypeExecList : 
     public virtual IEval,
     public virtual EvalBase,
     public virtual dm::VisitorBase {
 public:
-    EvalTypeExpr(
-        IEvalContext        *ctxt,
-        IEvalThread         *thread,
-        vsc::dm::ITypeExpr  *expr,
-        vsc::dm::IModelVal  *lhs=0,
-        vsc::dm::IModelVal  *rhs=0,
-        uint32_t            idx=0
-    );
+    EvalTypeExecList(
+        IEvalContext                        *ctxt,
+        IEvalThread                         *thread,
+        const std::vector<dm::ITypeExecUP>  &execs);
 
-    virtual ~EvalTypeExpr();
+    EvalTypeExecList(const EvalTypeExecList *o);
+
+    virtual ~EvalTypeExecList();
 
     virtual bool eval() override;
 
     virtual IEval *clone() override;
 
-    virtual bool isBlocked() override {
-        return !haveResult();
-    }
+	virtual void visitTypeExecProc(dm::ITypeExecProc *e) override;
 
-
-protected:
-    static dmgr::IDebug     *m_dbg;
-    vsc::dm::ITypeExpr      *m_expr;
-    vsc::dm::IModelValUP    m_val_lhs;
-    vsc::dm::IModelValUP    m_val_rhs;
-    uint32_t                m_idx;
-
+private:
+    static dmgr::IDebug                     *m_dbg;
+    const std::vector<dm::ITypeExecUP>      &m_execs;
+    uint32_t                                m_idx;
 };
 
 }

@@ -22,6 +22,7 @@
 #include <functional>
 #include <vector>
 #include "zsp/arl/eval/IEvalThread.h"
+#include "EvalBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,9 +30,13 @@ namespace eval {
 
 
 
-class EvalThread : public virtual IEvalThread {
+class EvalThread : 
+    public virtual IEvalThread,
+    public virtual EvalBase {
 public:
-    EvalThread();
+    EvalThread(
+        IEvalContext            *ctxt,
+        IEvalThread             *thread);
 
     virtual ~EvalThread();
 
@@ -51,19 +56,24 @@ public:
 
     virtual void popEval(IEval *e) override;
 
-/*
-    virtual const std::vector<IEvalListener *> &getListeners() const override {
-        return m_listeners;
+    virtual IEvalThreadId *getThreadId() const override {
+        return m_thread_id;
     }
- */
 
+    virtual void setThreadId(IEvalThreadId *tid) override {
+        m_thread_id = tid;
+    }
+
+    virtual void setResult(
+        vsc::dm::IModelVal      *val,
+        EvalResultKind          kind) override;
 
 protected:
-//    void sendEvalEvent(const std::function<void (IEvalListener *)> &f);
 
 protected:
+    static dmgr::IDebug                 *m_dbg;
     std::vector<IEvalUP>                m_eval_s;
-    std::vector<IEvalListener *>        m_listeners;
+    IEvalThreadId                       *m_thread_id;
 
 };
 

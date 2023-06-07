@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include <functional>
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalContext.h"
 #include "zsp/arl/eval/IEvalThread.h"
@@ -35,7 +36,11 @@ public:
         IEvalThread             *thread
     );
 
+    EvalBase(const EvalBase *o);
+
     virtual ~EvalBase();
+
+    virtual bool eval(const std::function<void()> &body);
 
     virtual int32_t getIdx() override {
         return m_idx;
@@ -45,16 +50,33 @@ public:
         m_idx = idx;
     }
 
+    virtual bool isBlocked() override {
+        return !haveResult();
+    }
+
+
     virtual vsc::dm::IModelVal *getResult() override {
         return m_result.get();
+    }
+
+    virtual EvalResultKind getResultKind() override {
+        return m_resultKind;
     }
 
     virtual vsc::dm::IModelVal *moveResult() override {
         return m_result.release();
     }
 
-    virtual void setResult(vsc::dm::IModelVal *val) override {
+    virtual void clrResult() override {
+        m_result.reset();
+        m_haveResult = false;
+    }
+
+    virtual void setResult(
+        vsc::dm::IModelVal  *val,
+        EvalResultKind      kind) override {
         m_result = vsc::dm::IModelValUP(val);
+        m_resultKind = kind;
         m_haveResult = true;
     }
 
@@ -68,6 +90,7 @@ protected:
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
     vsc::dm::IModelValUP        m_result;
+    EvalResultKind              m_resultKind;
     bool                        m_haveResult;
 
 };

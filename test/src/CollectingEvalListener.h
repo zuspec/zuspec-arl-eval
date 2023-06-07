@@ -1,5 +1,5 @@
 /**
- * IEvalListener.h
+ * CollectingEvalListener.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
+#include "zsp/arl/eval/impl/EvalListenerBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,31 +27,34 @@ namespace eval {
 
 
 
-class IEvalListener {
+class CollectingEvalListener : public virtual EvalListenerBase {
 public:
+    CollectingEvalListener();
 
-    virtual ~IEvalListener() { }
-
-    virtual void enterThreads(const std::vector<IEvalThread *> &threads) = 0;
-
-    virtual void enterThread(IEvalThread *t) = 0;
+    virtual ~CollectingEvalListener();
 
     virtual void enterAction(
         IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
+        dm::IModelFieldAction   *action) override { }
 
     virtual void leaveAction(
         IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
+        dm::IModelFieldAction   *action) override { 
+        m_actions.push_back(action);
+    }
+    
+    const std::vector<dm::IModelFieldAction *> &getActions() const {
+        return m_actions;
+    }
 
-    virtual void leaveThread(IEvalThread *t) = 0;
 
-    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) = 0;
+protected:
+    std::vector<dm::IModelFieldAction *>           m_actions;
 
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

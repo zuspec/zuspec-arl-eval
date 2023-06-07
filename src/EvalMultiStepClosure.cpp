@@ -1,5 +1,5 @@
 /*
- * EvalBase.cpp
+ * EvalMultiStepClosure.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -18,7 +18,7 @@
  * Created on:
  *     Author:
  */
-#include "EvalBase.h"
+#include "EvalMultiStepClosure.h"
 
 
 namespace zsp {
@@ -26,39 +26,35 @@ namespace arl {
 namespace eval {
 
 
-EvalBase::EvalBase(
-    IEvalContext            *ctxt,
-    IEvalThread             *thread) :
-        m_initial(true), m_idx(-1), m_ctxt(ctxt), m_thread(thread),
-        m_haveResult(false) {
+EvalMultiStepClosure::EvalMultiStepClosure(
+    IEvalContext                            *ctxt,
+    IEvalThread                             *thread,
+    const std::function<bool(EvalMultiStepClosure *, uint32_t &)>     &func,
+    uint32_t                                idx) :
+        EvalBase(ctxt, thread), m_func(func), m_idx(idx) {
+    m_initial = (idx == 0);
+}
+
+EvalMultiStepClosure::~EvalMultiStepClosure() {
 
 }
 
-EvalBase::EvalBase(const EvalBase *o) :
-    m_initial(o->m_initial), m_ctxt(o->m_ctxt), m_thread(o->m_thread),
-    m_haveResult(false) {
-
-}
-
-EvalBase::~EvalBase() {
-
-}
-
-bool EvalBase::eval(const std::function<void()> &body) {
+bool EvalMultiStepClosure::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
     }
 
-    body();
+    bool ret = m_func(this, m_idx);
 
     if (m_initial) {
-        if (!haveResult()) {
-            m_thread->suspendEval(this);
-        }
-        m_initial = false;
+        m_thread->suspendEval(this);
     }
 
-    return !haveResult();
+    return ret;
+}
+
+IEval *EvalMultiStepClosure::clone() {
+    return new EvalMultiStepClosure(m_ctxt, m_thread, m_func, m_idx);
 }
 
 }

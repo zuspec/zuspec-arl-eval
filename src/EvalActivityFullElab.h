@@ -22,6 +22,7 @@
 #include "zsp/arl/dm/IModelActivity.h"
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalContext.h"
+#include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "EvalBase.h"
 
@@ -32,6 +33,7 @@ namespace eval {
 
 
 class EvalActivityFullElab : 
+    public virtual IEval,
     public virtual EvalBase,
     public virtual dm::VisitorBase  {
 public:
@@ -49,9 +51,14 @@ public:
 
     virtual bool isBlocked() override;
 
-protected:
-    dm::IModelActivity              *m_activity;
+	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
+	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;
+
+protected:
+    static dmgr::IDebug             *m_dbg;
+    dm::IModelActivity              *m_activity;
+    uint32_t                        m_idx;
 
 };
 

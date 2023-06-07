@@ -1,5 +1,5 @@
 /*
- * EvalBase.cpp
+ * CollectingEvalListener.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -18,7 +18,7 @@
  * Created on:
  *     Author:
  */
-#include "EvalBase.h"
+#include "CollectingEvalListener.h"
 
 
 namespace zsp {
@@ -26,39 +26,12 @@ namespace arl {
 namespace eval {
 
 
-EvalBase::EvalBase(
-    IEvalContext            *ctxt,
-    IEvalThread             *thread) :
-        m_initial(true), m_idx(-1), m_ctxt(ctxt), m_thread(thread),
-        m_haveResult(false) {
+CollectingEvalListener::CollectingEvalListener() {
 
 }
 
-EvalBase::EvalBase(const EvalBase *o) :
-    m_initial(o->m_initial), m_ctxt(o->m_ctxt), m_thread(o->m_thread),
-    m_haveResult(false) {
+CollectingEvalListener::~CollectingEvalListener() {
 
-}
-
-EvalBase::~EvalBase() {
-
-}
-
-bool EvalBase::eval(const std::function<void()> &body) {
-    if (m_initial) {
-        m_thread->pushEval(this);
-    }
-
-    body();
-
-    if (m_initial) {
-        if (!haveResult()) {
-            m_thread->suspendEval(this);
-        }
-        m_initial = false;
-    }
-
-    return !haveResult();
 }
 
 }

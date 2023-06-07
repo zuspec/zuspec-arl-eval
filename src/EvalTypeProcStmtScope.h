@@ -1,5 +1,5 @@
 /**
- * IEvalListener.h
+ * EvalTypeProcStmtScope.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,9 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
+#include "zsp/arl/eval/IEval.h"
+#include "EvalBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,31 +29,34 @@ namespace eval {
 
 
 
-class IEvalListener {
+class EvalTypeProcStmtScope :
+    public virtual IEval,
+    public virtual EvalBase {
 public:
+    EvalTypeProcStmtScope(
+        IEvalContext                *ctxt,
+        IEvalThread                 *thread,
+        dm::ITypeProcStmtScope      *scope
+    );
 
-    virtual ~IEvalListener() { }
+    EvalTypeProcStmtScope(const EvalTypeProcStmtScope *other);
 
-    virtual void enterThreads(const std::vector<IEvalThread *> &threads) = 0;
+    virtual ~EvalTypeProcStmtScope();
 
-    virtual void enterThread(IEvalThread *t) = 0;
+    virtual bool eval() override;
 
-    virtual void enterAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
+    virtual IEval *clone() override;
 
-    virtual void leaveAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
 
-    virtual void leaveThread(IEvalThread *t) = 0;
-
-    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) = 0;
+private:
+    static dmgr::IDebug             *m_dbg;
+    dm::ITypeProcStmtScope          *m_scope;
+    uint32_t                        m_idx;
 
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

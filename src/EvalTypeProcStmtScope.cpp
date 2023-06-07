@@ -1,5 +1,5 @@
 /*
- * EvalTypeExpr.cpp
+ * EvalTypeProcStmtScope.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -20,6 +20,8 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "EvalTypeExpr.h"
+#include "EvalTypeProcStmt.h"
+#include "EvalTypeProcStmtScope.h"
 
 
 namespace zsp {
@@ -27,25 +29,26 @@ namespace arl {
 namespace eval {
 
 
-EvalTypeExpr::EvalTypeExpr(
-    IEvalContext        *ctxt,
-    IEvalThread         *thread,
-    vsc::dm::ITypeExpr  *expr,
-    vsc::dm::IModelVal  *lhs,
-    vsc::dm::IModelVal  *rhs,
-    uint32_t            idx) :
-        EvalBase(ctxt, thread), 
-        m_expr(expr),
-        m_val_lhs(lhs), m_val_rhs(rhs), m_idx(idx) {
-    DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
+EvalTypeProcStmtScope::EvalTypeProcStmtScope(
+    IEvalContext                *ctxt,
+    IEvalThread                 *thread,
+    dm::ITypeProcStmtScope      *scope) : 
+        EvalBase(ctxt, thread), m_scope(scope), m_idx(0) {
+    DEBUG_INIT("EvalTypeProcStmtScope", ctxt->getDebugMgr());
 }
 
-EvalTypeExpr::~EvalTypeExpr() {
+EvalTypeProcStmtScope::EvalTypeProcStmtScope(const EvalTypeProcStmtScope *o) : 
+    EvalBase(o->m_ctxt, o->m_thread),
+    m_scope(o->m_scope), m_idx(o->m_idx) {
+}
+
+EvalTypeProcStmtScope::~EvalTypeProcStmtScope() {
 
 }
 
-bool EvalTypeExpr::eval() {
+bool EvalTypeProcStmtScope::eval() {
     DEBUG_ENTER("eval");
+
     if (m_initial) {
         m_thread->pushEval(this);
     }
@@ -53,7 +56,17 @@ bool EvalTypeExpr::eval() {
     // Safety
     setResult(0, EvalResultKind::Default);
 
-    m_expr->accept(m_this);
+    while (m_idx < m_scope->getStatements().size()) {
+        EvalTypeProcStmt evaluator(
+            m_ctxt, m_thread, m_scope->getStatements().at(m_idx).get());
+
+        m_idx++;
+
+        if (evaluator.eval()) {
+            clrResult();
+            break;
+        }
+    }
 
     bool ret = !haveResult();
 
@@ -65,19 +78,17 @@ bool EvalTypeExpr::eval() {
         }
     }
 
-    m_initial = false;
-
     DEBUG_LEAVE("eval %d", ret);
     return ret;
 }
 
-IEval *EvalTypeExpr::clone() {
-    return new EvalTypeExpr(m_ctxt, m_thread, m_expr,
-        m_val_lhs.release(), m_val_rhs.release(), m_idx);
+IEval *EvalTypeProcStmtScope::clone() {
+    return new EvalTypeProcStmtScope(m_ctxt, m_thread, m_scope);
 }
 
-dmgr::IDebug *EvalTypeExpr::m_dbg = 0;
 
+dmgr::IDebug *EvalTypeProcStmtScope::m_dbg = 0;
+ 
 }
 }
 }

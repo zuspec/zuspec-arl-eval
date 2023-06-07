@@ -1,5 +1,5 @@
 /**
- * IEvalListener.h
+ * EvalElemClosure.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,9 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
+#include <functional>
+#include "zsp/arl/eval/IEval.h"
+#include "EvalBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,31 +29,23 @@ namespace eval {
 
 
 
-class IEvalListener {
+template <class T> class EvalElemClosure :
+    public virtual IEval,
+    public virtual EvalBase {
 public:
+    EvalElemClosure(
+        IEvalContext            *ctxt,
+        IEvalThread             *thread,
+        T                       *elem,
+        const std::function<bool(uint32_t idx)
+    );
 
-    virtual ~IEvalListener() { }
-
-    virtual void enterThreads(const std::vector<IEvalThread *> &threads) = 0;
-
-    virtual void enterThread(IEvalThread *t) = 0;
-
-    virtual void enterAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveThread(IEvalThread *t) = 0;
-
-    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) = 0;
+    virtual ~EvalElemClosure();
 
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

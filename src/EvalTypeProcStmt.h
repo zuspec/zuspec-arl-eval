@@ -1,5 +1,5 @@
 /**
- * EvalTypeExpr.h
+ * EvalTypeProcStmt.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -29,37 +29,30 @@ namespace eval {
 
 
 
-class EvalTypeExpr :
+class EvalTypeProcStmt :
     public virtual IEval,
     public virtual EvalBase,
     public virtual dm::VisitorBase {
 public:
-    EvalTypeExpr(
-        IEvalContext        *ctxt,
-        IEvalThread         *thread,
-        vsc::dm::ITypeExpr  *expr,
-        vsc::dm::IModelVal  *lhs=0,
-        vsc::dm::IModelVal  *rhs=0,
-        uint32_t            idx=0
-    );
+    EvalTypeProcStmt(
+        IEvalContext                *ctxt,
+        IEvalThread                 *thread,
+        dm::ITypeProcStmt           *stmt);
 
-    virtual ~EvalTypeExpr();
+    EvalTypeProcStmt(const EvalTypeProcStmt *o);
+
+    virtual ~EvalTypeProcStmt();
 
     virtual bool eval() override;
 
     virtual IEval *clone() override;
 
-    virtual bool isBlocked() override {
-        return !haveResult();
-    }
+	virtual void visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) override;
 
-
-protected:
-    static dmgr::IDebug     *m_dbg;
-    vsc::dm::ITypeExpr      *m_expr;
-    vsc::dm::IModelValUP    m_val_lhs;
-    vsc::dm::IModelValUP    m_val_rhs;
-    uint32_t                m_idx;
+private:
+    static dmgr::IDebug             *m_dbg;
+    dm::ITypeProcStmt               *m_stmt;
+    uint32_t                        m_idx;
 
 };
 

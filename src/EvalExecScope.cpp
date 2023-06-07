@@ -34,6 +34,32 @@ EvalExecScope::~EvalExecScope() {
 
 }
 
+void EvalExecScope::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) { }
+
+void EvalExecScope::visitTypeProcStmtBreak(dm::ITypeProcStmtBreak *s) { }
+
+void EvalExecScope::visitTypeProcStmtContinue(dm::ITypeProcStmtContinue *s) { }
+
+void EvalExecScope::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) { }
+
+void EvalExecScope::visitTypeProcStmtForeach(dm::ITypeProcStmtForeach *s) { }
+
+void EvalExecScope::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) { }
+
+void EvalExecScope::visitTypeProcStmtMatch(dm::ITypeProcStmtMatch *s) { }
+
+void EvalExecScope::visitTypeProcStmtRepeat(dm::ITypeProcStmtRepeat *s) { }
+
+void EvalExecScope::visitTypeProcStmtRepeatWhile(dm::ITypeProcStmtRepeatWhile *s) { }
+
+void EvalExecScope::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) { }
+
+void EvalExecScope::visitTypeProcStmtScope(dm::ITypeProcStmtScope *s) { }
+
+void EvalExecScope::visitTypeProcStmtVarDecl(dm::ITypeProcStmtVarDecl *s) { }
+
+void EvalExecScope::visitTypeProcStmtWhile(dm::ITypeProcStmtWhile *s) { }
+
 }
 }
 }

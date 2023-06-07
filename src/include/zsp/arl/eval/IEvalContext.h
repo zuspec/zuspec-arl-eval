@@ -19,9 +19,12 @@
  *     Author: 
  */
 #pragma once
+#include <functional>
 #include <vector>
+#include "dmgr/IDebugMgr.h"
+#include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalBackend.h"
-#include "zsp/arl/eval/IEvalThread.h"
+#include "zsp/arl/eval/IEvalListener.h"
 #include "zsp/arl/eval/IEvalFunctionData.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/dm/IDataTypeFunctionImport.h"
@@ -32,10 +35,12 @@ namespace eval {
 
 class IEvalContext;
 using IEvalContextUP=vsc::dm::UP<IEvalContext>;
-class IEvalContext : public virtual IEvalThread {
+class IEvalContext {
 public:
 
     virtual ~IEvalContext() { }
+
+    virtual bool eval() = 0;
 
     virtual IEvalBackend *getBackend() const = 0;
 
@@ -52,6 +57,12 @@ public:
         dm::IDataTypeFunction       *func_t,
         IEvalFunctionData           *data
     ) = 0;
+
+    virtual void addListener(IEvalListener *l) = 0;
+
+    virtual void callListener(const std::function<void (IEvalListener *)> &f) = 0;
+
+    virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 
 };
 

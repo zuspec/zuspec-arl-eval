@@ -30,7 +30,25 @@ namespace eval {
 class EvalListenerBase : public virtual IEvalListener {
 public:
 
+    EvalListenerBase() { }
+
     virtual ~EvalListenerBase() { }
+
+    virtual void enterThreads(const std::vector<IEvalThread *> &threads) override { }
+
+    virtual void enterThread(IEvalThread *t) override { }
+
+    virtual void enterAction(
+        IEvalThread             *t,
+        dm::IModelFieldAction   *action) override { }
+
+    virtual void leaveAction(
+        IEvalThread             *t,
+        dm::IModelFieldAction   *action) override { }
+
+    virtual void leaveThread(IEvalThread *t) override { }
+
+    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) override { }
 
 };
 

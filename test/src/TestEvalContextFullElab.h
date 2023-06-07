@@ -1,5 +1,5 @@
 /**
- * IEvalListener.h
+ * TestEvalContextFullElab.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
+#include "TestBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,31 +27,16 @@ namespace eval {
 
 
 
-class IEvalListener {
+class TestEvalContextFullElab : public TestBase {
 public:
+    TestEvalContextFullElab();
 
-    virtual ~IEvalListener() { }
-
-    virtual void enterThreads(const std::vector<IEvalThread *> &threads) = 0;
-
-    virtual void enterThread(IEvalThread *t) = 0;
-
-    virtual void enterAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveAction(
-        IEvalThread             *t,
-        dm::IModelFieldAction   *action) = 0;
-
-    virtual void leaveThread(IEvalThread *t) = 0;
-
-    virtual void leaveThreads(const std::vector<IEvalThread *> &threads) = 0;
+    virtual ~TestEvalContextFullElab();
 
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

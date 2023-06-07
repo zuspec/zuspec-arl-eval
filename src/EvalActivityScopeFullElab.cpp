@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "zsp/arl/dm/IModelActivity.h"
 #include "zsp/arl/eval/IEvalThread.h"
 #include "EvalActivityFullElab.h"
@@ -35,6 +36,7 @@ EvalActivityScopeFullElab::EvalActivityScopeFullElab(
     dm::IModelActivityScope     *scope,
     int32_t                     idx) : 
         EvalBase(ctxt, thread), m_scope(scope), m_idx(idx) {
+    DEBUG_INIT("EvalActivityScopeFullElab", ctxt->getDebugMgr());
 
 }
 
@@ -44,6 +46,7 @@ EvalActivityScopeFullElab::~EvalActivityScopeFullElab() {
 
 bool EvalActivityScopeFullElab::eval() {
     bool ret = false;
+    DEBUG_ENTER("eval n_activities=%d", m_scope->activities().size());
 
     if (m_initial) {
         m_thread->pushEval(this);
@@ -57,9 +60,12 @@ bool EvalActivityScopeFullElab::eval() {
 
         // Only return if one of the tasks indicates that it is
         // suspending with more work to be done
+        DEBUG_ENTER("idx %d", m_idx);
         if ((ret=evaluator.eval())) {
+            DEBUG("Child statement blocked");
             break;
         }
+        DEBUG_LEAVE("idx %d", m_idx);
 
         m_idx++;
     }
@@ -75,6 +81,7 @@ bool EvalActivityScopeFullElab::eval() {
 
     m_initial = false;
 
+    DEBUG_LEAVE("eval (%d)", ret);
     return ret;
 }
 
@@ -85,6 +92,8 @@ bool EvalActivityScopeFullElab::isBlocked() {
 IEval *EvalActivityScopeFullElab::clone() {
     return new EvalActivityScopeFullElab(m_ctxt, m_thread, m_scope, m_idx);
 }
+
+dmgr::IDebug *EvalActivityScopeFullElab::m_dbg = 0;
 
 }
 }

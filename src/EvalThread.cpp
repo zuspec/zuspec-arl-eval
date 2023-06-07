@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "EvalThread.h"
 
 
@@ -26,7 +27,10 @@ namespace arl {
 namespace eval {
 
 
-EvalThread::EvalThread() {
+EvalThread::EvalThread(
+    IEvalContext        *ctxt,
+    IEvalThread         *thread) : EvalBase(ctxt, thread), m_thread_id(0) {
+    DEBUG_INIT("EvalThread", ctxt->getDebugMgr());
 
 }
 
@@ -35,6 +39,7 @@ EvalThread::~EvalThread() {
 }
 
 bool EvalThread::eval() {
+    DEBUG_ENTER("eval");
     bool ret = false;
 
     while (m_eval_s.size() 
@@ -43,9 +48,12 @@ bool EvalThread::eval() {
         // Propagate the result up the stack
         if (m_eval_s.size() > 1) {
             m_eval_s.at(m_eval_s.size()-2)->setResult(
-                m_eval_s.back()->moveResult());
+                m_eval_s.back()->moveResult(),
+                m_eval_s.back()->getResultKind());
         } else {
-            setResult(m_eval_s.back()->moveResult());
+            EvalBase::setResult(
+                m_eval_s.back()->moveResult(),
+                m_eval_s.back()->getResultKind());
         }
         m_eval_s.pop_back();
     }
@@ -54,6 +62,7 @@ bool EvalThread::eval() {
         m_eval_s.back()->eval();
     }
 
+    DEBUG_LEAVE("eval %d", ret);
     return ret;
 }
 
@@ -62,18 +71,51 @@ bool EvalThread::isBlocked() {
 }
 
 void EvalThread::pushEval(IEval *e, bool owned) {
+    DEBUG_ENTER("pushEval %d", m_eval_s.size());
     e->setIdx(m_eval_s.size());
     m_eval_s.push_back(IEvalUP(e, owned));
+    DEBUG_LEAVE("pushEval");
 }
 
 void EvalThread::suspendEval(IEval *e) {
+    DEBUG_ENTER("suspendEval %d", m_eval_s.size());
     if (!m_eval_s.at(e->getIdx()).owned()) {
+        DEBUG("Swap with clone");
         m_eval_s.at(e->getIdx()) = IEvalUP(e->clone(), true);
+    } else {
+        DEBUG("Already owned");
     }
+    DEBUG_LEAVE("suspendEval %d", m_eval_s.size());
 }
 
 void EvalThread::popEval(IEval *e) {
+    DEBUG_ENTER("popEval");
+    if (e->haveResult()) {
+        DEBUG("hasResult");
+        if (m_eval_s.size() > 1) {
+            m_eval_s.at(m_eval_s.size()-2)->setResult(
+                e->moveResult(),
+                e->getResultKind());
+        } else {
+            setResult(
+                e->moveResult(),
+                e->getResultKind());
+        }
+    } else {
+        DEBUG("NOT hasResult");
+    }
     m_eval_s.pop_back();
+    DEBUG_LEAVE("popEval");
+}
+
+void EvalThread::setResult(
+        vsc::dm::IModelVal      *val,
+        EvalResultKind          kind) {
+    if (m_eval_s.size()) {
+        m_eval_s.back()->setResult(val, kind);
+    } else {
+        EvalBase::setResult(val, kind);
+    }
 }
 
 /*
@@ -90,6 +132,8 @@ void EvalThread::sendEvalEvent(
     }
 }
 */
+
+dmgr::IDebug *EvalThread::m_dbg = 0;
 
 }
 }
