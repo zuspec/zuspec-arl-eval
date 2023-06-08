@@ -72,7 +72,8 @@ IEvalContext *Factory::mkEvalContextFullElab(
             root_action);
     return new EvalContextFullElab(
         m_dmgr,
-        exec_activity);
+        exec_activity,
+        backend);
 }
 
 IFactory *Factory::inst() {

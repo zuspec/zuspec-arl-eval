@@ -34,7 +34,8 @@ class EvalContextFullElab :
 public:
     EvalContextFullElab(
         dmgr::IDebugMgr     *dmgr,
-        ElabActivity        *activity);
+        ElabActivity        *activity,
+        IEvalBackend        *backend=0);
 
     virtual ~EvalContextFullElab();
 
@@ -96,7 +97,7 @@ public:
 
     virtual void setResult(
         vsc::dm::IModelVal      *val,
-        EvalResultKind          kind) override { }
+        EvalResultKind          kind) override;
 
     virtual bool haveResult() const override { return false; }
 

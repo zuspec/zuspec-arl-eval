@@ -38,8 +38,7 @@ EvalTypeProcStmtScope::EvalTypeProcStmtScope(
 }
 
 EvalTypeProcStmtScope::EvalTypeProcStmtScope(const EvalTypeProcStmtScope *o) : 
-    EvalBase(o->m_ctxt, o->m_thread),
-    m_scope(o->m_scope), m_idx(o->m_idx) {
+    EvalBase(o), m_scope(o->m_scope), m_idx(o->m_idx) {
 }
 
 EvalTypeProcStmtScope::~EvalTypeProcStmtScope() {
@@ -47,30 +46,32 @@ EvalTypeProcStmtScope::~EvalTypeProcStmtScope() {
 }
 
 bool EvalTypeProcStmtScope::eval() {
-    DEBUG_ENTER("eval");
+    DEBUG_ENTER("[%d] eval", getIdx());
 
     if (m_initial) {
         m_thread->pushEval(this);
+        // Safety
+        setResult(0, EvalResultKind::Default);
     }
 
-    // Safety
-    setResult(0, EvalResultKind::Default);
+    bool ret = false;
+    if (m_idx < m_scope->getStatements().size()) {
+        while (m_idx < m_scope->getStatements().size()) {
+            EvalTypeProcStmt evaluator(
+                m_ctxt, m_thread, m_scope->getStatements().at(m_idx).get());
 
-    while (m_idx < m_scope->getStatements().size()) {
-        EvalTypeProcStmt evaluator(
-            m_ctxt, m_thread, m_scope->getStatements().at(m_idx).get());
+            m_idx++;
 
-        m_idx++;
-
-        if (evaluator.eval()) {
-            clrResult();
-            break;
+            if (evaluator.eval()) {
+                clrResult();
+                ret = true;
+                break;
+            }
         }
     }
 
-    bool ret = !haveResult();
-
     if (m_initial) {
+        m_initial = false;
         if (haveResult()) {
             m_thread->popEval(this);
         } else {
@@ -78,12 +79,12 @@ bool EvalTypeProcStmtScope::eval() {
         }
     }
 
-    DEBUG_LEAVE("eval %d", ret);
+    DEBUG_LEAVE("[%d] eval %d", getIdx(), ret);
     return ret;
 }
 
 IEval *EvalTypeProcStmtScope::clone() {
-    return new EvalTypeProcStmtScope(m_ctxt, m_thread, m_scope);
+    return new EvalTypeProcStmtScope(this);
 }
 
 

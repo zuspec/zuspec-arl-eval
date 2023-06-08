@@ -42,6 +42,9 @@ public:
         IEvalThread                 *thread,
         dm::IModelActivity          *activity
     );
+    EvalActivityFullElab(const EvalActivityFullElab *o);
+
+
 
     virtual ~EvalActivityFullElab();
 

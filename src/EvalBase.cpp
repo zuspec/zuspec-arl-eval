@@ -29,14 +29,14 @@ namespace eval {
 EvalBase::EvalBase(
     IEvalContext            *ctxt,
     IEvalThread             *thread) :
-        m_initial(true), m_idx(-1), m_ctxt(ctxt), m_thread(thread),
+        m_initial(true), m_entry_idx(-1), m_ctxt(ctxt), m_thread(thread),
         m_haveResult(false) {
 
 }
 
 EvalBase::EvalBase(const EvalBase *o) :
-    m_initial(o->m_initial), m_ctxt(o->m_ctxt), m_thread(o->m_thread),
-    m_haveResult(false) {
+    m_initial(false), m_entry_idx(o->m_entry_idx), m_ctxt(o->m_ctxt), 
+    m_thread(o->m_thread), m_haveResult(false) {
 
 }
 

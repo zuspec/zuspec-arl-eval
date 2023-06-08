@@ -33,10 +33,14 @@ namespace eval {
 EvalActivityScopeFullElab::EvalActivityScopeFullElab(
     IEvalContext                *ctxt,
     IEvalThread                 *thread,
-    dm::IModelActivityScope     *scope,
-    int32_t                     idx) : 
-        EvalBase(ctxt, thread), m_scope(scope), m_idx(idx) {
+    dm::IModelActivityScope     *scope) :
+        EvalBase(ctxt, thread), m_scope(scope), m_idx(0) {
     DEBUG_INIT("EvalActivityScopeFullElab", ctxt->getDebugMgr());
+
+}
+
+EvalActivityScopeFullElab::EvalActivityScopeFullElab(const EvalActivityScopeFullElab *o) :
+    EvalBase(o), m_scope(o->m_scope), m_idx(o->m_idx) {
 
 }
 
@@ -46,7 +50,7 @@ EvalActivityScopeFullElab::~EvalActivityScopeFullElab() {
 
 bool EvalActivityScopeFullElab::eval() {
     bool ret = false;
-    DEBUG_ENTER("eval n_activities=%d", m_scope->activities().size());
+    DEBUG_ENTER("[%d] eval n_activities=%d", getIdx(), m_scope->activities().size());
 
     if (m_initial) {
         m_thread->pushEval(this);
@@ -58,6 +62,8 @@ bool EvalActivityScopeFullElab::eval() {
             m_thread, 
             m_scope->activities().at(m_idx));
 
+        m_idx++; // Always advance
+
         // Only return if one of the tasks indicates that it is
         // suspending with more work to be done
         DEBUG_ENTER("idx %d", m_idx);
@@ -66,11 +72,10 @@ bool EvalActivityScopeFullElab::eval() {
             break;
         }
         DEBUG_LEAVE("idx %d", m_idx);
-
-        m_idx++;
     }
 
     if (m_initial) {
+        m_initial = false;
         if (!ret) {
             m_thread->popEval(this);
         } else {
@@ -79,9 +84,7 @@ bool EvalActivityScopeFullElab::eval() {
         }
     }
 
-    m_initial = false;
-
-    DEBUG_LEAVE("eval (%d)", ret);
+    DEBUG_LEAVE("[%d] eval (%d)", getIdx(), ret);
     return ret;
 }
 
@@ -90,7 +93,7 @@ bool EvalActivityScopeFullElab::isBlocked() {
 }
 
 IEval *EvalActivityScopeFullElab::clone() {
-    return new EvalActivityScopeFullElab(m_ctxt, m_thread, m_scope, m_idx);
+    return new EvalActivityScopeFullElab(this);
 }
 
 dmgr::IDebug *EvalActivityScopeFullElab::m_dbg = 0;

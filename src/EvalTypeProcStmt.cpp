@@ -33,7 +33,7 @@ EvalTypeProcStmt::EvalTypeProcStmt(
     IEvalThread             *thread,
     dm::ITypeProcStmt       *stmt) : EvalBase(ctxt, thread),
         m_stmt(stmt), m_idx(0) {
-    DEBUG_INIT("EValTypeProcStmt", ctxt->getDebugMgr());
+    DEBUG_INIT("EvalTypeProcStmt", ctxt->getDebugMgr());
 
 }
 
@@ -47,15 +47,16 @@ EvalTypeProcStmt::~EvalTypeProcStmt() {
 }
 
 bool EvalTypeProcStmt::eval() {
-    DEBUG_ENTER("eval");
+    DEBUG_ENTER("[%d] eval", getIdx());
     // We need to preserve this evaluator, since it contains 
     // the "stitching" logic across evaluation parts
     if (m_initial) {
         m_thread->pushEval(this);
+
+        // Safety
+        setResult(0, EvalResultKind::Default);
     }
 
-    // Safety
-    setResult(0, EvalResultKind::Default);
 
     // In this case, we delegate to the individual visit methods
     m_stmt->accept(m_this);
@@ -69,7 +70,7 @@ bool EvalTypeProcStmt::eval() {
         }
     }
 
-    DEBUG_LEAVE("eval %d", !haveResult());
+    DEBUG_LEAVE("[%d] eval %d", getIdx(), !haveResult());
     return !haveResult();
 }
 

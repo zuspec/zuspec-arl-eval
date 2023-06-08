@@ -45,6 +45,7 @@ public:
     void enableDebug(bool en);
 
 protected:
+    static dmgr::IDebug         *m_dbg;
     dm::IFactory                *m_arl_dm_factory;
     eval::IFactory              *m_eval_f;
     dm::IContextUP              m_ctxt;

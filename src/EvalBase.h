@@ -43,11 +43,11 @@ public:
     virtual bool eval(const std::function<void()> &body);
 
     virtual int32_t getIdx() override {
-        return m_idx;
+        return m_entry_idx;
     }
 
     virtual void setIdx(int32_t idx) override {
-        m_idx = idx;
+        m_entry_idx = idx;
     }
 
     virtual bool isBlocked() override {
@@ -86,7 +86,7 @@ public:
 
 protected:
     bool                        m_initial;
-    int32_t                     m_idx;
+    int32_t                     m_entry_idx;
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
     vsc::dm::IModelValUP        m_result;

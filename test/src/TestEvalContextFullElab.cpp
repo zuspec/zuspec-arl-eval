@@ -18,8 +18,10 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TestEvalContextFullElab.h"
 #include "CollectingEvalListener.h"
+#include "EvalBackendTestFixture.h"
 #include "zsp/arl/dm/IModelFieldComponent.h"
 #include "zsp/arl/dm/IModelFieldComponentRoot.h"
 #include "zsp/arl/dm/impl/ModelBuildContext.h"
@@ -101,14 +103,14 @@ TEST_F(TestEvalContextFullElab, two_action_seq) {
 
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
-    EvalBackendBase backend_stub;
+    EvalBackendTestFixture backend;
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
         pss_top.get(),
         entry_t.get(),
-        &backend_stub
+        &backend
     ));
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
@@ -202,14 +204,14 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_nb) {
 
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
-    EvalBackendBase backend_stub;
+    EvalBackendTestFixture backend;
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
         pss_top.get(),
         entry_t.get(),
-        &backend_stub
+        &backend
     ));
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
@@ -217,6 +219,129 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_nb) {
     while (eval_ctxt->eval()) {
         ;
     }
+
+    ASSERT_EQ(listener.getActions().size(), 3);
+}
+
+TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
+    vsc::dm::ITypeExprFieldRef *ref;
+    m_ctxt->getDebugMgr()->enable(true);
+
+    // Import function
+    dm::IDataTypeFunctionUP doit(m_ctxt->mkDataTypeFunction(
+        "doit",
+        0,
+        false));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+
+    // component pss_top {
+    // }
+    // 
+    dm::IDataTypeComponentUP pss_top_t(m_ctxt->mkDataTypeComponent("pss_top"));
+
+    // action_t
+    // action action_t {
+    //   exec body {
+    //     doit();
+    //   }
+    // }
+    //
+
+    dm::IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
+    dm::ITypeProcStmtScopeUP exec_body_b(m_ctxt->mkTypeProcStmtScope());
+    exec_body_b->addStatement(m_ctxt->mkTypeProcStmtExpr(
+        m_ctxt->mkTypeExprMethodCallStatic(doit.get(), {})
+    ));
+    dm::ITypeExecUP exec_body(m_ctxt->mkTypeExecProc(
+        dm::ExecKindT::Body,
+        exec_body_b.release()));
+    action1_t->addExec(exec_body.release());
+
+    action1_t->setComponentType(pss_top_t.get());
+    pss_top_t->addActionType(action1_t.get());
+
+    // entry_t
+    // action entry_t {
+    //   action_t a1, a2;
+    //   activity {
+    //     a1;
+    //     a2;
+    //  }
+    dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->setComponentType(pss_top_t.get());
+    pss_top_t->addActionType(entry_t.get());
+
+    dm::IDataTypeActivitySequence *activity_root = m_ctxt->mkDataTypeActivitySequence();
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(1);
+    activity_root->addActivity(m_ctxt->mkTypeFieldActivity(
+        "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
+
+    ref = m_ctxt->mkTypeExprFieldRef(
+        vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+        0
+    );
+    ref->addPathElem(2);
+    activity_root->addActivity(m_ctxt->mkTypeFieldActivity(
+        "", m_ctxt->mkDataTypeActivityTraverse(ref, 0), true));
+
+    entry_t->addActivity(m_ctxt->mkTypeFieldActivity(
+        "activity", 
+        activity_root,
+        true));
+
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
+        &build_ctxt,
+        "pss_top", 
+        false));
+
+    pss_top->initCompTree();
+
+    vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
+
+    EvalBackendTestFixture backend;
+
+    // Don't respond to call request
+    backend.setCallReq([](IEvalThread*,dm::IDataTypeFunction*) {});
+
+    IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
+        m_solvers_f,
+        m_ctxt.get(),
+        randstate.get(),
+        pss_top.get(),
+        entry_t.get(),
+        &backend
+    ));
+    CollectingEvalListener listener;
+    eval_ctxt->addListener(&listener);
+
+    // First call should block
+    ASSERT_TRUE(eval_ctxt->eval());
+
+    // Should have just one call request
+    ASSERT_EQ(backend.getFuncCalls().size(), 1);
+
+    // Send a response
+    DEBUG_ENTER("setResult");
+    backend.getFuncCalls().back().first->setResult(0, EvalResultKind::Default);
+    DEBUG_LEAVE("setResult");
+
+    // Should terminate this time
+    ASSERT_TRUE(eval_ctxt->eval());
+
+    ASSERT_EQ(backend.getFuncCalls().size(), 2);
+
+    DEBUG_ENTER("setResult");
+    backend.getFuncCalls().back().first->setResult(0, EvalResultKind::Default);
+    DEBUG_LEAVE("setResult");
+
+    ASSERT_FALSE(eval_ctxt->eval());
 
     ASSERT_EQ(listener.getActions().size(), 3);
 }

@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/FactoryExt.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "zsp/arl/dm/FactoryExt.h"
 #include "zsp/arl/eval/FactoryExt.h"
 #include "vsc/dm/FactoryExt.h"
@@ -61,6 +62,8 @@ void TestBase::SetUp() {
 //        ArlImpl::inst()->mkContext(
 //            vsc::VscImpl::inst()->mkContext()));
 //    m_randstate = vsc::IRandStateUP(m_ctxt->mkRandState(""));
+
+    DEBUG_INIT("Test", dmgr_factory->getDebugMgr());
     enableDebug(false);
 }
 
@@ -71,6 +74,8 @@ void TestBase::TearDown() {
 void TestBase::enableDebug(bool en) {
     m_ctxt->getDebugMgr()->enable(en);
 }
+
+dmgr::IDebug *TestBase::m_dbg = 0;
 
 }
 }

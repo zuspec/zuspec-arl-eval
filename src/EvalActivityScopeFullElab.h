@@ -37,8 +37,9 @@ public:
     EvalActivityScopeFullElab(
         IEvalContext                *ctxt,
         IEvalThread                 *thread,
-        dm::IModelActivityScope     *scope,
-        int32_t                     idx=0);
+        dm::IModelActivityScope     *scope);
+
+    EvalActivityScopeFullElab(const EvalActivityScopeFullElab *o);
 
     virtual ~EvalActivityScopeFullElab();
 

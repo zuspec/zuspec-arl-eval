@@ -111,11 +111,13 @@ void EvalThread::popEval(IEval *e) {
 void EvalThread::setResult(
         vsc::dm::IModelVal      *val,
         EvalResultKind          kind) {
+    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(val, kind);
     } else {
         EvalBase::setResult(val, kind);
     }
+    DEBUG_LEAVE("setResult sz=%d", m_eval_s.size());
 }
 
 /*

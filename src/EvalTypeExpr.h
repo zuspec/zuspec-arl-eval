@@ -43,6 +43,8 @@ public:
         uint32_t            idx=0
     );
 
+    EvalTypeExpr(EvalTypeExpr *o);
+
     virtual ~EvalTypeExpr();
 
     virtual bool eval() override;
@@ -53,6 +55,9 @@ public:
         return !haveResult();
     }
 
+    virtual void visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) override;
+
+    virtual void visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *e) override;
 
 protected:
     static dmgr::IDebug     *m_dbg;

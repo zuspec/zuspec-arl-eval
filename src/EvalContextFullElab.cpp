@@ -30,8 +30,10 @@ namespace eval {
 
 EvalContextFullElab::EvalContextFullElab(
     dmgr::IDebugMgr     *dmgr,
-    ElabActivity        *activity) : 
-        m_dmgr(dmgr), m_backend(0), m_initial(true), m_activity(activity) {
+    ElabActivity        *activity,
+    IEvalBackend        *backend) : 
+        m_dmgr(dmgr), m_backend(backend), m_initial(true), 
+        m_activity(activity) {
     DEBUG_INIT("EvalContextFullElab", dmgr);
 }
 
@@ -51,18 +53,28 @@ bool EvalContextFullElab::eval() {
             m_activity->activity_s.back().get()
         );
 
+        ret = evaluator.eval();
+
+        /*
         pushEval(&evaluator);
         if ((ret=evaluator.eval())) {
             suspendEval(&evaluator);
         } else {
             popEval(&evaluator);
         }
+         */
 
         m_initial = false;
     } else {
-        while (m_eval_s.size() 
-            && !(ret=m_eval_s.back()->eval())) {
-            m_eval_s.pop_back();
+        while (m_eval_s.size()) {
+            DEBUG_ENTER("sub-eval %d", m_eval_s.back()->getIdx());
+            if (!(ret=m_eval_s.back()->eval())) {
+                DEBUG_LEAVE("sub-eval %d -- done", m_eval_s.back()->getIdx());
+                m_eval_s.pop_back();
+            } else {
+                DEBUG_LEAVE("sub-eval %d -- more work", m_eval_s.back()->getIdx());
+                break;
+            }
         }
     }
 
@@ -115,6 +127,16 @@ void EvalContextFullElab::callListener(
         it!=m_listeners.end(); it++) {
         f(*it);
     }
+}
+
+void EvalContextFullElab::setResult(
+        vsc::dm::IModelVal      *val,
+        EvalResultKind          kind) {
+    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
+    if (m_eval_s.size()) {
+        m_eval_s.back()->setResult(val, kind);
+    }
+    DEBUG_LEAVE("setResult");
 }
 
 dmgr::IDebug *EvalContextFullElab::m_dbg = 0;

@@ -40,24 +40,31 @@ EvalTypeExpr::EvalTypeExpr(
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
 
+EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
+    EvalBase(o), m_expr(o->m_expr), m_val_lhs(o->m_val_lhs.release()),
+    m_val_rhs(o->m_val_rhs.release()), m_idx(o->m_idx) {
+}
+
 EvalTypeExpr::~EvalTypeExpr() {
 
 }
 
 bool EvalTypeExpr::eval() {
-    DEBUG_ENTER("eval");
+    DEBUG_ENTER("[%d] eval", getIdx());
     if (m_initial) {
         m_thread->pushEval(this);
+
+        // Safety
+        setResult(0, EvalResultKind::Default);
     }
 
-    // Safety
-    setResult(0, EvalResultKind::Default);
 
     m_expr->accept(m_this);
 
     bool ret = !haveResult();
 
     if (m_initial) {
+        m_initial = false;
         if (haveResult()) {
             m_thread->popEval(this);
         } else {
@@ -65,15 +72,44 @@ bool EvalTypeExpr::eval() {
         }
     }
 
-    m_initial = false;
 
-    DEBUG_LEAVE("eval %d", ret);
+    DEBUG_LEAVE("[%d] eval %d", getIdx(), ret);
     return ret;
 }
 
 IEval *EvalTypeExpr::clone() {
-    return new EvalTypeExpr(m_ctxt, m_thread, m_expr,
-        m_val_lhs.release(), m_val_rhs.release(), m_idx);
+    return new EvalTypeExpr(this);
+}
+
+void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
+
+}
+
+void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *e) {
+    DEBUG_ENTER("visitTypeExprMethodCallStatic idx=%d", m_idx);
+
+    switch (m_idx) {
+        case 0: {
+            clrResult();
+
+            m_ctxt->getBackend()->callFuncReq(
+                m_thread,
+                e->getTarget()
+            );
+
+            m_idx = 1;
+            if (!haveResult()) {
+                break;
+            }
+        }
+
+        case 1: {
+            // Wait for a response
+
+        }
+    }
+
+    DEBUG_LEAVE("visitTypeExprMethodCallStatic idx=%d haveResult=%d", m_idx, haveResult());
 }
 
 dmgr::IDebug *EvalTypeExpr::m_dbg = 0;

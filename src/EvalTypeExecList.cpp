@@ -46,23 +46,32 @@ EvalTypeExecList::~EvalTypeExecList() {
 }
 
 bool EvalTypeExecList::eval() {
-    DEBUG_ENTER("eval");
+    DEBUG_ENTER("[%d] eval size=%d idx=%d", getIdx(), m_execs.size(), m_idx);
 
     if (m_initial) {
         m_thread->pushEval(this);
+
+        // Safety...
+        setResult(0, EvalResultKind::Default);
     }
 
-    while (m_idx < m_execs.size() && !haveResult()) {
+    bool ret = false;
 
-        clrResult();
-        m_execs.at(m_idx)->accept(m_this);
-        m_idx++;
+    if (m_idx < m_execs.size()) {
+        while (m_idx < m_execs.size()) {
+            clrResult();
+            m_execs.at(m_idx)->accept(m_this);
+            m_idx++;
 
+            if (!haveResult()) {
+                ret = true;
+                break;
+            }
+        }
     }
-
-    bool ret = !haveResult();
 
     if (m_initial) {
+        m_initial = false;
         if (!haveResult()) {
             m_thread->suspendEval(this);
         } else {
@@ -70,7 +79,7 @@ bool EvalTypeExecList::eval() {
         }
     }
 
-    DEBUG_LEAVE("eval (%d)", ret);
+    DEBUG_LEAVE("[%d] eval (%d)", getIdx(), ret);
     return ret;
 }
 
@@ -82,7 +91,10 @@ void EvalTypeExecList::visitTypeExecProc(dm::ITypeExecProc *e) {
     DEBUG_ENTER("visitTypeExecProc");
 
     EvalTypeProcStmtScope evaluator(m_ctxt, m_thread, e->getBody());
-    evaluator.eval();
+
+    if (evaluator.eval()) {
+        clrResult();
+    }
 
     DEBUG_LEAVE("visitTypeExecProc");
 }

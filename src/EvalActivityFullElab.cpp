@@ -38,12 +38,17 @@ EvalActivityFullElab::EvalActivityFullElab(
     DEBUG_INIT("EvalActivityFullElab", ctxt->getDebugMgr());
 }
 
+EvalActivityFullElab::EvalActivityFullElab(const EvalActivityFullElab *o) :
+    EvalBase(o), m_activity(o->m_activity), m_idx(o->m_idx) {
+
+}
+
 EvalActivityFullElab::~EvalActivityFullElab() {
 
 }
 
 bool EvalActivityFullElab::eval() {
-    DEBUG_ENTER("eval");
+    DEBUG_ENTER("[%d] eval", getIdx());
     if (m_initial) {
         m_thread->pushEval(this);
     }
@@ -62,12 +67,12 @@ bool EvalActivityFullElab::eval() {
         }
     }
 
-    DEBUG_LEAVE("eval (%d)", ret);
+    DEBUG_LEAVE("[%d] eval (%d)", getIdx(), ret);
     return ret;
 }
 
 IEval *EvalActivityFullElab::clone() {
-    return new EvalActivityFullElab(m_ctxt, m_thread, m_activity);
+    return new EvalActivityFullElab(this);
 }
 
 bool EvalActivityFullElab::isBlocked() {
@@ -77,19 +82,35 @@ bool EvalActivityFullElab::isBlocked() {
 void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
     DEBUG_ENTER("visitModelActivityScope");
 
-    EvalActivityScopeFullElab evaluator(m_ctxt, m_thread, a);
-    evaluator.eval();
+    switch (m_idx) {
+        case 0: {
+            EvalActivityScopeFullElab evaluator(m_ctxt, m_thread, a);
+
+            m_idx++;
+            if (evaluator.eval()) {
+                clrResult();
+                break;
+            }
+        }
+
+        case 1: {
+            setResult(0, EvalResultKind::Default);
+        }
+    }
+
 
     DEBUG_LEAVE("visitModelActivityScope (%d)", haveResult());
 }
 
 void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
     bool ret = false;
-    DEBUG_ENTER("visitModelActivityTraverse %s",
-        a->getTarget()->getDataTypeT<vsc::dm::IDataTypeStruct>()->name().c_str());
+    DEBUG_ENTER("visitModelActivityTraverse %s idx=%d",
+        a->getTarget()->getDataTypeT<vsc::dm::IDataTypeStruct>()->name().c_str(), m_idx);
 
     switch (m_idx) {
         case 0: {
+            m_idx = 1; // Always move forward
+
             // After solving?
             m_ctxt->callListener([&](IEvalListener *l) { 
                 l->enterAction(m_thread, a->getTarget());});
@@ -125,7 +146,6 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                     }
                 }
             }
-            m_idx = 1;
         }
         
         case 1: {
