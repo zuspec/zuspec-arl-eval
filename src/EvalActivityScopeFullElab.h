@@ -39,7 +39,7 @@ public:
         IEvalThread                 *thread,
         dm::IModelActivityScope     *scope);
 
-    EvalActivityScopeFullElab(const EvalActivityScopeFullElab *o);
+    EvalActivityScopeFullElab(EvalActivityScopeFullElab *o);
 
     virtual ~EvalActivityScopeFullElab();
 
@@ -50,8 +50,15 @@ public:
     virtual bool isBlocked() override;
 
 private:
+
+    bool eval_parallel();
+
+    bool eval_sequence();
+
+private:
     static dmgr::IDebug              *m_dbg;
     dm::IModelActivityScope          *m_scope;
+    std::vector<IEvalThread *>       m_threads;
     int32_t                          m_idx;
 
 };

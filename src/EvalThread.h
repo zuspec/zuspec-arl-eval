@@ -44,6 +44,8 @@ public:
 
     virtual bool isBlocked() override;
 
+    virtual IEval *clone() override { return 0; }
+
     /**
      * @brief Push an eval-stack entry
      */
