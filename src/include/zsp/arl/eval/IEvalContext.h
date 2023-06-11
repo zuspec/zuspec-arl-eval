@@ -22,10 +22,12 @@
 #include <functional>
 #include <vector>
 #include "dmgr/IDebugMgr.h"
+#include "vsc/dm/IModelValOp.h"
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalBackend.h"
 #include "zsp/arl/eval/IEvalListener.h"
 #include "zsp/arl/eval/IEvalFunctionData.h"
+#include "zsp/arl/eval/IEvalFunctionParam.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/dm/IDataTypeFunctionImport.h"
 
@@ -61,6 +63,12 @@ public:
     virtual void addListener(IEvalListener *l) = 0;
 
     virtual void callListener(const std::function<void (IEvalListener *)> &f) = 0;
+
+    virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) = 0;
+
+    virtual vsc::dm::IModelVal *mkModelValU(uint64_t v=0, int32_t w=32) = 0;
+
+    virtual vsc::dm::IModelValOp *getModelValOp() = 0;
 
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 

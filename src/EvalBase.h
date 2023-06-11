@@ -50,38 +50,40 @@ public:
         m_entry_idx = idx;
     }
 
-    virtual bool isBlocked() override {
-        return !haveResult();
+    virtual const EvalResult &getResult() const override {
+        return m_result;
     }
 
-
-    virtual vsc::dm::IModelVal *getResult() override {
-        return m_result.get();
-    }
-
-    virtual EvalResultKind getResultKind() override {
-        return m_resultKind;
-    }
-
-    virtual vsc::dm::IModelVal *moveResult() override {
-        return m_result.release();
+    virtual EvalResult moveResult() override {
+        EvalResult ret = m_result;
+        m_result.clear();
+        return ret;
     }
 
     virtual void clrResult() override {
-        m_result.reset();
-        m_haveResult = false;
+        m_result.clear();
     }
 
-    virtual void setResult(
-        vsc::dm::IModelVal  *val,
-        EvalResultKind      kind) override {
-        m_result = vsc::dm::IModelValUP(val);
-        m_resultKind = kind;
-        m_haveResult = true;
+    virtual void setResult(const EvalResult &r) override {
+        if (r.kind == EvalResultKind::Val) {
+            throw "Error: cannot call setResult(const) with Val\n";
+        } else {
+            m_result.ref = r.ref;
+            m_result.kind = r.kind;
+            m_result.val.reset();
+        }
+    }
+
+    virtual void moveResult(EvalResult &r) override {
+        m_result = r;
+    }
+
+    virtual void moveResult(EvalResult &&r) override {
+        m_result = r;
     }
 
     virtual bool haveResult() const override {
-        return m_haveResult;
+        return m_result.kind != EvalResultKind::None;
     }
 
 protected:
@@ -89,9 +91,7 @@ protected:
     int32_t                     m_entry_idx;
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
-    vsc::dm::IModelValUP        m_result;
-    EvalResultKind              m_resultKind;
-    bool                        m_haveResult;
+    EvalResult                  m_result;
 
 };
 

@@ -51,9 +51,15 @@ public:
 
     virtual IEval *clone() override;
 
-    virtual bool isBlocked() override {
-        return !haveResult();
-    }
+	virtual void visitTypeExprBin(vsc::dm::ITypeExprBin *e) override;
+
+	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
+
+	virtual void visitTypeExprRange(vsc::dm::ITypeExprRange *e) override;
+
+	virtual void visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) override;
+
+	virtual void visitTypeExprVal(vsc::dm::ITypeExprVal *e) override;
 
     virtual void visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) override;
 
@@ -62,9 +68,11 @@ public:
 protected:
     static dmgr::IDebug     *m_dbg;
     vsc::dm::ITypeExpr      *m_expr;
-    vsc::dm::IModelValUP    m_val_lhs;
-    vsc::dm::IModelValUP    m_val_rhs;
+    EvalResult              m_val_lhs;
+    EvalResult              m_val_rhs;
+    std::vector<EvalResult> m_params;
     uint32_t                m_idx;
+    uint32_t                m_subidx;
 
 };
 

@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <vector>
+#include "zsp/arl/eval/EvalResult.h"
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
@@ -51,8 +52,9 @@ public:
         const std::vector<IEvalThread *>    &threads) = 0;
 
     virtual void callFuncReq(
-            IEvalThread                 *thread,
-            dm::IDataTypeFunction       *func_t
+            IEvalThread                     *thread,
+            dm::IDataTypeFunction           *func_t,
+            const std::vector<EvalResult>   &params
     ) = 0;
 
 };

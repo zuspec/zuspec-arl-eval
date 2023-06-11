@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/eval/IEvalContext.h"
 #include "TaskElaborateActivity.h"
 #include "EvalThread.h"
@@ -34,6 +35,7 @@ class EvalContextFullElab :
 public:
     EvalContextFullElab(
         dmgr::IDebugMgr     *dmgr,
+        dm::IContext        *ctxt,
         ElabActivity        *activity,
         IEvalBackend        *backend=0);
 
@@ -52,8 +54,6 @@ public:
     virtual void suspendEval(IEval *e) override;
 
     virtual void popEval(IEval *e) override;
-
-    virtual bool isBlocked() override;
 
     virtual IEvalBackend *getBackend() const override {
         return m_backend;
@@ -87,17 +87,17 @@ public:
 
     virtual IEval *clone() override { return 0; }
 
-    virtual vsc::dm::IModelVal *getResult() override { return 0; }
+    virtual const EvalResult &getResult() const override { return m_result; }
 
-    virtual EvalResultKind getResultKind() override { return EvalResultKind::Default; }
-
-    virtual vsc::dm::IModelVal *moveResult() override { return 0; }
+    virtual EvalResult moveResult() override { return m_result; }
 
     virtual void clrResult() override { }
 
-    virtual void setResult(
-        vsc::dm::IModelVal      *val,
-        EvalResultKind          kind) override;
+    virtual void setResult(const EvalResult &r) override;
+
+    virtual void moveResult(EvalResult &r) override;
+
+    virtual void moveResult(EvalResult &&r) override;
 
     virtual bool haveResult() const override { return false; }
 
@@ -107,9 +107,34 @@ public:
 
     virtual void setThreadId(IEvalThreadId *tid) override { }
 
+    virtual void pushStackFrame(IEvalStackFrame *frame) override {
+        m_callstack.push_back(IEvalStackFrameUP(frame));
+    }
+
+    virtual IEvalStackFrame *stackFrame() override {
+        return (m_callstack.size())?m_callstack.back().get():0;
+    }
+
+    virtual void popStackFrame() override {
+        m_callstack.pop_back();
+    }
+
+    virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) override {
+        return m_ctxt->mkModelValS(v, w);
+    }
+
+    virtual vsc::dm::IModelVal *mkModelValU(uint64_t v=0, int32_t w=32) override {
+        return m_ctxt->mkModelValS(v, w);
+    }
+
+    virtual vsc::dm::IModelValOp *getModelValOp() override {
+        return m_ctxt->getModelValOp();
+    }
+
 private:
     static dmgr::IDebug                     *m_dbg;
     dmgr::IDebugMgr                         *m_dmgr;
+    dm::IContext                            *m_ctxt;
     IEvalBackend                            *m_backend;
     ElabActivityUP                          m_activity;
     std::vector<dm::IDataTypeFunction *>    m_functions;
@@ -117,6 +142,8 @@ private:
 
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;
+    std::vector<IEvalStackFrameUP>          m_callstack;
+    EvalResult                              m_result;
 
 };
 

@@ -47,8 +47,6 @@ public:
 
     virtual IEval *clone() override;
 
-    virtual bool isBlocked() override;
-
 private:
 
     bool eval_parallel();

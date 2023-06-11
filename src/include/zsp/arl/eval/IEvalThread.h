@@ -22,6 +22,7 @@
 #include <vector>
 #include "vsc/dm/impl/UP.h"
 #include "zsp/arl/eval/IEval.h"
+#include "zsp/arl/eval/IEvalStackFrame.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
 
 namespace zsp {
@@ -50,6 +51,12 @@ public:
     virtual IEvalThreadId *getThreadId() const = 0;
 
     virtual void setThreadId(IEvalThreadId *tid) = 0;
+
+    virtual void pushStackFrame(IEvalStackFrame *frame) = 0;
+
+    virtual IEvalStackFrame *stackFrame() = 0;
+
+    virtual void popStackFrame() = 0;
 
 };
 

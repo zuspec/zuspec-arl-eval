@@ -20,6 +20,7 @@
  */
 #include "zsp/arl/eval/FactoryExt.h"
 #include "EvalContextFullElab.h"
+#include "EvalStackFrame.h"
 #include "Factory.h"
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
@@ -72,8 +73,13 @@ IEvalContext *Factory::mkEvalContextFullElab(
             root_action);
     return new EvalContextFullElab(
         m_dmgr,
+        ctxt,
         exec_activity,
         backend);
+}
+
+IEvalStackFrame *Factory::mkStackFrame() {
+    return new EvalStackFrame();
 }
 
 IFactory *Factory::inst() {

@@ -52,8 +52,6 @@ public:
 
     virtual IEval *clone() override;
 
-    virtual bool isBlocked() override;
-
 	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
 	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;

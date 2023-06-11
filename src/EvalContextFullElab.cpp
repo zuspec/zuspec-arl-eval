@@ -30,10 +30,11 @@ namespace eval {
 
 EvalContextFullElab::EvalContextFullElab(
     dmgr::IDebugMgr     *dmgr,
+    dm::IContext        *ctxt,
     ElabActivity        *activity,
     IEvalBackend        *backend) : 
-        m_dmgr(dmgr), m_backend(backend), m_initial(true), 
-        m_activity(activity) {
+        m_dmgr(dmgr), m_ctxt(ctxt), m_backend(backend), 
+        m_initial(true), m_activity(activity) {
     DEBUG_INIT("EvalContextFullElab", dmgr);
 }
 
@@ -82,10 +83,6 @@ bool EvalContextFullElab::eval() {
     return ret;
 }
 
-bool EvalContextFullElab::isBlocked() {
-    return (m_eval_s.size() && m_eval_s.back()->isBlocked());
-}
-
 void EvalContextFullElab::pushEval(IEval *e, bool owned) {
     e->setIdx(m_eval_s.size());
     m_eval_s.push_back(IEvalUP(e, owned));
@@ -99,13 +96,9 @@ void EvalContextFullElab::popEval(IEval *e) {
     if (e->haveResult()) {
         DEBUG("hasResult (%d)", m_eval_s.size());
         if (m_eval_s.size() > 1) {
-            m_eval_s.at(m_eval_s.size()-2)->setResult(
-                e->moveResult(),
-                e->getResultKind());
+            m_eval_s.at(m_eval_s.size()-2)->moveResult(e->moveResult());
         } else {
-            setResult(
-                e->moveResult(),
-                e->getResultKind());
+            moveResult(e->moveResult());
         }
     } else {
         DEBUG("NOT hasResult");
@@ -129,12 +122,26 @@ void EvalContextFullElab::callListener(
     }
 }
 
-void EvalContextFullElab::setResult(
-        vsc::dm::IModelVal      *val,
-        EvalResultKind          kind) {
+void EvalContextFullElab::setResult(const EvalResult &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
-        m_eval_s.back()->setResult(val, kind);
+        m_eval_s.back()->setResult(r);
+    }
+    DEBUG_LEAVE("setResult");
+}
+
+void EvalContextFullElab::moveResult(EvalResult &r) {
+    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
+    if (m_eval_s.size()) {
+        m_eval_s.back()->moveResult(r);
+    }
+    DEBUG_LEAVE("setResult");
+}
+
+void EvalContextFullElab::moveResult(EvalResult &&r) {
+    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
+    if (m_eval_s.size()) {
+        m_eval_s.back()->moveResult(r);
     }
     DEBUG_LEAVE("setResult");
 }

@@ -52,7 +52,7 @@ bool EvalTypeExecList::eval() {
         m_thread->pushEval(this);
 
         // Safety...
-        setResult(0, EvalResultKind::Default);
+        setResult(EvalResult::Void());
     }
 
     bool ret = false;

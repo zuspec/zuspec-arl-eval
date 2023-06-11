@@ -42,8 +42,6 @@ public:
 
     virtual bool eval() override;
 
-    virtual bool isBlocked() override;
-
     virtual IEval *clone() override { return 0; }
 
     /**
@@ -66,9 +64,19 @@ public:
         m_thread_id = tid;
     }
 
-    virtual void setResult(
-        vsc::dm::IModelVal      *val,
-        EvalResultKind          kind) override;
+    virtual void setResult(const EvalResult &r) override;
+
+    virtual void pushStackFrame(IEvalStackFrame *frame) override {
+        m_callstack.push_back(IEvalStackFrameUP(frame));
+    }
+
+    virtual IEvalStackFrame *stackFrame() override {
+        return (m_callstack.size())?m_callstack.back().get():0;
+    }
+
+    virtual void popStackFrame() override {
+        m_callstack.pop_back();
+    }
 
 protected:
 
@@ -76,6 +84,7 @@ protected:
     static dmgr::IDebug                 *m_dbg;
     std::vector<IEvalUP>                m_eval_s;
     IEvalThreadId                       *m_thread_id;
+    std::vector<IEvalStackFrameUP>      m_callstack;
 
 };
 

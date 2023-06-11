@@ -21,17 +21,11 @@
 #pragma once
 #include "vsc/dm/IModelVal.h"
 #include "vsc/dm/impl/UP.h"
+#include "zsp/arl/eval/EvalResult.h"
 
 namespace zsp {
 namespace arl {
 namespace eval {
-
-enum class EvalResultKind {
-    Default,
-    Break,
-    Continue,
-    Return
-};
 
 class IEval;
 using IEvalUP=vsc::dm::UP<IEval>;
@@ -54,23 +48,25 @@ public:
 
     virtual IEval *clone() = 0;
 
+    virtual const EvalResult &getResult() const = 0;
+
     /**
-     * @brief Indicates if the thread is blocked
+     * @brief Moves the result, clearing the result here
      * 
-     * @return true - Thread is waiting for an event
-     * @return false 
+     * @return EvalResult& 
      */
-    virtual bool isBlocked() = 0;
+    virtual EvalResult moveResult() = 0;
 
-    virtual vsc::dm::IModelVal *getResult() = 0;
+    /**
+     * @brief Sets the result, taking ownership of value data
+     * 
+     * @param r 
+     */
+    virtual void setResult(const EvalResult &r) = 0;
 
-    virtual EvalResultKind getResultKind() = 0;
+    virtual void moveResult(EvalResult &r) = 0;
 
-    virtual vsc::dm::IModelVal *moveResult() = 0;
-
-    virtual void setResult(
-        vsc::dm::IModelVal      *val,
-        EvalResultKind          kind) = 0;
+    virtual void moveResult(EvalResult &&r) = 0;
 
     virtual void clrResult() = 0;
 

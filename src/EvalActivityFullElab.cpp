@@ -75,10 +75,6 @@ IEval *EvalActivityFullElab::clone() {
     return new EvalActivityFullElab(this);
 }
 
-bool EvalActivityFullElab::isBlocked() {
-    return false;
-}
-
 void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
     DEBUG_ENTER("visitModelActivityScope");
 
@@ -94,7 +90,7 @@ void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
         }
 
         case 1: {
-            setResult(0, EvalResultKind::Default);
+            setResult(EvalResult::Void());
         }
     }
 
@@ -150,7 +146,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
         
         case 1: {
             DEBUG("case 1: setResult");
-            setResult(0, EvalResultKind::Default);
+            setResult(EvalResult::Void());
 
         } break;
     }

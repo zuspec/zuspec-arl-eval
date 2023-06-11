@@ -53,6 +53,8 @@ public:
         dm::IDataTypeAction             *root_action,
         IEvalBackend                    *backend) override;
 
+    virtual IEvalStackFrame *mkStackFrame() override;
+
     static IFactory *inst();
 
 private:

@@ -1,5 +1,5 @@
-/**
- * IEvalFunctionParamVal.h
+/*
+ * EvalStackFrame.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -16,25 +16,24 @@
  * limitations under the License.
  *
  * Created on:
- *     Author: 
+ *     Author:
  */
-#pragma once
+#include "EvalStackFrame.h"
+
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
 
+EvalStackFrame::EvalStackFrame() {
 
-class IEvalFunctionParamVal {
-public:
+}
 
-    virtual ~IEvalFunctionParamVal() { }
+EvalStackFrame::~EvalStackFrame() {
 
-};
+}
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
-
-
+}
+}
+}

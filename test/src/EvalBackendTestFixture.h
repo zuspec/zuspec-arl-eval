@@ -45,10 +45,11 @@ public:
         const std::vector<IEvalThread *>    &threads) override;
 
     virtual void callFuncReq(
-            IEvalThread                 *thread,
-            dm::IDataTypeFunction       *func_t) override;
+            IEvalThread                     *thread,
+            dm::IDataTypeFunction           *func_t,
+            const std::vector<EvalResult>   &params) override;
 
-    void setCallReq(const std::function<void(IEvalThread*, dm::IDataTypeFunction*)> &f) {
+    void setCallReq(const std::function<void(IEvalThread*, dm::IDataTypeFunction*,const std::vector<EvalResult> &)> &f) {
         m_call_req = f;
     } 
 
@@ -57,7 +58,7 @@ public:
     }
 
 protected:
-    std::function<void(IEvalThread *, dm::IDataTypeFunction *)>     m_call_req;
+    std::function<void(IEvalThread *, dm::IDataTypeFunction *,const std::vector<EvalResult>&)>     m_call_req;
     std::vector<std::pair<IEvalThread*,dm::IDataTypeFunction *>>    m_func_calls;
 
 };

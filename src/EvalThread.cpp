@@ -42,32 +42,20 @@ bool EvalThread::eval() {
     DEBUG_ENTER("eval");
     bool ret = false;
 
-    while (m_eval_s.size() 
-        && !(ret=m_eval_s.back()->eval())) {
+    while (m_eval_s.size() && !(ret=m_eval_s.back()->eval())) {
 
         // Propagate the result up the stack
         if (m_eval_s.size() > 1) {
             m_eval_s.at(m_eval_s.size()-2)->setResult(
-                m_eval_s.back()->moveResult(),
-                m_eval_s.back()->getResultKind());
+                m_eval_s.back()->moveResult());
         } else {
-            EvalBase::setResult(
-                m_eval_s.back()->moveResult(),
-                m_eval_s.back()->getResultKind());
+            EvalBase::setResult(m_eval_s.back()->moveResult());
         }
         m_eval_s.pop_back();
     }
 
-    if (m_eval_s.size() && !m_eval_s.back()->isBlocked()) {
-        m_eval_s.back()->eval();
-    }
-
     DEBUG_LEAVE("eval %d", ret);
     return ret;
-}
-
-bool EvalThread::isBlocked() {
-    return (m_eval_s.size() && m_eval_s.back()->isBlocked());
 }
 
 void EvalThread::pushEval(IEval *e, bool owned) {
@@ -93,13 +81,9 @@ void EvalThread::popEval(IEval *e) {
     if (e->haveResult()) {
         DEBUG("hasResult");
         if (m_eval_s.size() > 1) {
-            m_eval_s.at(m_eval_s.size()-2)->setResult(
-                e->moveResult(),
-                e->getResultKind());
+            m_eval_s.at(m_eval_s.size()-2)->setResult(e->moveResult());
         } else {
-            setResult(
-                e->moveResult(),
-                e->getResultKind());
+            setResult(e->moveResult());
         }
     } else {
         DEBUG("NOT hasResult");
@@ -108,14 +92,12 @@ void EvalThread::popEval(IEval *e) {
     DEBUG_LEAVE("popEval");
 }
 
-void EvalThread::setResult(
-        vsc::dm::IModelVal      *val,
-        EvalResultKind          kind) {
+void EvalThread::setResult(const EvalResult &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
-        m_eval_s.back()->setResult(val, kind);
+        m_eval_s.back()->setResult(r);
     } else {
-        EvalBase::setResult(val, kind);
+        EvalBase::setResult(r);
     }
     DEBUG_LEAVE("setResult sz=%d", m_eval_s.size());
 }

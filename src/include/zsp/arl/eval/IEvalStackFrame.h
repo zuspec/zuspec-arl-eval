@@ -1,5 +1,5 @@
 /**
- * EvalFunctionCall.h
+ * IEvalStackFrame.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,43 +19,30 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/arl/eval/IEvalContext.h"
-#include "zsp/arl/eval/IEvalThread.h"
-#include "EvalBase.h"
+#include "vsc/dm/impl/UP.h"
+#include "vsc/dm/IModelField.h"
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
-
-
-class EvalFunctionCall : 
-    public virtual IEval,
-    public virtual EvalBase {
+class IEvalStackFrame;
+using IEvalStackFrameUP=vsc::dm::UP<IEvalStackFrame>;
+class IEvalStackFrame {
 public:
-    EvalFunctionCall(
-        IEvalContext                *ctxt,
-        IEvalThread                 *thread,
-        dm::IDataTypeFunction       *func
-    );
 
-    virtual ~EvalFunctionCall();
+    virtual ~IEvalStackFrame() { }
 
-    virtual IEval *clone() override;
+    virtual vsc::dm::IModelField *getVariable(uint32_t idx) = 0;
 
-    virtual bool eval() override;
+    virtual void addVariable(vsc::dm::IModelField *var) = 0;
 
-    virtual bool isBlocked() override {
-        return !haveResult();
-    }
-
-protected:
-    dm::IDataTypeFunction           *m_func;
+    virtual const std::vector<vsc::dm::IModelFieldUP> &getVariables() const = 0;
 
 };
 
-}
-}
-}
+} /* namespace eval */
+} /* namespace arl */
+} /* namespace zsp */
 
 

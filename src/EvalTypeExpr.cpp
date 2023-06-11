@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/ITypeExprVal.h"
 #include "EvalTypeExpr.h"
 
 
@@ -36,13 +37,13 @@ EvalTypeExpr::EvalTypeExpr(
     uint32_t            idx) :
         EvalBase(ctxt, thread), 
         m_expr(expr),
-        m_val_lhs(lhs), m_val_rhs(rhs), m_idx(idx) {
+        m_val_lhs(lhs), m_val_rhs(rhs), m_idx(idx), m_subidx(0) {
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
 
 EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
-    EvalBase(o), m_expr(o->m_expr), m_val_lhs(o->m_val_lhs.release()),
-    m_val_rhs(o->m_val_rhs.release()), m_idx(o->m_idx) {
+    EvalBase(o), m_expr(o->m_expr), m_val_lhs(o->m_val_lhs),
+    m_val_rhs(o->m_val_rhs), m_idx(o->m_idx), m_subidx(o->m_subidx) {
 }
 
 EvalTypeExpr::~EvalTypeExpr() {
@@ -55,7 +56,7 @@ bool EvalTypeExpr::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setResult(0, EvalResultKind::Default);
+        setResult(EvalResult::Void());
     }
 
 
@@ -81,6 +82,93 @@ IEval *EvalTypeExpr::clone() {
     return new EvalTypeExpr(this);
 }
 
+void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) { 
+    DEBUG_ENTER("visitTypeExprBin");
+    switch (m_idx) {
+        case 0: { // Operand 1
+            m_idx = 1;
+            EvalTypeExpr evaluator(m_ctxt, m_thread, e->lhs());
+
+            if (evaluator.eval()) {
+                break;
+            }
+        }
+        case 1: { // Operand 2
+            m_idx = 2;
+            m_val_lhs = moveResult(); // Preserve LHS
+
+            EvalTypeExpr evaluator(m_ctxt, m_thread, e->rhs());
+
+            if (evaluator.eval()) {
+                break;
+            }
+
+        }
+        case 2: { // Perform operation
+            m_idx = 3;
+            m_val_rhs = moveResult(); // Preserve RHS
+
+            vsc::dm::IModelValOp *op = m_ctxt->getModelValOp();
+            vsc::dm::IModelVal *val = m_ctxt->mkModelValU();
+
+            switch (e->op()) {
+                case vsc::dm::BinOp::Add: {
+                    op->add(
+                        val, 
+                        m_val_lhs.val.get(),
+                        m_val_rhs.val.get());
+                } break;
+                case vsc::dm::BinOp::BinAnd: {
+                    op->bin_and(
+                        val,
+                        m_val_lhs.val.get(),
+                        m_val_rhs.val.get());
+                } break;
+                case vsc::dm::BinOp::BinOr: {
+                    op->bin_or(
+                        val,
+                        m_val_lhs.val.get(),
+                        m_val_rhs.val.get());
+                } break;
+                case vsc::dm::BinOp::BinXor: {
+                    op->bin_xor(
+                        val,
+                        m_val_lhs.val.get(),
+                        m_val_rhs.val.get());
+                } break;
+            }
+
+            EvalResult res(val);
+            moveResult(res);
+        }
+
+        case 3: {
+            // Idle
+        }
+    }
+    DEBUG_LEAVE("visitTypeExprBin");
+}
+
+void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) { 
+
+}
+
+void EvalTypeExpr::visitTypeExprRange(vsc::dm::ITypeExprRange *e) { 
+
+}
+
+void EvalTypeExpr::visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) { 
+
+}
+
+void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) { 
+    DEBUG_ENTER("visitTypeExprVal");
+    EvalResult res(e->val()->clone());
+    moveResult(res);
+    DEBUG("haveResult: %d ; val: %p", haveResult(), getResult().val.get());
+    DEBUG_LEAVE("visitTypeExprVal");
+}
+
 void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
 
 }
@@ -90,14 +178,39 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
 
     switch (m_idx) {
         case 0: {
-            clrResult();
+            if (m_subidx > 0 && haveResult()) {
+                EvalResult r = moveResult();
+                m_params.push_back(r);
+            }
+            while (m_subidx < e->getParameters().size()) {
+                EvalTypeExpr evaluator(m_ctxt, m_thread, e->getParameters().at(m_subidx).get());
 
-            m_ctxt->getBackend()->callFuncReq(
-                m_thread,
-                e->getTarget()
-            );
+                m_subidx += 1;
+                clrResult();
+                if (evaluator.eval()) {
+                    break;
+                } else {
+                    if (haveResult()) {
+                        fprintf(stdout, "Note: push expr result\n");
+                        EvalResult r = moveResult();
+                        m_params.push_back(r);
+                    }
+                }
+            }
+
+            // If we left the loop before achieving enough
+            // parameters, suspend...
+            if (m_subidx < e->getParameters().size()) {
+                break;
+            }
 
             m_idx = 1;
+            m_ctxt->getBackend()->callFuncReq(
+                m_thread,
+                e->getTarget(),
+                m_params
+            );
+
             if (!haveResult()) {
                 break;
             }

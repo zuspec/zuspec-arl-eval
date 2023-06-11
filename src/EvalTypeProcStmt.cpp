@@ -54,24 +54,26 @@ bool EvalTypeProcStmt::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setResult(0, EvalResultKind::Default);
+        setResult(EvalResult::Void());
     }
 
 
     // In this case, we delegate to the individual visit methods
     m_stmt->accept(m_this);
 
+    bool ret = !haveResult();
+
     if (m_initial) {
         m_initial = false;
-        if (haveResult()) {
-            m_thread->popEval(this);
-        } else {
+        if (ret) {
             m_thread->suspendEval(this);
+        } else {
+            m_thread->popEval(this);
         }
     }
 
-    DEBUG_LEAVE("[%d] eval %d", getIdx(), !haveResult());
-    return !haveResult();
+    DEBUG_LEAVE("[%d] eval %d", getIdx(), ret);
+    return ret;
 }
 
 IEval *EvalTypeProcStmt::clone() {
@@ -93,7 +95,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
         }
         case 1: {
             // Result from the previous has been reflected up. 
-            setResult(0, EvalResultKind::Default);
+            setResult(EvalResult::Void());
         }
     }
 

@@ -174,10 +174,6 @@ bool EvalActivityScopeFullElab::eval_sequence() {
     return ret;
 }
 
-bool EvalActivityScopeFullElab::isBlocked() {
-    return false;
-}
-
 IEval *EvalActivityScopeFullElab::clone() {
     return new EvalActivityScopeFullElab(this);
 }

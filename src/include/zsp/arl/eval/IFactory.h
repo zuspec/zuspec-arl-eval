@@ -25,6 +25,8 @@
 #include "zsp/arl/eval/IModelEvaluator.h"
 #include "zsp/arl/eval/IEvalBackend.h"
 #include "zsp/arl/eval/IEvalContext.h"
+#include "zsp/arl/eval/IEvalFunctionParam.h"
+#include "zsp/arl/eval/IEvalStackFrame.h"
 
 namespace zsp {
 namespace arl {
@@ -52,6 +54,7 @@ public:
         dm::IDataTypeAction             *root_action,
         IEvalBackend                    *backend) = 0;
 
+    virtual IEvalStackFrame *mkStackFrame() = 0;
 };
 
 } /* namespace eval */

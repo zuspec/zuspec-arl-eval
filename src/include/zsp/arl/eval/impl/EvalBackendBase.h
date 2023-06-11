@@ -44,8 +44,9 @@ public:
         const std::vector<IEvalThread *>    &threads) override { }
 
     virtual void callFuncReq(
-            IEvalThread                 *thread,
-            dm::IDataTypeFunction       *func_t) override { }
+            IEvalThread                     *thread,
+            dm::IDataTypeFunction           *func_t,
+            const std::vector<EvalResult>   &params) override { }
 
 };
 
