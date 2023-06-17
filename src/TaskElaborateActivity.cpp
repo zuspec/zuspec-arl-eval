@@ -50,6 +50,19 @@ ElabActivity *TaskElaborateActivity::elaborate(
     dm::IModelFieldComponent            *root_comp,
     dm::IDataTypeAction                 *root_action) {
     bool ret = true;
+    
+    m_activity = ElabActivityUP(new ElabActivity());
+
+    // Collect all import functions
+    for (std::vector<dm::IDataTypeFunction *>::const_iterator
+        it=m_ctxt->getDataTypeFunctions().begin();
+        it!=m_ctxt->getDataTypeFunctions().end(); it++) {
+        if ((*it)->getImportSpecs().size()) {
+            m_activity->functions.push_back(*it);
+        }
+    }
+
+    // TODO: collect executors
 
     dm::ModelBuildContext build_ctxt(m_ctxt);
     dm::IModelFieldAction *root_action_f = root_action->mkRootFieldT<dm::IModelFieldAction>(
@@ -73,7 +86,6 @@ ElabActivity *TaskElaborateActivity::elaborate(
     // The activity owns the root action
     seq->addField(root_action_f);
 
-    m_activity = ElabActivityUP(new ElabActivity());
     m_activity->activity_s.push_back(dm::IModelActivityScopeUP(seq));
 
     // Gen2: expand all replicate scopes

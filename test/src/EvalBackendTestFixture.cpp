@@ -34,20 +34,20 @@ EvalBackendTestFixture::~EvalBackendTestFixture() {
 
 }
 
-void EvalBackendTestFixture::startThreads(
+void EvalBackendTestFixture::enterThreads(
     const std::vector<IEvalThread *>    &threads) {
 
 }
     
-void EvalBackendTestFixture::startThread(IEvalThread *thread) {
+void EvalBackendTestFixture::enterThread(IEvalThread *thread) {
 
 }
 
-void EvalBackendTestFixture::endThread(IEvalThread *thread) {
+void EvalBackendTestFixture::leaveThread(IEvalThread *thread) {
 
 }
 
-void EvalBackendTestFixture::endThreads(
+void EvalBackendTestFixture::leaveThreads(
     const std::vector<IEvalThread *>    &threads) {
 
 }

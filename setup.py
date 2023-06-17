@@ -248,6 +248,8 @@ ext = Extension("zsp_arl_eval.core",
             extra_compile_args=extra_compile_args,
             sources=[
                 os.path.join(zuspec_arl_eval_dir, 'python', "core.pyx"), 
+                os.path.join(zuspec_arl_eval_dir, 'python', "EvalBackendClosure.cpp"), 
+                os.path.join(zuspec_arl_eval_dir, 'python', "EvalThreadData.cpp"), 
             ],
             language="c++",
             include_dirs=[

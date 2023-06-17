@@ -24,6 +24,20 @@ cdef class Factory(object):
         vsc_solvers.Factory solvers_f,
         arl_dm.Context      ctxt)
 
+cdef class EvalBackend(object):
+    cdef decl.EvalBackendClosure    *_hndl
+
+cdef class EvalThread(object):
+    cdef decl.IEvalThread           *_hndl
+    cdef bool                       _owned
+
+    cpdef void setThreadId(self, obj)
+    
+    cpdef getThreadId(self)
+
+    @staticmethod
+    cdef EvalThread mk(decl.IEvalThread *hndl, bool owned=*)
+
 cdef class ModelEvaluator(object):
     cdef decl.IModelEvaluator       *_hndl
     cdef bool                       _owned

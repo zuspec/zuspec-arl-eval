@@ -29,6 +29,7 @@
 #include "zsp/arl/eval/IEvalFunctionData.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/dm/IDataTypeFunctionImport.h"
+#include "zsp/arl/dm/IModelFieldExecutor.h"
 
 namespace zsp {
 namespace arl {
@@ -53,6 +54,8 @@ public:
      * @return const std::vector<dm::IDataTypeFunction *>& 
      */
     virtual const std::vector<dm::IDataTypeFunction *> &getFunctions() const = 0;
+
+    virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const = 0;
 
     virtual void setFunctionData(
         dm::IDataTypeFunction       *func_t,

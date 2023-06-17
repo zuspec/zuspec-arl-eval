@@ -92,7 +92,7 @@ bool EvalActivityScopeFullElab::eval_parallel() {
             m_threads.push_back(new EvalThread(m_ctxt, m_thread));
         }
 
-        m_ctxt->getBackend()->startThreads(m_threads);
+        m_ctxt->getBackend()->enterThreads(m_threads);
     }
 
     for (uint32_t i=0; i<m_threads.size(); i++) {
@@ -128,7 +128,7 @@ bool EvalActivityScopeFullElab::eval_parallel() {
 
     // All done
     if (!ret) {
-        m_ctxt->getBackend()->endThreads(m_threads);
+        m_ctxt->getBackend()->leaveThreads(m_threads);
     }
     DEBUG_LEAVE("[%d] eval_parallel n_branches=%d", getIdx(), m_scope->activities().size());
     return ret;

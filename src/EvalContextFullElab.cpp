@@ -29,10 +29,10 @@ namespace eval {
 
 
 EvalContextFullElab::EvalContextFullElab(
-    dmgr::IDebugMgr     *dmgr,
-    dm::IContext        *ctxt,
-    ElabActivity        *activity,
-    IEvalBackend        *backend) : 
+    dmgr::IDebugMgr                                 *dmgr,
+    dm::IContext                                    *ctxt,
+    ElabActivity                                    *activity,
+    IEvalBackend                                    *backend) : 
         m_dmgr(dmgr), m_ctxt(ctxt), m_backend(backend), 
         m_initial(true), m_activity(activity) {
     DEBUG_INIT("EvalContextFullElab", dmgr);

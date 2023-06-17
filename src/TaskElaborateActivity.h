@@ -31,6 +31,8 @@ namespace eval {
 struct ElabActivity {
     std::vector<dm::IModelActivityScopeUP>      activity_s;
     dm::IModelActivityScope                     *root;
+    std::vector<dm::IModelFieldExecutor *>      executors;
+    std::vector<dm::IDataTypeFunction *>        functions;
 };
 using ElabActivityUP=std::unique_ptr<ElabActivity>;
 

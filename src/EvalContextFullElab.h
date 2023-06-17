@@ -34,10 +34,10 @@ class EvalContextFullElab :
     public virtual IEvalThread {
 public:
     EvalContextFullElab(
-        dmgr::IDebugMgr     *dmgr,
-        dm::IContext        *ctxt,
-        ElabActivity        *activity,
-        IEvalBackend        *backend=0);
+        dmgr::IDebugMgr                                 *dmgr,
+        dm::IContext                                    *ctxt,
+        ElabActivity                                    *activity,
+        IEvalBackend                                    *backend=0);
 
     virtual ~EvalContextFullElab();
 
@@ -62,9 +62,13 @@ public:
     virtual void setBackend(IEvalBackend *b) override {
         m_backend = b;
     }
-    
+
     virtual const std::vector<dm::IDataTypeFunction *> &getFunctions() const override {
-        return m_functions;
+        return m_activity->functions;
+    }
+
+    virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const override {
+        return m_activity->executors;
     }
 
     virtual void setFunctionData(
@@ -138,6 +142,7 @@ private:
     IEvalBackend                            *m_backend;
     ElabActivityUP                          m_activity;
     std::vector<dm::IDataTypeFunction *>    m_functions;
+    std::vector<dm::IModelFieldExecutor *>  m_executors;
     std::vector<IEvalListener *>            m_listeners;
 
     bool                                    m_initial;

@@ -1,5 +1,5 @@
 /**
- * IEvalBackend.h
+ * EvalBackendClosure.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,11 +19,8 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/EvalResult.h"
-#include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/eval/IEvalThreadId.h"
-#include "zsp/arl/dm/IDataTypeFunction.h"
+#include <Python.h>
+#include "zsp/arl/eval/IEvalBackend.h"
 
 namespace zsp {
 namespace arl {
@@ -31,36 +28,34 @@ namespace eval {
 
 
 
-class IEvalBackend {
+class EvalBackendClosure : public virtual IEvalBackend {
 public:
+    EvalBackendClosure(PyObject *peer);
 
-    virtual ~IEvalBackend() { }
+    virtual ~EvalBackendClosure();
 
-    /**
-     * @brief Start
-     * 
-     * @param threads 
-     */
     virtual void enterThreads(
-        const std::vector<IEvalThread *>    &threads) = 0;
+        const std::vector<IEvalThread *>    &threads) override;
     
-    virtual void enterThread(IEvalThread *thread) = 0;
+    virtual void enterThread(IEvalThread *thread) override;
 
-    virtual void leaveThread(IEvalThread *thread) = 0;
+    virtual void leaveThread(IEvalThread *thread) override;
 
     virtual void leaveThreads(
-        const std::vector<IEvalThread *>    &threads) = 0;
+        const std::vector<IEvalThread *>    &threads) override;
 
     virtual void callFuncReq(
             IEvalThread                     *thread,
             dm::IDataTypeFunction           *func_t,
             const std::vector<EvalResult>   &params
-    ) = 0;
+    ) override;
 
+private:
+    PyObject                            *m_peer;
 };
 
-} /* namespace eval */
-} /* namespace arl */
-} /* namespace zsp */
+}
+}
+}
 
 

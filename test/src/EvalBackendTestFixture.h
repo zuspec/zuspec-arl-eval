@@ -34,14 +34,14 @@ public:
 
     virtual ~EvalBackendTestFixture();
 
-    virtual void startThreads(
+    virtual void enterThreads(
         const std::vector<IEvalThread *>    &threads) override;
     
-    virtual void startThread(IEvalThread *thread) override;
+    virtual void enterThread(IEvalThread *thread) override;
 
-    virtual void endThread(IEvalThread *thread) override;
+    virtual void leaveThread(IEvalThread *thread) override;
 
-    virtual void endThreads(
+    virtual void leaveThreads(
         const std::vector<IEvalThread *>    &threads) override;
 
     virtual void callFuncReq(

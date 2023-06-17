@@ -1,5 +1,19 @@
 #****************************************************************************
 #* core.pyx
+#*
+#* Copyright 2023 Matthew Ballance and Contributors
+#*
+#* Licensed under the Apache License, Version 2.0 (the "License"); you may 
+#* not use this file except in compliance with the License.  
+#* You may obtain a copy of the License at:
+#*
+#*   http://www.apache.org/licenses/LICENSE-2.0
+#*
+#* Unless required by applicable law or agreed to in writing, software 
+#* distributed under the License is distributed on an "AS IS" BASIS, 
+#* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+#* See the License for the specific language governing permissions and 
+#* limitations under the License.
 #****************************************************************************
 import os
 import sys
@@ -11,6 +25,7 @@ from libcpp.cast cimport dynamic_cast, static_cast
 from libcpp.vector cimport vector as cpp_vector
 from enum import IntEnum
 cimport zsp_arl_dm.core as arl_dm
+cimport zsp_arl_dm.decl as arl_dm_decl
 from zsp_arl_eval cimport decl
 cimport vsc_dm.core as vsc
 cimport vsc_dm.decl as vsc_decl
@@ -66,6 +81,86 @@ cdef class Factory(object):
             _inst = factory
         return _inst
 
+cdef class EvalBackend(object):
+
+    def __init__(self):
+        self._hndl = new decl.EvalBackendClosure(<cpy_ref.PyObject *>(self))
+        pass
+
+    def enterThreads(self, threads):
+        pass
+
+    def enterThread(self, thread):
+        pass
+
+    def leaveThread(self, thread):
+        pass
+
+    def leaveThreads(self, threads):
+        pass
+
+#********************************************************************
+#* Export methods for EvalBackendClosure
+#********************************************************************
+cdef public void EvalBackendClosure_enterThreads(
+    obj,
+    const cpp_vector[decl.IEvalThreadP] &threads) with gil:
+    threads_l = []
+    for i in range(threads.size()):
+        threads_l.append(EvalThread.mk(threads.at(i)))
+    obj.startThreads(threads_l)
+
+cdef public void EvalBackendClosure_enterThread(
+    obj,
+    decl.IEvalThread *thread) with gil:
+    obj.enterThread(EvalThread.mk(thread, False))
+    
+cdef public void EvalBackendClosure_leaveThread(
+    obj,
+    decl.IEvalThread *thread) with gil:
+    obj.leaveThread(EvalThread.mk(thread, False))
+
+cdef public void EvalBackendClosure_leaveThreads(
+    obj,
+    const cpp_vector[decl.IEvalThreadP] &threads) with gil:
+    threads_l = []
+    for i in range(threads.size()):
+        threads_l.append(EvalThread.mk(threads.at(i)))
+    obj.leaveThreads(threads_l)
+
+cdef public void EvalBackendClosure_callFuncReq(
+    obj,
+    decl.IEvalThread                     *thread,
+    arl_dm_decl.IDataTypeFunction        *func_t,
+    const cpp_vector[decl.EvalResult]    &params):
+    pass
+
+cdef class EvalThread(object):
+
+    def __dealloc__(self):
+        if self._owned:
+            del self._hndl
+
+    cpdef void setThreadId(self, obj):
+        cdef decl.EvalThreadData *data;
+        data = new decl.EvalThreadData(<cpy_ref.PyObject *>(obj))
+        self._hndl.setThreadId(data);
+    
+    cpdef getThreadId(self):
+        cdef decl.EvalThreadData *data
+        data = dynamic_cast[decl.EvalThreadDataP](self._hndl.getThreadId())
+
+        if data == NULL:
+            return None
+        else:
+            return data.getData()
+
+    @staticmethod
+    cdef EvalThread mk(decl.IEvalThread *hndl, bool owned=True):
+        ret = EvalThread()
+        ret._hndl = hndl
+        ret._owned = owned
+        return ret
 
 cdef class ModelEvaluator(object):
 
