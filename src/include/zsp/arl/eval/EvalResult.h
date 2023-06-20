@@ -57,19 +57,19 @@ struct EvalResult {
     }
 
     EvalResult(EvalResult &o) : 
-        kind(o.kind), ref(o.ref), val(o.val.release()) {
+        kind(o.kind), val(o.val.release()), ref(o.ref) {
     }
 
     void operator =(EvalResult &o) {
         kind = o.kind;
-        ref = o.ref;
         val = vsc::dm::IModelValUP(o.val.release());
+        ref = o.ref;
     }
 
     void operator =(EvalResult &&o) {
         kind = o.kind;
-        ref = o.ref;
         val = vsc::dm::IModelValUP(o.val.release());
+        ref = o.ref;
     }
 
 /*

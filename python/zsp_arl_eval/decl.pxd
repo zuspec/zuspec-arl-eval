@@ -40,6 +40,11 @@ cdef extern from "zsp/arl/eval/EvalResult.h" namespace "zsp::arl::eval":
     cdef cppclass EvalResult:
         pass
 
+cdef extern from "zsp/arl/eval/IEval.h" namespace "zsp::arl::eval":
+    cdef cppclass IEval:
+        bool eval()
+
+
 cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":
     cdef cppclass IEvalBackend:
         void enterThreads(const cpp_vector[IEvalThreadP] &)
@@ -56,8 +61,7 @@ cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":
             const cpp_vector[EvalResult]    &params)
 
 cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
-    cdef cppclass IEvalContext:
-        bool eval()
+    cdef cppclass IEvalContext(IEval):
         IEvalBackend *getBackend() const
         void setBackend(IEvalBackend *b)
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getFunctions() const

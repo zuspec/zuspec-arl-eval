@@ -44,6 +44,14 @@ public:
     virtual void leaveThreads(
         const std::vector<IEvalThread *>    &threads) override;
 
+    virtual void enterAction(
+        IEvalThread                         *thread,
+        dm::IModelFieldAction               *action) override;
+
+    virtual void leaveAction(
+        IEvalThread                         *thread,
+        dm::IModelFieldAction               *action) override;
+
     virtual void callFuncReq(
             IEvalThread                     *thread,
             dm::IDataTypeFunction           *func_t,

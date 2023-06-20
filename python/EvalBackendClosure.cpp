@@ -20,6 +20,7 @@
  */
 #include <vector>
 #include "zsp/arl/dm/IDataTypeFunction.h"
+#include "zsp/arl/dm/IModelFieldAction.h"
 #include "zsp/arl/eval/IEvalThread.h"
 typedef zsp::arl::eval::IEvalThread *__pyx_t_12zsp_arl_eval_4decl_IEvalThreadP;
 #include "core.h"
@@ -57,11 +58,23 @@ void EvalBackendClosure::leaveThreads(
     EvalBackendClosure_leaveThreads(m_peer, threads);
 }
 
+void EvalBackendClosure::enterAction(
+        IEvalThread                         *thread,
+        dm::IModelFieldAction               *action) {
+    EvalBackendClosure_enterAction(m_peer, thread, action);
+}
+
+void EvalBackendClosure::leaveAction(
+        IEvalThread                         *thread,
+        dm::IModelFieldAction               *action) {
+    EvalBackendClosure_leaveAction(m_peer, thread, action);
+}
+
 void EvalBackendClosure::callFuncReq(
             IEvalThread                     *thread,
             dm::IDataTypeFunction           *func_t,
             const std::vector<EvalResult>   &params) { 
-
+    EvalBackendClosure_callFuncReq(m_peer, thread, func_t, params);
 }
 
 }

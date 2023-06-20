@@ -24,6 +24,7 @@
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
+#include "zsp/arl/dm/IModelFieldAction.h"
 
 namespace zsp {
 namespace arl {
@@ -50,6 +51,14 @@ public:
 
     virtual void leaveThreads(
         const std::vector<IEvalThread *>    &threads) = 0;
+
+    virtual void enterAction(
+        IEvalThread                         *thread,
+        dm::IModelFieldAction               *action) = 0;
+
+    virtual void leaveAction(
+        IEvalThread                         *thread,
+        dm::IModelFieldAction               *action) = 0;
 
     virtual void callFuncReq(
             IEvalThread                     *thread,

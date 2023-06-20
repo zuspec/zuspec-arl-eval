@@ -115,6 +115,10 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
 
             // TODO: Perform solving first
 
+            m_ctxt->getBackend()->enterAction(
+                m_thread,
+                a->getTarget());
+
             // TODO: Evaluate non-blocking 'post_solve' if it exists
 
             if (a->getTarget()->getActivity()) {
@@ -146,8 +150,12 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
         
         case 1: {
             DEBUG("case 1: setResult");
-            setResult(EvalResult::Void());
+            m_idx = 2;
+            m_ctxt->getBackend()->leaveAction(
+                m_thread, 
+                a->getTarget());
 
+            setResult(EvalResult::Void());
         } break;
     }
 

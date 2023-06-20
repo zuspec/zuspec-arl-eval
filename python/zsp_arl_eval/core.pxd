@@ -18,6 +18,15 @@ cdef class Factory(object):
 
     cdef init(self, dm_core.Factory)
 
+    cpdef EvalContext mkEvalContextFullElab(
+        self,
+        vsc_solvers.Factory           solvers_f,
+        arl_dm.Context                ctxt,
+        vsc_solvers.RandState         randstate,
+        arl_dm.ModelFieldComponent    root_comp,
+        arl_dm.DataTypeAction         root_action,
+        EvalBackend                   backend)
+
     cpdef ModelEvaluator mkModelEvaluator(
         self,
         kind,
@@ -26,6 +35,33 @@ cdef class Factory(object):
 
 cdef class EvalBackend(object):
     cdef decl.EvalBackendClosure    *_hndl
+
+cdef class Eval(object):
+    cdef decl.IEval                 *_hndl
+    cdef bool                       _owned
+
+    cpdef bool eval(self)
+
+    @staticmethod
+    cdef Eval mk(decl.IEval *hndl, bool owned=*)
+
+cdef class EvalContext(object):
+    cdef decl.IEvalContext          *_hndl
+    cdef bool                       _owned
+
+    cpdef bool eval(self)
+
+    cpdef getFunctions(self)
+
+    @staticmethod
+    cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=*)
+
+cdef class EvalResult(object):
+    cdef decl.EvalResult            *_hndl
+    cdef bool                       _owned
+
+    @staticmethod
+    cdef EvalResult mk(decl.EvalResult *hndl, bool owned=*)
 
 cdef class EvalThread(object):
     cdef decl.IEvalThread           *_hndl

@@ -45,6 +45,23 @@ cdef class Factory(object):
     cdef init(self, dm_core.Factory f):
         self._hndl.init(f._hndl.getDebugMgr())
 
+    cpdef EvalContext mkEvalContextFullElab(
+        self,
+        vsc_solvers.Factory           solvers_f,
+        arl_dm.Context                ctxt,
+        vsc_solvers.RandState         randstate,
+        arl_dm.ModelFieldComponent    root_comp,
+        arl_dm.DataTypeAction         root_action,
+        EvalBackend                   backend):
+        return EvalContext.mk(self._hndl.mkEvalContextFullElab(
+            solvers_f._hndl,
+            ctxt.asContext(),
+            randstate._hndl,
+            root_comp.asComponent(),
+            root_action.asAction(),
+            backend._hndl
+        ), False)
+
     cpdef ModelEvaluator mkModelEvaluator(
         self,
         kind,
@@ -99,6 +116,46 @@ cdef class EvalBackend(object):
     def leaveThreads(self, threads):
         pass
 
+    def enterAction(self, thread, action):
+        pass
+
+    def leaveAction(self, thread, action):
+        pass
+
+    def callFuncReq(self, thread, func_t, params):
+        pass
+
+cdef class Eval(object):
+
+    cpdef bool eval(self):
+        return self._hndl.eval()
+
+    @staticmethod
+    cdef Eval mk(decl.IEval *hndl, bool owned=True):
+        ret = Eval()
+        ret._hndl = hndl
+        ret._owned = owned
+        return ret
+
+cdef class EvalContext(object):
+
+    cpdef bool eval(self):
+        return self._hndl.eval()
+
+    cpdef getFunctions(self):
+        ret = []
+        for i in range(self._hndl.getFunctions().size()):
+            ret.append(arl_dm.DataTypeFunction.mk(
+                self._hndl.getFunctions().at(i), False))
+        return ret
+
+    @staticmethod
+    cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=True):
+        ret = EvalContext()
+        ret._hndl = hndl
+        ret._owned = owned
+        return ret
+
 #********************************************************************
 #* Export methods for EvalBackendClosure
 #********************************************************************
@@ -128,12 +185,48 @@ cdef public void EvalBackendClosure_leaveThreads(
         threads_l.append(EvalThread.mk(threads.at(i)))
     obj.leaveThreads(threads_l)
 
+cdef public void EvalBackendClosure_enterAction(
+    obj,
+    decl.IEvalThread                    *thread,
+    arl_dm_decl.IModelFieldAction       *action):
+    obj.enterAction(
+        EvalThread.mk(thread, False),
+        arl_dm.ModelFieldAction.mk(action, False))
+
+cdef public void EvalBackendClosure_leaveAction(
+    obj,
+    decl.IEvalThread                    *thread,
+    arl_dm_decl.IModelFieldAction       *action):
+    obj.leaveAction(
+        EvalThread.mk(thread, False),
+        arl_dm.ModelFieldAction.mk(action, False))
+
 cdef public void EvalBackendClosure_callFuncReq(
     obj,
     decl.IEvalThread                     *thread,
     arl_dm_decl.IDataTypeFunction        *func_t,
     const cpp_vector[decl.EvalResult]    &params):
+    cdef decl.EvalResult *param
+
+    params_l = []
+    for i in range(params.size()):
+        param = &params.at(i)
+        params_l.append(EvalResult.mk(param, False))
+    
+    obj.callFuncReq(
+        EvalThread.mk(thread, False),
+        arl_dm.DataTypeFunction.mk(func_t, False),
+        params_l)
     pass
+
+cdef class EvalResult(object):
+
+    @staticmethod
+    cdef EvalResult mk(decl.EvalResult *hndl, bool owned=True):
+        ret = EvalResult()
+        ret._hndl = hndl
+        ret._owned = owned
+        return ret
 
 cdef class EvalThread(object):
 
