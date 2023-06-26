@@ -56,12 +56,12 @@ cdef class EvalContext(object):
     @staticmethod
     cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=*)
 
-cdef class EvalResult(object):
-    cdef decl.EvalResult            *_hndl
-    cdef bool                       _owned
+cdef class EvalResult(vsc.ModelVal):
+
+    cdef decl.IEvalResult *asResult(self)
 
     @staticmethod
-    cdef EvalResult mk(decl.EvalResult *hndl, bool owned=*)
+    cdef EvalResult mk(decl.IEvalResult *hndl, bool owned=*)
 
 cdef class EvalThread(object):
     cdef decl.IEvalThread           *_hndl

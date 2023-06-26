@@ -18,6 +18,8 @@ ctypedef EvalThreadData *EvalThreadDataP
 ctypedef IFactory *IFactoryP
 ctypedef IEvalThread *IEvalThreadP
 ctypedef IEvalThreadId *IEvalThreadIdP
+ctypedef IEvalResult *IEvalResultP
+ctypedef unique_ptr[IEvalResult] IEvalResultUP
 
 cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
     cdef cppclass IFactory:
@@ -36,14 +38,16 @@ cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
             arl_dm.IDataTypeAction          *root_action,
             IEvalBackend                    *backend)
 
-cdef extern from "zsp/arl/eval/EvalResult.h" namespace "zsp::arl::eval":
-    cdef cppclass EvalResult:
+cdef extern from "zsp/arl/eval/IEvalResult.h" namespace "zsp::arl::eval":
+    cdef cppclass IEvalResult(vsc.IModelVal):
         pass
 
 cdef extern from "zsp/arl/eval/IEval.h" namespace "zsp::arl::eval":
     cdef cppclass IEval:
         bool eval()
-        void setResult(const EvalResult &)
+        const IEvalResult *getResult()
+        void setResult(IEvalResult *)
+        IEvalResult *moveResult()
 
 
 cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":
@@ -59,7 +63,7 @@ cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":
         void callFuncReq(
             IEvalThread                     *thread,
             arl_dm.IDataTypeFunction        *func_t,
-            const cpp_vector[EvalResult]    &params)
+            const cpp_vector[IEvalResultUP] &params)
 
 cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
     cdef cppclass IEvalContext(IEval):

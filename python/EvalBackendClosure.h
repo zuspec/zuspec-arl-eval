@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <Python.h>
+#include "zsp/arl/eval/impl/EvalBackendBase.h"
 #include "zsp/arl/eval/IEvalBackend.h"
 
 namespace zsp {
@@ -28,7 +29,7 @@ namespace eval {
 
 
 
-class EvalBackendClosure : public virtual IEvalBackend {
+class EvalBackendClosure : public virtual EvalBackendBase {
 public:
     EvalBackendClosure(PyObject *peer);
 
@@ -53,9 +54,9 @@ public:
         dm::IModelFieldAction               *action) override;
 
     virtual void callFuncReq(
-            IEvalThread                     *thread,
-            dm::IDataTypeFunction           *func_t,
-            const std::vector<EvalResult>   &params
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<IEvalResultUP>    &params
     ) override;
 
 private:

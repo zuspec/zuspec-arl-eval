@@ -203,14 +203,14 @@ cdef public void EvalBackendClosure_leaveAction(
 
 cdef public void EvalBackendClosure_callFuncReq(
     obj,
-    decl.IEvalThread                     *thread,
-    arl_dm_decl.IDataTypeFunction        *func_t,
-    const cpp_vector[decl.EvalResult]    &params):
-    cdef decl.EvalResult *param
+    decl.IEvalThread                        *thread,
+    arl_dm_decl.IDataTypeFunction           *func_t,
+    const cpp_vector[decl.IEvalResultUP]    &params):
+    cdef decl.IEvalResult *param
 
     params_l = []
     for i in range(params.size()):
-        param = &params.at(i)
+        param = params.at(i).get()
         params_l.append(EvalResult.mk(param, False))
     
     obj.callFuncReq(
@@ -219,10 +219,13 @@ cdef public void EvalBackendClosure_callFuncReq(
         params_l)
     pass
 
-cdef class EvalResult(object):
+cdef class EvalResult(vsc.ModelVal):
+
+    cdef decl.IEvalResult *asResult(self):
+        return dynamic_cast[decl.IEvalResultP](self._hndl)
 
     @staticmethod
-    cdef EvalResult mk(decl.EvalResult *hndl, bool owned=True):
+    cdef EvalResult mk(decl.IEvalResult *hndl, bool owned=True):
         ret = EvalResult()
         ret._hndl = hndl
         ret._owned = owned
