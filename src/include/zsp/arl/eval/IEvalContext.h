@@ -27,6 +27,7 @@
 #include "zsp/arl/eval/IEvalBackend.h"
 #include "zsp/arl/eval/IEvalListener.h"
 #include "zsp/arl/eval/IEvalFunctionData.h"
+#include "zsp/arl/eval/IEvalResult.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/dm/IDataTypeFunctionImport.h"
 #include "zsp/arl/dm/IModelFieldExecutor.h"
@@ -34,6 +35,8 @@
 namespace zsp {
 namespace arl {
 namespace eval {
+
+class IEvalResult;
 
 class IEvalContext;
 using IEvalContextUP=vsc::dm::UP<IEvalContext>;
@@ -71,6 +74,12 @@ public:
     virtual vsc::dm::IModelVal *mkModelValU(uint64_t v=0, int32_t w=32) = 0;
 
     virtual vsc::dm::IModelValOp *getModelValOp() = 0;
+
+    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) = 0;
+
+    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) = 0;
+
+    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) = 0;
 
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 

@@ -54,7 +54,7 @@ bool EvalTypeProcStmt::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setResult(EvalResult::Void());
+        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
     }
 
 
@@ -95,7 +95,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
         }
         case 1: {
             // Result from the previous has been reflected up. 
-            setResult(EvalResult::Void());
+            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
         }
     }
 

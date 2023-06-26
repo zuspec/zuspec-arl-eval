@@ -112,6 +112,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq) {
         entry_t.get(),
         &backend
     ));
+
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
 
@@ -209,7 +210,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
     EvalBackendTestFixture backend;
 
     // Don't respond to call request
-    backend.setCallReq([](IEvalThread*,dm::IDataTypeFunction*,const std::vector<EvalResult>&) {});
+    backend.setCallReq([](IEvalThread*,dm::IDataTypeFunction*,const std::vector<IEvalResultUP>&) {});
 
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
@@ -230,7 +231,8 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
 
     // Send a response
     DEBUG_ENTER("setResult");
-    backend.getFuncCalls().back().first->setResult(EvalResult::Void());
+    backend.getFuncCalls().back().first->setResult(
+        eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
     DEBUG_LEAVE("setResult");
 
     // Should terminate this time
@@ -239,7 +241,8 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
     ASSERT_EQ(backend.getFuncCalls().size(), 2);
 
     DEBUG_ENTER("setResult");
-    backend.getFuncCalls().back().first->setResult(EvalResult::Void());
+    backend.getFuncCalls().back().first->setResult(
+        eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
     DEBUG_LEAVE("setResult");
 
     ASSERT_FALSE(eval_ctxt->eval());
@@ -437,13 +440,6 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
 
     EvalBackendTestFixture backend;
 
-    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<EvalResult> &p) {
-        if (backend.getFuncCalls().size() == 1) {
-            // Immediately respond to this
-            t->setResult(EvalResult::Void());
-        }
-    });
-
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
         m_ctxt.get(),
@@ -452,6 +448,14 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
         entry_t.get(),
         &backend
     ));
+
+    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<IEvalResultUP> &p) {
+        if (backend.getFuncCalls().size() == 1) {
+            // Immediately respond to this
+            t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        }
+    });
+
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
 
@@ -460,7 +464,8 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
     ASSERT_EQ(listener.getActions().size(), 1);
 
     // Now, release the second function
-    backend.getFuncCalls().back().first->setResult(EvalResult::Void());
+    backend.getFuncCalls().back().first->setResult(
+        eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
     ASSERT_FALSE(eval_ctxt->eval());
     ASSERT_EQ(backend.getFuncCalls().size(), 2);
     ASSERT_EQ(listener.getActions().size(), 3);
@@ -553,13 +558,6 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
 
     EvalBackendTestFixture backend;
 
-    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<EvalResult> &p) {
-        if (backend.getFuncCalls().size() == 2) {
-            // Immediately respond to this
-            t->setResult(EvalResult::Void());
-        }
-    });
-
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
         m_ctxt.get(),
@@ -568,6 +566,14 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
         entry_t.get(),
         &backend
     ));
+
+    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<IEvalResultUP> &p) {
+        if (backend.getFuncCalls().size() == 2) {
+            // Immediately respond to this
+            t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        }
+    });
+
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
 
@@ -576,7 +582,8 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
     ASSERT_EQ(listener.getActions().size(), 1);
 
     // Now, release the first function
-    backend.getFuncCalls().at(0).first->setResult(EvalResult::Void());
+    backend.getFuncCalls().at(0).first->setResult(
+            eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
     ASSERT_FALSE(eval_ctxt->eval());
     ASSERT_EQ(backend.getFuncCalls().size(), 2);
     for (std::vector<dm::IModelFieldAction *>::const_iterator
@@ -674,15 +681,6 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
 
     EvalBackendTestFixture backend;
     std::vector<uint64_t> pvals;
-    backend.setCallReq([&](
-        IEvalThread                     *t,
-        dm::IDataTypeFunction           *f,
-        const std::vector<EvalResult>   &params) {
-        for (uint32_t i=0; i<params.size(); i++) {
-            pvals.push_back(params.at(i).val->val_u());
-        }
-        t->setResult(EvalResult::Void());
-    });
 
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
@@ -692,6 +690,17 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
         entry_t.get(),
         &backend
     ));
+
+    backend.setCallReq([&](
+        IEvalThread                     *t,
+        dm::IDataTypeFunction           *f,
+        const std::vector<IEvalResultUP>   &params) {
+        for (uint32_t i=0; i<params.size(); i++) {
+            pvals.push_back(params.at(i)->val_u());
+        }
+        t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+    });
+
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
 
@@ -793,15 +802,6 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
 
     EvalBackendTestFixture backend;
     std::vector<uint64_t> pvals;
-    backend.setCallReq([&](
-        IEvalThread                     *t,
-        dm::IDataTypeFunction           *f,
-        const std::vector<EvalResult>   &params) {
-        for (uint32_t i=0; i<params.size(); i++) {
-            pvals.push_back(params.at(i).val->val_u());
-        }
-        t->setResult(EvalResult::Void());
-    });
 
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
@@ -811,6 +811,17 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
         entry_t.get(),
         &backend
     ));
+
+    backend.setCallReq([&](
+        IEvalThread                     *t,
+        dm::IDataTypeFunction           *f,
+        const std::vector<IEvalResultUP>   &params) {
+        for (uint32_t i=0; i<params.size(); i++) {
+            pvals.push_back(params.at(i)->val_u());
+        }
+        t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+    });
+
     CollectingEvalListener listener;
     eval_ctxt->addListener(&listener);
 

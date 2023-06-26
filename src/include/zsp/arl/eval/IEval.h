@@ -21,7 +21,7 @@
 #pragma once
 #include "vsc/dm/IModelVal.h"
 #include "vsc/dm/impl/UP.h"
-#include "zsp/arl/eval/EvalResult.h"
+#include "zsp/arl/eval/IEvalResult.h"
 
 namespace zsp {
 namespace arl {
@@ -48,25 +48,21 @@ public:
 
     virtual IEval *clone() = 0;
 
-    virtual const EvalResult &getResult() const = 0;
+    virtual const IEvalResult *getResult() const = 0;
 
     /**
      * @brief Moves the result, clearing the result here
      * 
      * @return EvalResult& 
      */
-    virtual EvalResult moveResult() = 0;
+    virtual IEvalResult *moveResult() = 0;
 
     /**
      * @brief Sets the result, taking ownership of value data
      * 
      * @param r 
      */
-    virtual void setResult(const EvalResult &r) = 0;
-
-    virtual void moveResult(EvalResult &r) = 0;
-
-    virtual void moveResult(EvalResult &&r) = 0;
+    virtual void setResult(IEvalResult *r) = 0;
 
     virtual void clrResult() = 0;
 

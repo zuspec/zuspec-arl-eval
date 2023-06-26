@@ -90,7 +90,7 @@ void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
         }
 
         case 1: {
-            setResult(EvalResult::Void());
+            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
         }
     }
 
@@ -123,6 +123,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
 
             if (a->getTarget()->getActivity()) {
                 // Compound activity
+                DEBUG("Note: Have an activity");
                 EvalActivityScopeFullElab evaluator(
                     m_ctxt, 
                     m_thread, 
@@ -136,6 +137,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                 dm::IDataTypeAction *action_t = a->getTarget()->getDataTypeT<dm::IDataTypeAction>();
 
                 if (action_t->getExecs(dm::ExecKindT::Body).size()) {
+                    DEBUG("Note: Have an exec body block");
                     EvalTypeExecList evaluator(
                         m_ctxt, 
                         m_thread, 
@@ -144,6 +146,8 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                     if (evaluator.eval()) {
                         break;
                     }
+                } else {
+                    DEBUG("Note: No exec body block");
                 }
             }
         }
@@ -155,7 +159,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                 m_thread, 
                 a->getTarget());
 
-            setResult(EvalResult::Void());
+            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
         } break;
     }
 

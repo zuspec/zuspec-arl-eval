@@ -37,11 +37,7 @@ public:
     EvalTypeExpr(
         IEvalContext        *ctxt,
         IEvalThread         *thread,
-        vsc::dm::ITypeExpr  *expr,
-        vsc::dm::IModelVal  *lhs=0,
-        vsc::dm::IModelVal  *rhs=0,
-        uint32_t            idx=0
-    );
+        vsc::dm::ITypeExpr  *expr);
 
     EvalTypeExpr(EvalTypeExpr *o);
 
@@ -66,13 +62,13 @@ public:
     virtual void visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *e) override;
 
 protected:
-    static dmgr::IDebug     *m_dbg;
-    vsc::dm::ITypeExpr      *m_expr;
-    EvalResult              m_val_lhs;
-    EvalResult              m_val_rhs;
-    std::vector<EvalResult> m_params;
-    uint32_t                m_idx;
-    uint32_t                m_subidx;
+    static dmgr::IDebug         *m_dbg;
+    vsc::dm::ITypeExpr          *m_expr;
+    IEvalResultUP               m_val_lhs;
+    IEvalResultUP               m_val_rhs;
+    std::vector<IEvalResultUP>  m_params;
+    uint32_t                    m_idx;
+    uint32_t                    m_subidx;
 
 };
 

@@ -22,6 +22,7 @@
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/eval/IEvalContext.h"
 #include "TaskElaborateActivity.h"
+#include "EvalResultAlloc.h"
 #include "EvalThread.h"
 
 namespace zsp {
@@ -61,6 +62,9 @@ public:
 
     virtual void setBackend(IEvalBackend *b) override {
         m_backend = b;
+        if (m_backend) {
+            m_backend->init(this);
+        }
     }
 
     virtual const std::vector<dm::IDataTypeFunction *> &getFunctions() const override {
@@ -91,17 +95,13 @@ public:
 
     virtual IEval *clone() override { return 0; }
 
-    virtual const EvalResult &getResult() const override { return m_result; }
+    virtual const IEvalResult *getResult() const override { return m_result.get(); }
 
-    virtual EvalResult moveResult() override { return m_result; }
+    virtual IEvalResult *moveResult() override { return m_result.release(); }
 
-    virtual void clrResult() override { }
+    virtual void clrResult() override { m_result.reset(); }
 
-    virtual void setResult(const EvalResult &r) override;
-
-    virtual void moveResult(EvalResult &r) override;
-
-    virtual void moveResult(EvalResult &&r) override;
+    virtual void setResult(IEvalResult *r) override;
 
     virtual bool haveResult() const override { return false; }
 
@@ -135,6 +135,12 @@ public:
         return m_ctxt->getModelValOp();
     }
 
+    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) override;
+
+    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) override;
+
+    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
+
 private:
     static dmgr::IDebug                     *m_dbg;
     dmgr::IDebugMgr                         *m_dmgr;
@@ -148,7 +154,8 @@ private:
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;
     std::vector<IEvalStackFrameUP>          m_callstack;
-    EvalResult                              m_result;
+    IEvalResultUP                           m_result;
+    EvalResultAlloc                         m_result_alloc;
 
 };
 

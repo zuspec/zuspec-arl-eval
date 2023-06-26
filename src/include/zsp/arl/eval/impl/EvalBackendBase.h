@@ -33,14 +33,18 @@ public:
 
     virtual ~EvalBackendBase() { }
 
-    virtual void startThreads(
+    virtual void init(IEvalContext *ctxt) override {
+        m_ctxt = ctxt;
+    }
+
+    virtual void enterThreads(
         const std::vector<IEvalThread *>    &threads) override { }
     
-    virtual void startThread(IEvalThread *thread) override { }
+    virtual void enterThread(IEvalThread *thread) override { }
 
-    virtual void endThread(IEvalThread *thread) override { }
+    virtual void leaveThread(IEvalThread *thread) override { }
 
-    virtual void endThreads(
+    virtual void leaveThreads(
         const std::vector<IEvalThread *>    &threads) override { }
 
     virtual void enterAction(
@@ -52,9 +56,12 @@ public:
         dm::IModelFieldAction               *action) override { }
 
     virtual void callFuncReq(
-            IEvalThread                     *thread,
-            dm::IDataTypeFunction           *func_t,
-            const std::vector<EvalResult>   &params) override { }
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<IEvalResultUP>    &params) override { }
+
+protected:
+    IEvalContext                        *m_ctxt;
 
 };
 

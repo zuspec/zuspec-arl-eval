@@ -20,7 +20,7 @@
  */
 #pragma once
 #include <vector>
-#include "zsp/arl/eval/EvalResult.h"
+#include "zsp/arl/eval/IEvalResult.h"
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
@@ -30,12 +30,15 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
+class IEvalContext;
 
 
 class IEvalBackend {
 public:
 
     virtual ~IEvalBackend() { }
+
+    virtual void init(IEvalContext *ctxt) = 0;
 
     /**
      * @brief Start
@@ -61,9 +64,9 @@ public:
         dm::IModelFieldAction               *action) = 0;
 
     virtual void callFuncReq(
-            IEvalThread                     *thread,
-            dm::IDataTypeFunction           *func_t,
-            const std::vector<EvalResult>   &params
+            IEvalThread                      *thread,
+            dm::IDataTypeFunction            *func_t,
+            const std::vector<IEvalResultUP> &params
     ) = 0;
 
 };

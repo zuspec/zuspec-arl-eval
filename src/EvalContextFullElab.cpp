@@ -21,6 +21,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "EvalActivityScopeFullElab.h"
 #include "EvalContextFullElab.h"
+#include "EvalResult.h"
 
 
 namespace zsp {
@@ -36,6 +37,10 @@ EvalContextFullElab::EvalContextFullElab(
         m_dmgr(dmgr), m_ctxt(ctxt), m_backend(backend), 
         m_initial(true), m_activity(activity) {
     DEBUG_INIT("EvalContextFullElab", dmgr);
+
+    if (backend) {
+        backend->init(this);
+    }
 }
 
 EvalContextFullElab::~EvalContextFullElab() {
@@ -96,9 +101,9 @@ void EvalContextFullElab::popEval(IEval *e) {
     if (e->haveResult()) {
         DEBUG("hasResult (%d)", m_eval_s.size());
         if (m_eval_s.size() > 1) {
-            m_eval_s.at(m_eval_s.size()-2)->moveResult(e->moveResult());
+            m_eval_s.at(m_eval_s.size()-2)->setResult(e->moveResult());
         } else {
-            moveResult(e->moveResult());
+            setResult(e->moveResult());
         }
     } else {
         DEBUG("NOT hasResult");
@@ -122,7 +127,7 @@ void EvalContextFullElab::callListener(
     }
 }
 
-void EvalContextFullElab::setResult(const EvalResult &r) {
+void EvalContextFullElab::setResult(IEvalResult *r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(r);
@@ -130,20 +135,22 @@ void EvalContextFullElab::setResult(const EvalResult &r) {
     DEBUG_LEAVE("setResult");
 }
 
-void EvalContextFullElab::moveResult(EvalResult &r) {
-    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
-    if (m_eval_s.size()) {
-        m_eval_s.back()->moveResult(r);
-    }
-    DEBUG_LEAVE("setResult");
+IEvalResult *EvalContextFullElab::mkEvalResultVal(const vsc::dm::IModelVal *val) {
+    return new(&m_result_alloc, (val)?val->bits():0) EvalResult(
+        &m_result_alloc,
+        val);
 }
 
-void EvalContextFullElab::moveResult(EvalResult &&r) {
-    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
-    if (m_eval_s.size()) {
-        m_eval_s.back()->moveResult(r);
-    }
-    DEBUG_LEAVE("setResult");
+IEvalResult *EvalContextFullElab::mkEvalResultKind(EvalResultKind kind) {
+    return new(&m_result_alloc, 0) EvalResult(
+        &m_result_alloc,
+        kind);
+}
+
+IEvalResult *EvalContextFullElab::mkEvalResultRef(vsc::dm::IModelField *ref) {
+    return new(&m_result_alloc, 0) EvalResult(
+        &m_result_alloc,
+        ref);
 }
 
 dmgr::IDebug *EvalContextFullElab::m_dbg = 0;

@@ -1,5 +1,5 @@
 /**
- * EvalStackFrame.h
+ * EvalResultAlloc.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,35 +19,31 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/arl/eval/IEvalStackFrame.h"
-#include "zsp/arl/eval/IEvalResult.h"
+#include <stdint.h>
+#include <memory>
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
-class EvalStackFrame : public virtual IEvalStackFrame {
+class EvalResult;
+
+class EvalResultAlloc {
 public:
-    EvalStackFrame();
+    static const uint32_t   MAX_POOLED_BITS = ((8+1)*64);
+public:
+    EvalResultAlloc();
 
-    virtual ~EvalStackFrame();
+    virtual ~EvalResultAlloc();
 
-    virtual vsc::dm::IModelField *getVariable(uint32_t idx) override {
-        return m_variables.at(idx).get();
-    }
+    void *alloc(size_t nbytes, uint32_t val_bits);
 
-    virtual void addVariable(vsc::dm::IModelField *var) override {
-        m_variables.push_back(vsc::dm::IModelFieldUP(var));
-    }
+    void dealloc(EvalResult *o);
 
-    virtual const std::vector<vsc::dm::IModelFieldUP> &getVariables() const override {
-        return m_variables;
-    }
 
 private:
-    std::vector<IEvalResultUP>                  m_parameters;
-    std::vector<vsc::dm::IModelFieldUP>         m_variables;
+    void                  *m_bins[8];
+    void                  *m_large;
 
 };
 

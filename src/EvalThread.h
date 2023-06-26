@@ -64,7 +64,7 @@ public:
         m_thread_id = tid;
     }
 
-    virtual void setResult(const EvalResult &r) override;
+    virtual void setResult(IEvalResult *r) override;
 
     virtual void pushStackFrame(IEvalStackFrame *frame) override {
         m_callstack.push_back(IEvalStackFrameUP(frame));

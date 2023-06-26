@@ -43,6 +43,7 @@ cdef extern from "zsp/arl/eval/EvalResult.h" namespace "zsp::arl::eval":
 cdef extern from "zsp/arl/eval/IEval.h" namespace "zsp::arl::eval":
     cdef cppclass IEval:
         bool eval()
+        void setResult(const EvalResult &)
 
 
 cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":

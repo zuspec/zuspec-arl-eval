@@ -50,40 +50,24 @@ public:
         m_entry_idx = idx;
     }
 
-    virtual const EvalResult &getResult() const override {
-        return m_result;
+    virtual const IEvalResult *getResult() const override {
+        return m_result.get();
     }
 
-    virtual EvalResult moveResult() override {
-        EvalResult ret = m_result;
-        m_result.clear();
-        return ret;
+    virtual IEvalResult *moveResult() override {
+        return m_result.release();
     }
 
     virtual void clrResult() override {
-        m_result.clear();
+        m_result.reset();
     }
 
-    virtual void setResult(const EvalResult &r) override {
-        if (r.kind == EvalResultKind::Val) {
-            throw "Error: cannot call setResult(const) with Val\n";
-        } else {
-            m_result.ref = r.ref;
-            m_result.kind = r.kind;
-            m_result.val.reset();
-        }
-    }
-
-    virtual void moveResult(EvalResult &r) override {
-        m_result = r;
-    }
-
-    virtual void moveResult(EvalResult &&r) override {
-        m_result = r;
+    virtual void setResult(IEvalResult *r) override {
+        m_result = IEvalResultUP(r);
     }
 
     virtual bool haveResult() const override {
-        return m_result.kind != EvalResultKind::None;
+        return m_result.get();
     }
 
 protected:
@@ -91,7 +75,7 @@ protected:
     int32_t                     m_entry_idx;
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
-    EvalResult                  m_result;
+    IEvalResultUP               m_result;
 
 };
 

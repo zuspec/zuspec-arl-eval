@@ -51,7 +51,7 @@ bool EvalTypeProcStmtScope::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
         // Safety
-        setResult(EvalResult::Void());
+        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
     }
 
     bool ret = false;

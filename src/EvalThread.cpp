@@ -92,7 +92,7 @@ void EvalThread::popEval(IEval *e) {
     DEBUG_LEAVE("popEval");
 }
 
-void EvalThread::setResult(const EvalResult &r) {
+void EvalThread::setResult(IEvalResult *r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(r);
