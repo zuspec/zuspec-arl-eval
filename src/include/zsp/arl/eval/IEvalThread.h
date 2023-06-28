@@ -58,6 +58,16 @@ public:
 
     virtual void popStackFrame() = 0;
 
+    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) = 0;
+
+    virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) = 0;
+
+    virtual IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits) = 0;
+
+    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) = 0;
+
+    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) = 0;
+
 };
 
 } /* namespace eval */

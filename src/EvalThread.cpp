@@ -117,6 +117,26 @@ void EvalThread::sendEvalEvent(
 }
 */
 
+IEvalResult *EvalThread::mkEvalResultVal(const vsc::dm::IModelVal *val) {
+    return m_ctxt->mkEvalResultVal(val);
+}
+
+IEvalResult *EvalThread::mkEvalResultValS(int64_t val, int32_t bits) {
+    return m_ctxt->mkEvalResultValS(val, bits);
+}
+
+IEvalResult *EvalThread::mkEvalResultValU(uint64_t val, int32_t bits) {
+    return m_ctxt->mkEvalResultValU(val, bits);
+}
+
+IEvalResult *EvalThread::mkEvalResultKind(EvalResultKind kind) {
+    return m_ctxt->mkEvalResultKind(kind);
+}
+
+IEvalResult *EvalThread::mkEvalResultRef(vsc::dm::IModelField *ref) {
+    return m_ctxt->mkEvalResultRef(ref);
+}
+
 dmgr::IDebug *EvalThread::m_dbg = 0;
 
 }

@@ -11,7 +11,7 @@ from libcpp.string cimport string as cpp_string
 from libcpp.vector cimport vector as cpp_vector
 from libcpp.memory cimport unique_ptr
 from libcpp cimport bool
-from libc.stdint cimport int32_t
+from libc.stdint cimport int32_t, int64_t, uint64_t
 cimport cpython.ref as cpy_ref
 
 ctypedef EvalThreadData *EvalThreadDataP
@@ -39,6 +39,13 @@ cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
             IEvalBackend                    *backend)
 
 cdef extern from "zsp/arl/eval/IEvalResult.h" namespace "zsp::arl::eval":
+    cdef enum EvalResultKind:
+        ResultKind_Void "zsp::arl::eval::EvalResultKind::Void"
+        ResultKind_Val "zsp::arl::eval::EvalResultKind::Val"
+        ResultKind_Ref "zsp::arl::eval::EvalResultKind::Ref"
+        ResultKind_Break "zsp::arl::eval::EvalResultKind::Break"
+        ResultKind_Continue "zsp::arl::eval::EvalResultKind::Continue"
+
     cdef cppclass IEvalResult(vsc.IModelVal):
         pass
 
@@ -70,6 +77,13 @@ cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
         IEvalBackend *getBackend() const
         void setBackend(IEvalBackend *b)
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getFunctions() const
+
+        IEvalResult *mkEvalResultVal(vsc.IModelVal *val)
+        IEvalResult *mkEvalResultValS(int64_t val, int32_t bits)
+        IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits)
+        IEvalResult *mkEvalResultKind(EvalResultKind kind)
+        IEvalResult *mkEvalResultRef(vsc.IModelField *ref)
+
 #        const cpp_vector[arl_dm.IModelFieldExecutor] &getFunctions() const
 
 cdef extern from "EvalBackendClosure.h" namespace "zsp::arl::eval":
@@ -81,10 +95,14 @@ cdef extern from "zsp/arl/eval/IEvalThreadId.h" namespace "zsp::arl::eval":
         pass
 
 cdef extern from "zsp/arl/eval/IEvalThread.h" namespace "zsp::arl::eval":
-    cdef cppclass IEvalThread:
+    cdef cppclass IEvalThread(IEval):
         void setThreadId(IEvalThreadId *)
         IEvalThreadId *getThreadId()
-        pass
+        IEvalResult *mkEvalResultVal(vsc.IModelVal *val)
+        IEvalResult *mkEvalResultValS(int64_t val, int32_t bits)
+        IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits)
+        IEvalResult *mkEvalResultKind(EvalResultKind kind)
+        IEvalResult *mkEvalResultRef(vsc.IModelField *ref)
 
 cdef extern from "EvalThreadData.h" namespace "zsp::arl::eval":
     cdef cppclass EvalThreadData(IEvalThreadId):

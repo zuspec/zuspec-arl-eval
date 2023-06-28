@@ -42,6 +42,12 @@ cdef class Eval(object):
 
     cpdef bool eval(self)
 
+    cpdef EvalResult getResult(self)
+
+    cpdef void setResult(self, EvalResult r)
+
+    cpdef EvalResult moveResult(self)
+
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=*)
 
@@ -53,6 +59,16 @@ cdef class EvalContext(object):
 
     cpdef getFunctions(self)
 
+    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
+
+    cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
+
+    cpdef EvalResult mkEvalResultValU(self, int val, int bits=*)
+
+    cpdef EvalResult mkEvalResultKind(self, kind)
+
+    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
+
     @staticmethod
     cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=*)
 
@@ -63,13 +79,23 @@ cdef class EvalResult(vsc.ModelVal):
     @staticmethod
     cdef EvalResult mk(decl.IEvalResult *hndl, bool owned=*)
 
-cdef class EvalThread(object):
-    cdef decl.IEvalThread           *_hndl
-    cdef bool                       _owned
+cdef class EvalThread(Eval):
 
     cpdef void setThreadId(self, obj)
     
-    cpdef getThreadId(self)
+    cpdef object getThreadId(self)
+
+    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
+
+    cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
+
+    cpdef EvalResult mkEvalResultValU(self, int val, int bits=*)
+
+    cpdef EvalResult mkEvalResultKind(self, kind)
+
+    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
+
+    cdef decl.IEvalThread *asThread(self)
 
     @staticmethod
     cdef EvalThread mk(decl.IEvalThread *hndl, bool owned=*)

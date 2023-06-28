@@ -51,6 +51,18 @@ public:
         const vsc::dm::IModelVal *val
     );
 
+    EvalResult(
+        EvalResultAlloc          *alloc,
+        int32_t                  bits,
+        int64_t                  val
+    );
+
+    EvalResult(
+        EvalResultAlloc          *alloc,
+        int32_t                  bits,
+        uint64_t                 val
+    );
+
     virtual ~EvalResult();
 
     void operator delete(void *p);

@@ -21,7 +21,7 @@ import ctypes
 import enum
 from libc.stdint cimport intptr_t
 from libcpp cimport bool
-from libcpp.cast cimport dynamic_cast, static_cast
+from libcpp.cast cimport dynamic_cast, static_cast, const_cast
 from libcpp.vector cimport vector as cpp_vector
 from enum import IntEnum
 cimport zsp_arl_dm.core as arl_dm
@@ -130,6 +130,21 @@ cdef class Eval(object):
     cpdef bool eval(self):
         return self._hndl.eval()
 
+    cpdef EvalResult getResult(self):
+        ret = EvalResult()
+        ret._hndl = const_cast[decl.IEvalResultP](self._hndl.getResult())
+        ret._owned = False
+        return ret
+
+    cpdef void setResult(self, EvalResult r):
+        if not r._owned:
+            raise Exception("Attempting to set result from a non-owned Result object")
+        r._owned = False
+        self._hndl.setResult(r.asResult())
+
+    cpdef EvalResult moveResult(self):
+        return EvalResult.mk(self._hndl.moveResult(), True)
+
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=True):
         ret = Eval()
@@ -149,6 +164,22 @@ cdef class EvalContext(object):
                 self._hndl.getFunctions().at(i), False))
         return ret
 
+    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
+        return EvalResult.mk(self._hndl.mkEvalResultVal(v._hndl), True)
+
+    cpdef EvalResult mkEvalResultValS(self, int val, int bits=64):
+        return EvalResult.mk(self._hndl.mkEvalResultValS(val, bits), True)
+
+    cpdef EvalResult mkEvalResultValU(self, int val, int bits=64):
+        return EvalResult.mk(self._hndl.mkEvalResultValU(val, bits), True)
+
+    cpdef EvalResult mkEvalResultKind(self, kind):
+        cdef int kind_i = int(kind)
+        return EvalResult.mk(self._hndl.mkEvalResultKind(<decl.EvalResultKind>(kind_i)), True)
+
+    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref):
+        return EvalResult.mk(self._hndl.mkEvalResultRef(ref.asField()), True)
+
     @staticmethod
     cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=True):
         ret = EvalContext()
@@ -165,17 +196,27 @@ cdef public void EvalBackendClosure_enterThreads(
     threads_l = []
     for i in range(threads.size()):
         threads_l.append(EvalThread.mk(threads.at(i)))
-    obj.startThreads(threads_l)
+    try:
+        obj.startThreads(threads_l)
+    except Exception as e:
+        print("Exception: %s" % str(e))
 
 cdef public void EvalBackendClosure_enterThread(
     obj,
     decl.IEvalThread *thread) with gil:
-    obj.enterThread(EvalThread.mk(thread, False))
+    try:
+        obj.enterThread(EvalThread.mk(thread, False))
+    except Exception as e:
+        print("Exception: %s" % str(e))
     
 cdef public void EvalBackendClosure_leaveThread(
     obj,
     decl.IEvalThread *thread) with gil:
-    obj.leaveThread(EvalThread.mk(thread, False))
+    try:
+        obj.leaveThread(EvalThread.mk(thread, False))
+    except Exception as e:
+        print("Exception: %s" % str(e))
+
 
 cdef public void EvalBackendClosure_leaveThreads(
     obj,
@@ -183,7 +224,10 @@ cdef public void EvalBackendClosure_leaveThreads(
     threads_l = []
     for i in range(threads.size()):
         threads_l.append(EvalThread.mk(threads.at(i)))
-    obj.leaveThreads(threads_l)
+    try:
+        obj.leaveThreads(threads_l)
+    except Exception as e:
+        print("Exception: %s" % str(e))
 
 cdef public void EvalBackendClosure_enterAction(
     obj,
@@ -212,12 +256,21 @@ cdef public void EvalBackendClosure_callFuncReq(
     for i in range(params.size()):
         param = params.at(i).get()
         params_l.append(EvalResult.mk(param, False))
-    
-    obj.callFuncReq(
-        EvalThread.mk(thread, False),
-        arl_dm.DataTypeFunction.mk(func_t, False),
-        params_l)
-    pass
+
+    try:
+        obj.callFuncReq(
+            EvalThread.mk(thread, False),
+            arl_dm.DataTypeFunction.mk(func_t, False),
+            params_l)
+    except Exception as e:
+        print("Exception: %s" % str(e))
+
+class EvalResultKind(IntEnum):
+    Void = decl.EvalResultKind.ResultKind_Void
+    Val = decl.EvalResultKind.ResultKind_Val
+    Ref = decl.EvalResultKind.ResultKind_Ref
+    Break = decl.EvalResultKind.ResultKind_Break
+    Continue = decl.EvalResultKind.ResultKind_Continue
 
 cdef class EvalResult(vsc.ModelVal):
 
@@ -231,25 +284,40 @@ cdef class EvalResult(vsc.ModelVal):
         ret._owned = owned
         return ret
 
-cdef class EvalThread(object):
-
-    def __dealloc__(self):
-        if self._owned:
-            del self._hndl
+cdef class EvalThread(Eval):
 
     cpdef void setThreadId(self, obj):
         cdef decl.EvalThreadData *data;
         data = new decl.EvalThreadData(<cpy_ref.PyObject *>(obj))
-        self._hndl.setThreadId(data);
+        self.asThread().setThreadId(data);
     
-    cpdef getThreadId(self):
+    cpdef object getThreadId(self):
         cdef decl.EvalThreadData *data
-        data = dynamic_cast[decl.EvalThreadDataP](self._hndl.getThreadId())
+        data = dynamic_cast[decl.EvalThreadDataP](self.asThread().getThreadId())
 
         if data == NULL:
             return None
         else:
             return data.getData()
+
+    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
+        return EvalResult.mk(self.asThread().mkEvalResultVal(v._hndl), True)
+
+    cpdef EvalResult mkEvalResultValS(self, int val, int bits=64):
+        return EvalResult.mk(self.asThread().mkEvalResultValS(val, bits), True)
+
+    cpdef EvalResult mkEvalResultValU(self, int val, int bits=64):
+        return EvalResult.mk(self.asThread().mkEvalResultValU(val, bits), True)
+
+    cpdef EvalResult mkEvalResultKind(self, kind):
+        cdef int kind_i = int(kind)
+        return EvalResult.mk(self.asThread().mkEvalResultKind(<decl.EvalResultKind>(kind_i)), True)
+
+    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref):
+        return EvalResult.mk(self.asThread().mkEvalResultRef(ref.asField()), True)
+
+    cdef decl.IEvalThread *asThread(self):
+        return dynamic_cast[decl.IEvalThreadP](self._hndl)
 
     @staticmethod
     cdef EvalThread mk(decl.IEvalThread *hndl, bool owned=True):

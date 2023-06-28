@@ -78,6 +78,16 @@ public:
         m_callstack.pop_back();
     }
 
+    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) override;
+
+    virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) override;
+
+    virtual IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits) override;
+
+    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) override;
+
+    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
+
 protected:
 
 protected:

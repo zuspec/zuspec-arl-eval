@@ -53,6 +53,8 @@ bool EvalContextFullElab::eval() {
 
     if (m_initial) {
         // Add an eval scope for the top-level activity
+        getBackend()->enterThread(this);
+
         EvalActivityScopeFullElab evaluator(
             this,
             this,
@@ -60,15 +62,6 @@ bool EvalContextFullElab::eval() {
         );
 
         ret = evaluator.eval();
-
-        /*
-        pushEval(&evaluator);
-        if ((ret=evaluator.eval())) {
-            suspendEval(&evaluator);
-        } else {
-            popEval(&evaluator);
-        }
-         */
 
         m_initial = false;
     } else {
@@ -81,6 +74,10 @@ bool EvalContextFullElab::eval() {
                 DEBUG_LEAVE("sub-eval %d -- more work", m_eval_s.back()->getIdx());
                 break;
             }
+        }
+
+        if (m_eval_s.size() == 0) {
+            getBackend()->leaveThread(this);
         }
     }
 
@@ -151,6 +148,20 @@ IEvalResult *EvalContextFullElab::mkEvalResultRef(vsc::dm::IModelField *ref) {
     return new(&m_result_alloc, 0) EvalResult(
         &m_result_alloc,
         ref);
+}
+
+IEvalResult *EvalContextFullElab::mkEvalResultValS(int64_t val, int32_t bits) {
+    return new(&m_result_alloc, bits) EvalResult(
+        &m_result_alloc,
+        bits,
+        val);
+}
+
+IEvalResult *EvalContextFullElab::mkEvalResultValU(uint64_t val, int32_t bits) {
+    return new(&m_result_alloc, bits) EvalResult(
+        &m_result_alloc,
+        bits,
+        val);
 }
 
 dmgr::IDebug *EvalContextFullElab::m_dbg = 0;

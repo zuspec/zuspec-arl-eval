@@ -62,6 +62,28 @@ EvalResult::EvalResult(
 	}
 }
 
+EvalResult::EvalResult(
+        EvalResultAlloc          *alloc,
+        int32_t                  bits,
+        int64_t                  val) : next(0), m_alloc(alloc),
+        m_kind(EvalResultKind::Val), m_bits(bits) {
+	m_val.v = val;
+	if (m_bits < 64) {
+		m_val.v &= (1ULL << m_bits)-1;
+	}
+}
+
+EvalResult::EvalResult(
+        EvalResultAlloc          *alloc,
+        int32_t                  bits,
+        uint64_t                 val) : next(0), m_alloc(alloc),
+        m_kind(EvalResultKind::Val), m_bits(bits) {
+	m_val.v = val;
+	if (m_bits < 64) {
+		m_val.v &= (1ULL << m_bits)-1;
+	}
+}
+
 EvalResult::~EvalResult() {
 
 }
