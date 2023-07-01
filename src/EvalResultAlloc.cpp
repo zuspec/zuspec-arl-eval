@@ -70,7 +70,6 @@ void *EvalResultAlloc::alloc(size_t nbytes, uint32_t val_bits) {
             p = malloc(n_ptrs*sizeof(void *));
         }
     }
-    fprintf(stdout, "p: %p\n", p);
     return p;
 }
 

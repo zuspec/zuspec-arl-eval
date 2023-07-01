@@ -89,6 +89,7 @@ EvalResult::~EvalResult() {
 }
 
 void EvalResult::operator delete(void *p) {
+#ifdef UNDEFINED
     EvalResult *r = reinterpret_cast<EvalResult *>(p);
 
     if (r->m_alloc) {
@@ -96,10 +97,13 @@ void EvalResult::operator delete(void *p) {
     } else {
         free(p);
     }
+#endif
+    free(p);
 }
 
 void *EvalResult::operator new(size_t nbytes, EvalResultAlloc *alloc, uint32_t val_bits) {
-    return alloc->alloc(nbytes, val_bits);
+//    return alloc->alloc(nbytes, val_bits);
+    return malloc(nbytes);
 }
 
 void EvalResult::set(const IModelVal *rhs) {

@@ -106,10 +106,12 @@ public:
     virtual bool haveResult() const override { return false; }
 
     virtual IEvalThreadId *getThreadId() const override { 
-        return 0;
+        return m_thread_id.get();
     }
 
-    virtual void setThreadId(IEvalThreadId *tid) override { }
+    virtual void setThreadId(IEvalThreadId *tid) override { 
+        m_thread_id = IEvalThreadIdUP(tid);
+    }
 
     virtual void pushStackFrame(IEvalStackFrame *frame) override {
         m_callstack.push_back(IEvalStackFrameUP(frame));
@@ -160,6 +162,7 @@ private:
     std::vector<IEvalStackFrameUP>          m_callstack;
     IEvalResultUP                           m_result;
     EvalResultAlloc                         m_result_alloc;
+    IEvalThreadIdUP                         m_thread_id;
 
 };
 

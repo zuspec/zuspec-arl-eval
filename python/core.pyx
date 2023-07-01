@@ -127,6 +127,10 @@ cdef class EvalBackend(object):
 
 cdef class Eval(object):
 
+    def __dealloc__(self):
+        if self._owned:
+            del self._hndl
+
     cpdef bool eval(self):
         return self._hndl.eval()
 
@@ -137,13 +141,19 @@ cdef class Eval(object):
         return ret
 
     cpdef void setResult(self, EvalResult r):
-        if not r._owned:
-            raise Exception("Attempting to set result from a non-owned Result object")
-        r._owned = False
-        self._hndl.setResult(r.asResult())
+        cdef decl.IEvalResult *rp = NULL
+        if r is not None:
+            if not r._owned:
+                raise Exception("Attempting to set result from a non-owned Result object")
+            r._owned = False
+            rp = r.asResult()
+        self._hndl.setResult(rp)
 
     cpdef EvalResult moveResult(self):
-        return EvalResult.mk(self._hndl.moveResult(), True)
+        self._owned = False
+        ret = EvalResult.mk(self._hndl.moveResult(), True)
+        self._hndl = NULL
+        return ret
 
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=True):
@@ -195,9 +205,9 @@ cdef public void EvalBackendClosure_enterThreads(
     const cpp_vector[decl.IEvalThreadP] &threads) with gil:
     threads_l = []
     for i in range(threads.size()):
-        threads_l.append(EvalThread.mk(threads.at(i)))
+        threads_l.append(EvalThread.mk(threads.at(i), False))
     try:
-        obj.startThreads(threads_l)
+        obj.enterThreads(threads_l)
     except Exception as e:
         print("Exception: %s" % str(e))
 
@@ -223,7 +233,7 @@ cdef public void EvalBackendClosure_leaveThreads(
     const cpp_vector[decl.IEvalThreadP] &threads) with gil:
     threads_l = []
     for i in range(threads.size()):
-        threads_l.append(EvalThread.mk(threads.at(i)))
+        threads_l.append(EvalThread.mk(threads.at(i), False))
     try:
         obj.leaveThreads(threads_l)
     except Exception as e:
@@ -232,7 +242,7 @@ cdef public void EvalBackendClosure_leaveThreads(
 cdef public void EvalBackendClosure_enterAction(
     obj,
     decl.IEvalThread                    *thread,
-    arl_dm_decl.IModelFieldAction       *action):
+    arl_dm_decl.IModelFieldAction       *action) with gil:
     obj.enterAction(
         EvalThread.mk(thread, False),
         arl_dm.ModelFieldAction.mk(action, False))
@@ -240,7 +250,7 @@ cdef public void EvalBackendClosure_enterAction(
 cdef public void EvalBackendClosure_leaveAction(
     obj,
     decl.IEvalThread                    *thread,
-    arl_dm_decl.IModelFieldAction       *action):
+    arl_dm_decl.IModelFieldAction       *action) with gil:
     obj.leaveAction(
         EvalThread.mk(thread, False),
         arl_dm.ModelFieldAction.mk(action, False))
@@ -249,13 +259,13 @@ cdef public void EvalBackendClosure_callFuncReq(
     obj,
     decl.IEvalThread                        *thread,
     arl_dm_decl.IDataTypeFunction           *func_t,
-    const cpp_vector[decl.IEvalResultUP]    &params):
+    const cpp_vector[decl.IEvalResultUP]    &params) with gil:
     cdef decl.IEvalResult *param
 
     params_l = []
-    for i in range(params.size()):
-        param = params.at(i).get()
-        params_l.append(EvalResult.mk(param, False))
+#    for i in range(params.size()):
+#        param = params.at(i).get()
+#        params_l.append(EvalResult.mk(param, False))
 
     try:
         obj.callFuncReq(

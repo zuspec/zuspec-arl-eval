@@ -57,11 +57,11 @@ public:
     virtual void popEval(IEval *e) override;
 
     virtual IEvalThreadId *getThreadId() const override {
-        return m_thread_id;
+        return m_thread_id.get();
     }
 
     virtual void setThreadId(IEvalThreadId *tid) override {
-        m_thread_id = tid;
+        m_thread_id = IEvalThreadIdUP(tid);
     }
 
     virtual void setResult(IEvalResult *r) override;
@@ -93,7 +93,7 @@ protected:
 protected:
     static dmgr::IDebug                 *m_dbg;
     std::vector<IEvalUP>                m_eval_s;
-    IEvalThreadId                       *m_thread_id;
+    IEvalThreadIdUP                     m_thread_id;
     std::vector<IEvalStackFrameUP>      m_callstack;
 
 };

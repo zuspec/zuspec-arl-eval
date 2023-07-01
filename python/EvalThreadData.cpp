@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include <stdio.h>
 #include "EvalThreadData.h"
 
 
@@ -31,6 +32,7 @@ EvalThreadData::EvalThreadData(PyObject *obj) : m_obj(obj) {
 }
 
 EvalThreadData::~EvalThreadData() {
+    fprintf(stdout, "EvalThreadData::~EvalThreadData\n");
     Py_DECREF(m_obj);
 }
 
