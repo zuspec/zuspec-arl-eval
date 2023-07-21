@@ -35,14 +35,21 @@ class EvalThread :
     public virtual EvalBase {
 public:
     EvalThread(
-        IEvalContext            *ctxt,
+        dmgr::IDebugMgr         *dmgr,
+        IEvalBackend            *backend,
         IEvalThread             *thread);
+
+    EvalThread(IEvalThread      *thread);
 
     virtual ~EvalThread();
 
-    virtual bool eval() override;
+    virtual int32_t eval() override;
 
     virtual IEval *clone() override { return 0; }
+
+    virtual IEvalBackend *getBackend() const override {
+        return m_backend;
+    }
 
     /**
      * @brief Push an eval-stack entry
@@ -78,6 +85,11 @@ public:
         m_callstack.pop_back();
     }
 
+    virtual int32_t evalMethodCallContext(
+        dm::IDataTypeFunction                   *method,
+        vsc::dm::IModelField                    *method_ctxt,
+        const std::vector<vsc::dm::ITypeExpr *> &params) override;
+
     virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) override;
 
     virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) override;
@@ -88,10 +100,16 @@ public:
 
     virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
 
+    virtual dmgr::IDebugMgr *getDebugMgr() const override {
+        return m_dmgr;
+    }
+
 protected:
 
 protected:
     static dmgr::IDebug                 *m_dbg;
+    IEvalBackend                        *m_backend;
+    dmgr::IDebugMgr                     *m_dmgr;
     std::vector<IEvalUP>                m_eval_s;
     IEvalThreadIdUP                     m_thread_id;
     std::vector<IEvalStackFrameUP>      m_callstack;

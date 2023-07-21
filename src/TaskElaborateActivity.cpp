@@ -28,7 +28,7 @@
 #include "TaskElaborateActivity.h"
 #include "TaskElaborateActivityExpandReplicate.h"
 #include "TaskElaborateActivityBinds.h"
-
+#include "TaskElaborateRegGroupTypes.h"
 
 namespace zsp {
 namespace arl {
@@ -63,6 +63,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
     }
 
     // TODO: collect executors
+
 
     dm::ModelBuildContext build_ctxt(m_ctxt);
     dm::IModelFieldAction *root_action_f = root_action->mkRootFieldT<dm::IModelFieldAction>(

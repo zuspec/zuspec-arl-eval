@@ -36,11 +36,13 @@ public:
         IEvalThread             *thread
     );
 
+    EvalBase(IEvalThread        *thread);
+
     EvalBase(const EvalBase *o);
 
     virtual ~EvalBase();
 
-    virtual bool eval(const std::function<void()> &body);
+    virtual int32_t eval(const std::function<void()> &body);
 
     virtual int32_t getIdx() override {
         return m_entry_idx;

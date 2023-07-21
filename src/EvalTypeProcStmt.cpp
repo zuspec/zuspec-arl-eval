@@ -46,7 +46,7 @@ EvalTypeProcStmt::~EvalTypeProcStmt() {
 
 }
 
-bool EvalTypeProcStmt::eval() {
+int32_t EvalTypeProcStmt::eval() {
     DEBUG_ENTER("[%d] eval", getIdx());
     // We need to preserve this evaluator, since it contains 
     // the "stitching" logic across evaluation parts
@@ -61,7 +61,7 @@ bool EvalTypeProcStmt::eval() {
     // In this case, we delegate to the individual visit methods
     m_stmt->accept(m_this);
 
-    bool ret = !haveResult();
+    int32_t ret = !haveResult();
 
     if (m_initial) {
         m_initial = false;

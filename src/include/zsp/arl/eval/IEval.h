@@ -40,7 +40,7 @@ public:
      * @return true - if more work remains
      * @return false - if work is complete
      */
-    virtual bool eval() = 0;
+    virtual int32_t eval() = 0;
 
     virtual int32_t getIdx() = 0;
 

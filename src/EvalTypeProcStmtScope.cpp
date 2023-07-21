@@ -45,7 +45,7 @@ EvalTypeProcStmtScope::~EvalTypeProcStmtScope() {
 
 }
 
-bool EvalTypeProcStmtScope::eval() {
+int32_t EvalTypeProcStmtScope::eval() {
     DEBUG_ENTER("[%d] eval", getIdx());
 
     if (m_initial) {
@@ -54,7 +54,7 @@ bool EvalTypeProcStmtScope::eval() {
         setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
     }
 
-    bool ret = false;
+    int32_t ret = false;
     if (m_idx < m_scope->getStatements().size()) {
         while (m_idx < m_scope->getStatements().size()) {
             EvalTypeProcStmt evaluator(

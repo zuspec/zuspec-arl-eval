@@ -61,7 +61,7 @@ EvalActivityScopeFullElab::~EvalActivityScopeFullElab() {
     }
 }
 
-bool EvalActivityScopeFullElab::eval() {
+int32_t EvalActivityScopeFullElab::eval() {
     bool ret = false;
     DEBUG_ENTER("eval type=%d", m_scope->getType());
 
@@ -89,7 +89,7 @@ bool EvalActivityScopeFullElab::eval_parallel() {
         m_thread->pushEval(this);
 
         for (uint32_t i=0; i<m_scope->activities().size(); i++) {
-            m_threads.push_back(new EvalThread(m_ctxt, m_thread));
+            m_threads.push_back(new EvalThread(m_thread));
         }
 
         m_ctxt->getBackend()->enterThreads(m_threads);

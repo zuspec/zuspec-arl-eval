@@ -1,5 +1,5 @@
 /**
- * EvalMultiStepClosure.h
+ * TestEvalProcStmts.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,9 @@
  *     Author: 
  */
 #pragma once
-#include <functional>
-#include "zsp/arl/eval/IEval.h"
-#include "EvalBase.h"
+#include <string>
+#include "TestBase.h"
+
 
 namespace zsp {
 namespace arl {
@@ -29,26 +29,15 @@ namespace eval {
 
 
 
-class EvalMultiStepClosure :
-    public virtual IEval,
-    public virtual EvalBase {
+class TestEvalProcStmts : public TestBase {
 public:
-    EvalMultiStepClosure(
-        IEvalContext                            *ctxt,
-        IEvalThread                             *thread,
-        const std::function<bool(EvalMultiStepClosure *, uint32_t &)> &func,
-        uint32_t                                idx=0
-    );
+    TestEvalProcStmts();
 
-    virtual ~EvalMultiStepClosure();
-
-    virtual int32_t eval() override;
-
-    virtual IEval *clone() override;
+    virtual ~TestEvalProcStmts();
 
 protected:
-    std::function<bool(EvalMultiStepClosure *, uint32_t &)> m_func;
-    uint32_t                                                m_idx;
+    dm::IDataTypeFunction *mkFunction(
+        const std::string       &name);
 
 };
 

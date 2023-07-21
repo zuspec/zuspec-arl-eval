@@ -93,14 +93,6 @@ TEST_F(TestEvalContextFullElab, two_action_seq) {
         activity_root,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     EvalBackendTestFixture backend;
@@ -108,7 +100,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));
@@ -134,7 +126,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
         "doit",
         0,
         false));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -216,7 +208,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));
@@ -259,7 +251,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb) {
         "doit",
         0,
         false));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -325,14 +317,6 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb) {
         activity_par,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     EvalBackendTestFixture backend;
@@ -340,7 +324,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));
@@ -362,7 +346,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
         "doit",
         0,
         false));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -428,14 +412,6 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
         activity_par,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     EvalBackendTestFixture backend;
@@ -444,7 +420,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));
@@ -480,7 +456,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
         "doit",
         0,
         false));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -546,14 +522,6 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
         activity_par,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     EvalBackendTestFixture backend;
@@ -562,7 +530,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));
@@ -613,7 +581,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
             false,
             0
         ));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -669,14 +637,6 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
         activity_root,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     EvalBackendTestFixture backend;
@@ -686,7 +646,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));
@@ -730,7 +690,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
             false,
             0
         ));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -790,14 +750,6 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
         activity_root,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     EvalBackendTestFixture backend;
@@ -807,7 +759,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         &backend
     ));

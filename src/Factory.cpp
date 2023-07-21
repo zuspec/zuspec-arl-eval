@@ -18,9 +18,11 @@
  * Created on:
  *     Author:
  */
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "zsp/arl/eval/FactoryExt.h"
 #include "EvalContextFullElab.h"
 #include "EvalStackFrame.h"
+#include "EvalThread.h"
 #include "Factory.h"
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
@@ -61,22 +63,29 @@ IEvalContext *Factory::mkEvalContextFullElab(
         vsc::solvers::IFactory          *solvers_f,
         arl::dm::IContext               *ctxt,
         const vsc::solvers::IRandState  *randstate,
-        dm::IModelFieldComponent        *root_comp,
+        dm::IDataTypeComponent          *root_comp,
         dm::IDataTypeAction             *root_action,
         IEvalBackend                    *backend) {
-    vsc::solvers::IRandState *randstate_l = randstate->clone();
-    ElabActivity *exec_activity = TaskElaborateActivity(
-        solvers_f, 
-        ctxt).elaborate(
-            randstate_l,
-            root_comp,
-            root_action);
-    return new EvalContextFullElab(
+
+
+    IEvalContext *ret = new EvalContextFullElab(
         m_dmgr,
+        solvers_f,
         ctxt,
-        exec_activity,
+        randstate,
+        root_comp,
+        root_action,
         backend);
+
+    return ret;
 }
+
+IEvalThread *Factory::mkEvalThread(
+        IEvalBackend                    *backend,
+        IEvalThread                     *parent) {
+
+}
+
 
 IEvalStackFrame *Factory::mkStackFrame() {
     return new EvalStackFrame();

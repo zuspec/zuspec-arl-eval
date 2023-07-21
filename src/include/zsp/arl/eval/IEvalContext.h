@@ -45,20 +45,36 @@ public:
 
     virtual ~IEvalContext() { }
 
-    virtual bool eval() = 0;
+    virtual int32_t buildCompTree() = 0; 
+
+    virtual int32_t initCompTree() = 0; 
+
+    virtual int32_t eval() = 0;
 
     virtual IEvalBackend *getBackend() const = 0;
 
-    virtual void setBackend(IEvalBackend *b) = 0;
+    virtual void setBackend(IEvalBackend *b, bool owned=false) = 0;
 
     /**
-     * @brief Return functions
+     * Return just the global solve functions
      * 
-     * @return const std::vector<dm::IDataTypeFunction *>& 
+     * Valid after construction
      */
-    virtual const std::vector<dm::IDataTypeFunction *> &getFunctions() const = 0;
+    virtual const std::vector<dm::IDataTypeFunction *> &getSolveFunctions() const = 0;
 
+    /**
+     * Returns the executor objects
+     * 
+     * Valid after initializing the component tree
+     */
     virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const = 0;
+
+    /**
+     * Return just the target functions
+     * 
+     * Valid after construction
+     */
+    virtual const std::vector<dm::IDataTypeFunction *> &getTargetFunctions() const = 0;
 
     virtual void setFunctionData(
         dm::IDataTypeFunction       *func_t,

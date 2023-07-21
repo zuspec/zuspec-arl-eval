@@ -46,7 +46,7 @@ TEST_F(TestEvalContextFuncCall, func_identified) {
         "doit",
         0,
         false));
-    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport(""));
+    doit->addImportSpec(m_ctxt->mkDataTypeFunctionImport("", false, false));
 
     // component pss_top {
     // }
@@ -101,21 +101,13 @@ TEST_F(TestEvalContextFuncCall, func_identified) {
         activity_root,
         true));
 
-    dm::ModelBuildContext build_ctxt(m_ctxt.get());
-    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
-        &build_ctxt,
-        "pss_top", 
-        false));
-
-    pss_top->initCompTree();
-
     vsc::solvers::IRandStateUP randstate(m_solvers_f->mkRandState(""));
 
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
-        pss_top.get(),
+        pss_top_t.get(),
         entry_t.get(),
         0
     ));

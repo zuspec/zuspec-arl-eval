@@ -33,6 +33,11 @@ EvalBase::EvalBase(
 
 }
 
+EvalBase::EvalBase(IEvalThread *thread) :
+        m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread) {
+
+}
+
 EvalBase::EvalBase(const EvalBase *o) :
     m_initial(false), m_entry_idx(o->m_entry_idx), m_ctxt(o->m_ctxt), 
     m_thread(o->m_thread) {
@@ -43,7 +48,7 @@ EvalBase::~EvalBase() {
 
 }
 
-bool EvalBase::eval(const std::function<void()> &body) {
+int32_t EvalBase::eval(const std::function<void()> &body) {
     if (m_initial) {
         m_thread->pushEval(this);
     }

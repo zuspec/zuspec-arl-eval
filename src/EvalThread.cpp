@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "EvalThread.h"
+#include "EvalTypeMethodCallContext.h"
 
 
 namespace zsp {
@@ -28,9 +29,17 @@ namespace eval {
 
 
 EvalThread::EvalThread(
-    IEvalContext        *ctxt,
-    IEvalThread         *thread) : EvalBase(ctxt, thread), m_thread_id(0) {
-    DEBUG_INIT("EvalThread", ctxt->getDebugMgr());
+    dmgr::IDebugMgr     *dmgr,
+    IEvalBackend        *backend,
+    IEvalThread         *thread) : EvalBase(thread), 
+        m_dmgr(dmgr), m_backend(backend), m_thread_id(0) {
+    DEBUG_INIT("EvalThread", dmgr);
+
+}
+
+EvalThread::EvalThread(IEvalThread *thread) :
+    EvalBase(thread), m_dmgr(thread->getDebugMgr()),
+    m_backend(thread->getBackend()), m_thread_id(0) {
 
 }
 
@@ -38,9 +47,9 @@ EvalThread::~EvalThread() {
 
 }
 
-bool EvalThread::eval() {
+int32_t EvalThread::eval() {
     DEBUG_ENTER("eval");
-    bool ret = false;
+    int32_t ret = 0;
 
     while (m_eval_s.size() && !(ret=m_eval_s.back()->eval())) {
 
@@ -116,6 +125,17 @@ void EvalThread::sendEvalEvent(
     }
 }
 */
+
+int32_t EvalThread::evalMethodCallContext(
+        dm::IDataTypeFunction                   *method,
+        vsc::dm::IModelField                    *method_ctxt,
+        const std::vector<vsc::dm::ITypeExpr *> &params) {
+    EvalTypeMethodCallContext invoke(this, method, method_ctxt, params);
+
+    int32_t ret = invoke.eval();
+
+    return ret;
+}
 
 IEvalResult *EvalThread::mkEvalResultVal(const vsc::dm::IModelVal *val) {
     return m_ctxt->mkEvalResultVal(val);

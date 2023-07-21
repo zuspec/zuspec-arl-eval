@@ -48,7 +48,7 @@ EvalTypeExpr::~EvalTypeExpr() {
 
 }
 
-bool EvalTypeExpr::eval() {
+int32_t EvalTypeExpr::eval() {
     DEBUG_ENTER("[%d] eval", getIdx());
     if (m_initial) {
         m_thread->pushEval(this);
@@ -59,7 +59,7 @@ bool EvalTypeExpr::eval() {
 
     m_expr->accept(m_this);
 
-    bool ret = !haveResult();
+    int32_t ret = !haveResult();
 
     if (m_initial) {
         m_initial = false;
@@ -165,7 +165,16 @@ void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) {
 }
 
 void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
+    DEBUG_ENTER("visitTypeExprMethodCallContext");
+    // Determine whether this is a call to a register
+    // If so: 
+    // - What is the base address?
+    // - What is the offset expression?
+    // Otherwise:
+    // - Know this is a model-internal call
+    // - TODO: need a Invoke PSS Function stage
 
+    DEBUG_LEAVE("visitTypeExprMethodCallContext");
 }
 
 void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *e) {

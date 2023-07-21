@@ -43,7 +43,7 @@ public:
 
     virtual ~EvalTypeExpr();
 
-    virtual bool eval() override;
+    virtual int32_t eval() override;
 
     virtual IEval *clone() override;
 

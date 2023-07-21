@@ -47,7 +47,7 @@ EvalActivityFullElab::~EvalActivityFullElab() {
 
 }
 
-bool EvalActivityFullElab::eval() {
+int32_t EvalActivityFullElab::eval() {
     DEBUG_ENTER("[%d] eval", getIdx());
     if (m_initial) {
         m_thread->pushEval(this);
@@ -55,7 +55,7 @@ bool EvalActivityFullElab::eval() {
 
     m_activity->accept(m_this);
 
-    bool ret = !haveResult();
+    int32_t ret = !haveResult();
 
     if (m_initial) {
         m_initial = false;

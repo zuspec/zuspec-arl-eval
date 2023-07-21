@@ -39,12 +39,12 @@ EvalMultiStepClosure::~EvalMultiStepClosure() {
 
 }
 
-bool EvalMultiStepClosure::eval() {
+int32_t EvalMultiStepClosure::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
     }
 
-    bool ret = m_func(this, m_idx);
+    int32_t ret = m_func(this, m_idx);
 
     if (m_initial) {
         m_thread->suspendEval(this);

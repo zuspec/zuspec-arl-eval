@@ -31,8 +31,8 @@ namespace arl {
 namespace eval {
 
 class IEvalContext;
-
-
+class IEvalBackend;
+using IEvalBackendUP=vsc::dm::UP<IEvalBackend>;
 class IEvalBackend {
 public:
 

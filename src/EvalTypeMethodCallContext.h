@@ -1,5 +1,5 @@
 /**
- * EvalTypeProcStmt.h
+ * EvalTypeMethodCallContext.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -27,33 +27,35 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
-
-
-class EvalTypeProcStmt :
+class EvalTypeMethodCallContext : 
     public virtual IEval,
     public virtual EvalBase,
-    public virtual dm::VisitorBase {
+    dm::VisitorBase {
 public:
-    EvalTypeProcStmt(
-        IEvalContext                *ctxt,
-        IEvalThread                 *thread,
-        dm::ITypeProcStmt           *stmt);
+    EvalTypeMethodCallContext(
+        IEvalThread                                 *thread,
+        dm::IDataTypeFunction                       *method,
+        vsc::dm::IModelField                        *method_ctxt,
+        const std::vector<vsc::dm::ITypeExpr *>     &params
+    );
 
-    EvalTypeProcStmt(const EvalTypeProcStmt *o);
+    EvalTypeMethodCallContext(EvalTypeMethodCallContext *o);
 
-    virtual ~EvalTypeProcStmt();
+    virtual ~EvalTypeMethodCallContext();
 
     virtual int32_t eval() override;
 
-    virtual IEval *clone() override;
-
-	virtual void visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) override;
+    virtual IEval *clone() override {
+        return new EvalTypeMethodCallContext(this); 
+    }
 
 private:
-    static dmgr::IDebug             *m_dbg;
-    dm::ITypeProcStmt               *m_stmt;
-    uint32_t                        m_idx;
-
+    dm::IDataTypeFunction                   *m_method;
+    vsc::dm::IModelField                    *m_method_ctxt;
+    std::vector<vsc::dm::ITypeExpr *>       m_params;
+    std::vector<IEvalResultUP>              m_pvals;
+    uint32_t                                m_idx;
+    uint32_t                                m_subidx;
 };
 
 }

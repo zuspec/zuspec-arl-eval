@@ -45,7 +45,7 @@ EvalTypeExecList::~EvalTypeExecList() {
 
 }
 
-bool EvalTypeExecList::eval() {
+int32_t EvalTypeExecList::eval() {
     DEBUG_ENTER("[%d] eval size=%d idx=%d", getIdx(), m_execs.size(), m_idx);
 
     if (m_initial) {
@@ -55,7 +55,7 @@ bool EvalTypeExecList::eval() {
         setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
     }
 
-    bool ret = false;
+    int32_t ret = 0;
 
     if (m_idx < m_execs.size()) {
         while (m_idx < m_execs.size()) {

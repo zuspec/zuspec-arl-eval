@@ -19,9 +19,12 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
+#include "zsp/arl/eval/impl/EvalBackendBase.h"
 #include "EvalActivityScopeFullElab.h"
 #include "EvalContextFullElab.h"
 #include "EvalResult.h"
+#include "TaskElaborateRegGroupTypes.h"
 
 
 namespace zsp {
@@ -31,11 +34,16 @@ namespace eval {
 
 EvalContextFullElab::EvalContextFullElab(
     dmgr::IDebugMgr                                 *dmgr,
+    vsc::solvers::IFactory                          *solvers_f,
     dm::IContext                                    *ctxt,
-    ElabActivity                                    *activity,
+    const vsc::solvers::IRandState                  *randstate,
+    dm::IDataTypeComponent                          *root_comp,
+    dm::IDataTypeAction                             *root_action,
     IEvalBackend                                    *backend) : 
-        m_dmgr(dmgr), m_ctxt(ctxt), m_backend(backend), 
-        m_initial(true), m_activity(activity) {
+        m_dmgr(dmgr), m_solvers_f(solvers_f), m_ctxt(ctxt), 
+        m_randstate(randstate), m_backend(backend), 
+        m_initial(true), m_pss_top(0), m_root_comp(root_comp), 
+        m_pss_top_is_init(false), m_root_action(root_action) {
     DEBUG_INIT("EvalContextFullElab", dmgr);
 
     if (backend) {
@@ -47,11 +55,72 @@ EvalContextFullElab::~EvalContextFullElab() {
 
 }
 
-bool EvalContextFullElab::eval() {
+int32_t EvalContextFullElab::buildCompTree() {
+    dm::ModelBuildContext build_ctxt(m_ctxt);
+
+    // Build component tree
+    m_pss_top = dm::IModelFieldComponentRootUP(
+        m_root_comp->mkRootFieldT<dm::IModelFieldComponentRoot>(
+            &build_ctxt,
+            "pss_top",
+            false));
+
+    // Collect all solve import functions
+    for (std::vector<dm::IDataTypeFunction *>::const_iterator
+        it=m_ctxt->getDataTypeFunctions().begin();
+        it!=m_ctxt->getDataTypeFunctions().end(); it++) {
+        bool is_solve = false;
+        for (std::vector<dm::IDataTypeFunctionImportUP>::const_iterator
+            ii=(*it)->getImportSpecs().begin();
+            ii!=(*it)->getImportSpecs().end(); ii++) {
+            is_solve |= (*ii)->isSolve();
+        }
+        if (is_solve) {
+            m_solve_functions.push_back(*it);
+        }
+    }
+
+    return 0;
+}
+
+int32_t EvalContextFullElab::initCompTree() {
+
+    m_pss_top->initCompTree();
+
+    // TODO: Process InitUp/InitDown exec blocks
+    
+    TaskElaborateRegGroupTypes(this).elaborate(m_pss_top.get());
+
+    m_pss_top_is_init = true;
+
+    return 0;
+}
+
+int32_t EvalContextFullElab::eval() {
     bool ret = false;
     DEBUG_ENTER("eval");
 
     if (m_initial) {
+        if (!m_pss_top) {
+            buildCompTree();
+        }
+
+        if (!m_pss_top_is_init) {
+            initCompTree();
+        }
+
+        if (!getBackend()) {
+            DEBUG("Note: using stub implementation of backend");
+            setBackend(new EvalBackendBase());
+        }
+
+        m_activity = ElabActivityUP(TaskElaborateActivity(
+            m_solvers_f, 
+            m_ctxt).elaborate(
+                m_randstate->clone(),
+                m_pss_top.get(),
+                m_root_action));
+
         // Add an eval scope for the top-level activity
         getBackend()->enterThread(this);
 
@@ -132,6 +201,13 @@ void EvalContextFullElab::setResult(IEvalResult *r) {
     DEBUG_LEAVE("setResult");
 }
 
+int32_t EvalContextFullElab::evalMethodCallContext(
+        dm::IDataTypeFunction                   *method,
+        vsc::dm::IModelField                    *method_ctxt,
+        const std::vector<vsc::dm::ITypeExpr *> &params) {
+    return -1;
+}
+
 IEvalResult *EvalContextFullElab::mkEvalResultVal(const vsc::dm::IModelVal *val) {
     return new(&m_result_alloc, (val)?val->bits():0) EvalResult(
         &m_result_alloc,
@@ -162,6 +238,10 @@ IEvalResult *EvalContextFullElab::mkEvalResultValU(uint64_t val, int32_t bits) {
         &m_result_alloc,
         bits,
         val);
+}
+
+void EvalContextFullElab::finalizeComponentTree() {
+
 }
 
 dmgr::IDebug *EvalContextFullElab::m_dbg = 0;

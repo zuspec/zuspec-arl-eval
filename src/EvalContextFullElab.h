@@ -36,13 +36,20 @@ class EvalContextFullElab :
 public:
     EvalContextFullElab(
         dmgr::IDebugMgr                                 *dmgr,
+        vsc::solvers::IFactory                          *solvers_f,
         dm::IContext                                    *ctxt,
-        ElabActivity                                    *activity,
+        const vsc::solvers::IRandState                  *randstate,
+        dm::IDataTypeComponent                          *root_comp,
+        dm::IDataTypeAction                             *root_action,
         IEvalBackend                                    *backend=0);
 
     virtual ~EvalContextFullElab();
 
-    virtual bool eval() override;
+    virtual int32_t buildCompTree() override;
+    
+    virtual int32_t initCompTree() override;
+
+    virtual int32_t eval() override;
 
     /**
      * @brief Push an eval-stack entry
@@ -57,18 +64,22 @@ public:
     virtual void popEval(IEval *e) override;
 
     virtual IEvalBackend *getBackend() const override {
-        return m_backend;
+        return m_backend.get();
     }
 
-    virtual void setBackend(IEvalBackend *b) override {
-        m_backend = b;
+    virtual void setBackend(IEvalBackend *b, bool owned=false) override {
+        m_backend = IEvalBackendUP(b, owned);
         if (m_backend) {
             m_backend->init(this);
         }
     }
 
-    virtual const std::vector<dm::IDataTypeFunction *> &getFunctions() const override {
-        return m_activity->functions;
+    virtual const std::vector<dm::IDataTypeFunction *> &getSolveFunctions() const override {
+        return m_solve_functions;
+    }
+
+    virtual const std::vector<dm::IDataTypeFunction *> &getTargetFunctions() const override {
+        return m_target_functions;
     }
 
     virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const override {
@@ -125,6 +136,11 @@ public:
         m_callstack.pop_back();
     }
 
+    virtual int32_t evalMethodCallContext(
+        dm::IDataTypeFunction                   *method,
+        vsc::dm::IModelField                    *method_ctxt,
+        const std::vector<vsc::dm::ITypeExpr *> &params) override;
+
     virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) override {
         return m_ctxt->mkModelValS(v, w);
     }
@@ -147,13 +163,23 @@ public:
 
     virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
 
+protected:
+    void finalizeComponentTree();
+
 private:
     static dmgr::IDebug                     *m_dbg;
     dmgr::IDebugMgr                         *m_dmgr;
+    vsc::solvers::IFactory                  *m_solvers_f;
     dm::IContext                            *m_ctxt;
-    IEvalBackend                            *m_backend;
+    const vsc::solvers::IRandState          *m_randstate;
+    dm::IModelFieldComponentRootUP          m_pss_top;
+    bool                                    m_pss_top_is_init;
+    dm::IDataTypeComponent                  *m_root_comp;
+    dm::IDataTypeAction                     *m_root_action;
+    IEvalBackendUP                          m_backend;
     ElabActivityUP                          m_activity;
-    std::vector<dm::IDataTypeFunction *>    m_functions;
+    std::vector<dm::IDataTypeFunction *>    m_solve_functions;
+    std::vector<dm::IDataTypeFunction *>    m_target_functions;
     std::vector<dm::IModelFieldExecutor *>  m_executors;
     std::vector<IEvalListener *>            m_listeners;
 

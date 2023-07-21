@@ -49,9 +49,13 @@ public:
         vsc::solvers::IFactory          *solvers_f,
         arl::dm::IContext               *ctxt,
         const vsc::solvers::IRandState  *randstate,
-        dm::IModelFieldComponent        *root_comp,
+        dm::IDataTypeComponent          *root_comp,
         dm::IDataTypeAction             *root_action,
         IEvalBackend                    *backend) override;
+
+    virtual IEvalThread *mkEvalThread(
+        IEvalBackend                    *backend,
+        IEvalThread                     *parent) override;
 
     virtual IEvalStackFrame *mkStackFrame() override;
 
