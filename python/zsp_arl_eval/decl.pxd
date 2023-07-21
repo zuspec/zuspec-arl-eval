@@ -16,6 +16,7 @@ cimport cpython.ref as cpy_ref
 
 ctypedef EvalThreadData *EvalThreadDataP
 ctypedef IFactory *IFactoryP
+ctypedef IEvalContext *IEvalContextP
 ctypedef IEvalThread *IEvalThreadP
 ctypedef IEvalThreadId *IEvalThreadIdP
 ctypedef IEvalResult *IEvalResultP
@@ -34,7 +35,7 @@ cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
             vsc_solvers.IFactory            *solvers_f,
             arl_dm.IContext                 *ctxt,
             const vsc_solvers.IRandState    *randstate,
-            arl_dm.IModelFieldComponent     *root_comp,
+            arl_dm.IDataTypeComponent       *root_comp,
             arl_dm.IDataTypeAction          *root_action,
             IEvalBackend                    *backend)
 
@@ -76,7 +77,8 @@ cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
     cdef cppclass IEvalContext(IEval):
         IEvalBackend *getBackend() const
         void setBackend(IEvalBackend *b)
-        const cpp_vector[arl_dm.IDataTypeFunctionP] &getFunctions() const
+        const cpp_vector[arl_dm.IDataTypeFunctionP] &getSolveFunctions() const
+        const cpp_vector[arl_dm.IDataTypeFunctionP] &getTargetFunctions() const
 
         IEvalResult *mkEvalResultVal(vsc.IModelVal *val)
         IEvalResult *mkEvalResultValS(int64_t val, int32_t bits)

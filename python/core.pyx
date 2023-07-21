@@ -50,7 +50,7 @@ cdef class Factory(object):
         vsc_solvers.Factory           solvers_f,
         arl_dm.Context                ctxt,
         vsc_solvers.RandState         randstate,
-        arl_dm.ModelFieldComponent    root_comp,
+        arl_dm.DataTypeComponent      root_comp,
         arl_dm.DataTypeAction         root_action,
         EvalBackend                   backend):
         return EvalContext.mk(self._hndl.mkEvalContextFullElab(
@@ -167,11 +167,21 @@ cdef class EvalContext(object):
     cpdef bool eval(self):
         return self._hndl.eval()
 
-    cpdef getFunctions(self):
+    cdef decl.IEvalContext *asContext(self):
+        return dynamic_cast[decl.IEvalContextP](self._hndl)
+
+    cpdef getSolveFunctions(self):
         ret = []
-        for i in range(self._hndl.getFunctions().size()):
+        for i in range(self.asContext().getSolveFunctions().size()):
             ret.append(arl_dm.DataTypeFunction.mk(
-                self._hndl.getFunctions().at(i), False))
+                self.asContext().getSolveFunctions().at(i), False))
+        return ret
+
+    cpdef getTargetFunctions(self):
+        ret = []
+        for i in range(self._hndl.getTargetFunctions().size()):
+            ret.append(arl_dm.DataTypeFunction.mk(
+                self._hndl.getTargetFunctions().at(i), False))
         return ret
 
     cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):

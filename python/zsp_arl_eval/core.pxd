@@ -23,7 +23,7 @@ cdef class Factory(object):
         vsc_solvers.Factory           solvers_f,
         arl_dm.Context                ctxt,
         vsc_solvers.RandState         randstate,
-        arl_dm.ModelFieldComponent    root_comp,
+        arl_dm.DataTypeComponent      root_comp,
         arl_dm.DataTypeAction         root_action,
         EvalBackend                   backend)
 
@@ -57,7 +57,9 @@ cdef class EvalContext(object):
 
     cpdef bool eval(self)
 
-    cpdef getFunctions(self)
+    cpdef getSolveFunctions(self)
+
+    cpdef getTargetFunctions(self)
 
     cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
 
@@ -68,6 +70,8 @@ cdef class EvalContext(object):
     cpdef EvalResult mkEvalResultKind(self, kind)
 
     cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
+
+    cdef decl.IEvalContext *asContext(self)
 
     @staticmethod
     cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=*)
