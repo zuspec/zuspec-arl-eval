@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "EvalTypeExpr.h"
 #include "EvalTypeMethodCallContext.h"
 
@@ -34,6 +35,7 @@ EvalTypeMethodCallContext::EvalTypeMethodCallContext(
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
     EvalBase(thread), m_method(method), m_method_ctxt(method_ctxt),
     m_params(params.begin(), params.end()), m_idx(0), m_subidx(0) {
+    DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
 
 }
 
@@ -49,12 +51,13 @@ EvalTypeMethodCallContext::~EvalTypeMethodCallContext() {
 }
 
 int32_t EvalTypeMethodCallContext::eval() {
+    DEBUG_ENTER("eval");
 
     if (m_initial) {
         m_thread->pushEval(this);
 
         // Safety
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setResult(m_thread->mkEvalResultKind(EvalResultKind::Void));
     }
 
     switch (m_idx) {
@@ -86,7 +89,7 @@ int32_t EvalTypeMethodCallContext::eval() {
             clrResult(); // Clear 'safety' result
 
             m_idx = 1;
-            m_ctxt->getBackend()->callFuncReq(
+            m_thread->getBackend()->callFuncReq(
                 m_thread,
                 m_method,
                 m_pvals
@@ -101,6 +104,7 @@ int32_t EvalTypeMethodCallContext::eval() {
             // Wait for a response
 
         }
+
     }
 
     int32_t ret = !haveResult();
@@ -114,8 +118,12 @@ int32_t EvalTypeMethodCallContext::eval() {
         }
     }
 
+    DEBUG_LEAVE("eval m_idx=%d %d", m_idx, ret);
+
     return ret;
 }
+
+dmgr::IDebug *EvalTypeMethodCallContext::m_dbg = 0;
 
 }
 }

@@ -23,6 +23,7 @@
 #include <vector>
 #include "zsp/arl/eval/IEvalThread.h"
 #include "EvalBase.h"
+#include "EvalResultAlloc.h"
 
 namespace zsp {
 namespace arl {
@@ -39,6 +40,8 @@ public:
         IEvalBackend            *backend,
         IEvalThread             *thread);
 
+    EvalThread(dmgr::IDebugMgr  *dmgr);
+
     EvalThread(IEvalThread      *thread);
 
     virtual ~EvalThread();
@@ -49,6 +52,10 @@ public:
 
     virtual IEvalBackend *getBackend() const override {
         return m_backend;
+    }
+
+    void setBackend(IEvalBackend *b) {
+        m_backend = b;
     }
 
     /**
@@ -77,8 +84,12 @@ public:
         m_callstack.push_back(IEvalStackFrameUP(frame));
     }
 
-    virtual IEvalStackFrame *stackFrame() override {
-        return (m_callstack.size())?m_callstack.back().get():0;
+    virtual IEvalStackFrame *stackFrame(int32_t idx=0) override {
+        if (idx < m_callstack.size()) {
+            return m_callstack.at(m_callstack.size()-idx-1).get();
+        } else {
+            return 0;
+        }
     }
 
     virtual void popStackFrame() override {
@@ -113,6 +124,7 @@ protected:
     std::vector<IEvalUP>                m_eval_s;
     IEvalThreadIdUP                     m_thread_id;
     std::vector<IEvalStackFrameUP>      m_callstack;
+    EvalResultAlloc                     m_result_alloc;
 
 };
 

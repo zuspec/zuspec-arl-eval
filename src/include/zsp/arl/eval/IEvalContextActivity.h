@@ -1,5 +1,5 @@
 /**
- * TestEvalProcStmts.h
+ * IEvalContextActivity.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include <string>
-#include "TestBase.h"
-
+#include "zsp/arl/eval/IEvalContext.h"
 
 namespace zsp {
 namespace arl {
@@ -29,22 +27,26 @@ namespace eval {
 
 
 
-class TestEvalProcStmts : public TestBase {
+class IEvalContextActivity : public virtual IEvalContext {
 public:
-    TestEvalProcStmts();
 
-    virtual ~TestEvalProcStmts();
+    virtual ~IEvalContextActivity() { }
 
-protected:
-    dm::IDataTypeFunction *mkFunction(
-        const std::string       &name,
-        vsc::dm::IDataType      *rtype,
-        dm::ITypeProcStmt       *stmt);
+    virtual int32_t buildCompTree() = 0;
+
+    virtual int32_t initCompTree() = 0;
+
+    /**
+     * Returns the executor objects
+     * 
+     * Valid after initializing the component tree
+     */
+    virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const = 0;
 
 };
 
-}
-}
-}
+} /* namespace eval */
+} /* namespace arl */
+} /* namespace zsp */
 
 

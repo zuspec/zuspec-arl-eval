@@ -25,7 +25,6 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
-
 EvalBase::EvalBase(
     IEvalContext            *ctxt,
     IEvalThread             *thread) :
@@ -35,7 +34,6 @@ EvalBase::EvalBase(
 
 EvalBase::EvalBase(IEvalThread *thread) :
         m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread) {
-
 }
 
 EvalBase::EvalBase(const EvalBase *o) :

@@ -1,5 +1,5 @@
 /**
- * EvalTypeMethodCallStatic.h
+ * EvalContextFunctionStatic.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,9 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include "vsc/dm/ITypeExpr.h"
-#include "zsp/arl/eval/IEval.h"
-#include "EvalBase.h"
+#include "EvalContextBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,32 +27,26 @@ namespace eval {
 
 
 
-class EvalTypeMethodCallStatic :
-    public virtual IEval,
-    public virtual EvalBase {
+class EvalContextFunctionStatic : public EvalContextBase {
 public:
-    EvalTypeMethodCallStatic(
-        IEvalContext                                *ctxt,
-        IEvalThread                                 *thread,
+    EvalContextFunctionStatic(
+        dmgr::IDebugMgr                             *dmgr,
+        vsc::solvers::IFactory                      *solvers_f,
+        arl::dm::IContext                           *ctxt,
+        const vsc::solvers::IRandState              *randstate,
+        IEvalBackend                                *backend,
         dm::IDataTypeFunction                       *func,
         const std::vector<vsc::dm::ITypeExpr *>     &params);
 
-    EvalTypeMethodCallStatic(EvalTypeMethodCallStatic *o);
-
-    virtual ~EvalTypeMethodCallStatic();
+    virtual ~EvalContextFunctionStatic();
 
     virtual int32_t eval() override;
 
-    virtual IEval *clone() override;
+    virtual IEval *clone() override { return 0; }
 
-private:
-    static dmgr::IDebug                             *m_dbg;
+protected:
     dm::IDataTypeFunction                           *m_func;
     std::vector<vsc::dm::ITypeExpr *>               m_params;
-    int32_t                                         m_idx;
-    std::vector<IEvalResultUP>                      m_pvals;
-    IEvalStackFrameUP                               m_stack_frame;
-    int32_t                                         m_param_idx;
 
 };
 

@@ -70,11 +70,15 @@ int32_t EvalTypeProcStmtScope::eval() {
         }
     }
 
+    ret = !haveResult();
+
     if (m_initial) {
         m_initial = false;
         if (haveResult()) {
+            DEBUG("popEval");
             m_thread->popEval(this);
         } else {
+            DEBUG("suspendEval");
             m_thread->suspendEval(this);
         }
     }

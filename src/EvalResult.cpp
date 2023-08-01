@@ -98,12 +98,12 @@ void EvalResult::operator delete(void *p) {
         free(p);
     }
 #endif
-    free(p);
+    return ::operator delete(p);
 }
 
 void *EvalResult::operator new(size_t nbytes, EvalResultAlloc *alloc, uint32_t val_bits) {
 //    return alloc->alloc(nbytes, val_bits);
-    return malloc(nbytes);
+    return ::operator new(nbytes);
 }
 
 void EvalResult::set(const IModelVal *rhs) {
@@ -281,16 +281,14 @@ void EvalResult::slice(
 }
 
 IEvalResult *EvalResult::clone(vsc::dm::IContext *ctxt) const {
-/*
-	IModelVal *ret = (ctxt)?ctxt->mkModelVal():new ModelVal(this);
-
-	if (!ctxt) {
-		ret->set(this);
-	}
-
-	return ret;
- */
-    return 0;
+    switch (m_kind) {
+        case EvalResultKind::Val:
+            return new (m_alloc, m_bits) EvalResult(m_alloc, this);
+        case EvalResultKind::Ref:
+            return new (m_alloc, m_bits) EvalResult(m_alloc, getRef());
+        default:
+            return new (m_alloc, m_bits) EvalResult(m_alloc, getKind());
+    }
 }
 
 }

@@ -27,27 +27,29 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
-class EvalStackFrame : public virtual IEvalStackFrame {
+struct EvalStackFrame : public virtual IEvalStackFrame {
 public:
-    EvalStackFrame();
+    EvalStackFrame(int32_t num_variables);
 
     virtual ~EvalStackFrame();
 
-    virtual vsc::dm::IModelField *getVariable(uint32_t idx) override {
-        return m_variables.at(idx).get();
+    void *operator new(size_t size, int32_t n_vars);
+
+    virtual IEvalResult *getVariable(uint32_t idx) override {
+        return m_variables[idx].get();
     }
 
-    virtual void addVariable(vsc::dm::IModelField *var) override {
-        m_variables.push_back(vsc::dm::IModelFieldUP(var));
+    virtual void setVariable(uint32_t idx, IEvalResult *var) override {
+        m_variables[idx] = IEvalResultUP(var);
     }
 
-    virtual const std::vector<vsc::dm::IModelFieldUP> &getVariables() const override {
-        return m_variables;
+    virtual int32_t getNumVariables() override {
+        return m_num_variables;
     }
 
 private:
-    std::vector<IEvalResultUP>                  m_parameters;
-    std::vector<vsc::dm::IModelFieldUP>         m_variables;
+    int32_t                                     m_num_variables;
+    IEvalResultUP                               m_variables[1];
 
 };
 

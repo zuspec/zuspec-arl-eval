@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "EvalResult.h"
 #include "EvalThread.h"
 #include "EvalTypeMethodCallContext.h"
 
@@ -34,6 +35,12 @@ EvalThread::EvalThread(
     IEvalThread         *thread) : EvalBase(thread), 
         m_dmgr(dmgr), m_backend(backend), m_thread_id(0) {
     DEBUG_INIT("EvalThread", dmgr);
+
+}
+
+EvalThread::EvalThread(dmgr::IDebugMgr *dmgr) :
+    EvalBase((IEvalThread *)0), m_dmgr(dmgr),
+    m_backend(0), m_thread_id(0) {
 
 }
 
@@ -111,21 +118,6 @@ void EvalThread::setResult(IEvalResult *r) {
     DEBUG_LEAVE("setResult sz=%d", m_eval_s.size());
 }
 
-/*
-void EvalThread::sendEvalEvent(
-    const std::function<void (IEvalListener *)> &f) {
-    IEvalThread *t = this;
-    while (t) {
-        for (std::vector<IEvalListener *>::const_iterator
-            it=t->getListeners().begin();
-            it!=t->getListeners().end(); it++) {
-            f(*it);
-        }
-        t = t->getParent();
-    }
-}
-*/
-
 int32_t EvalThread::evalMethodCallContext(
         dm::IDataTypeFunction                   *method,
         vsc::dm::IModelField                    *method_ctxt,
@@ -138,23 +130,55 @@ int32_t EvalThread::evalMethodCallContext(
 }
 
 IEvalResult *EvalThread::mkEvalResultVal(const vsc::dm::IModelVal *val) {
-    return m_ctxt->mkEvalResultVal(val);
+    if (m_ctxt) {
+        return m_ctxt->mkEvalResultVal(val);
+    } else {
+        return new(&m_result_alloc, (val)?val->bits():0) EvalResult(
+            &m_result_alloc,
+            val);
+    }
 }
 
 IEvalResult *EvalThread::mkEvalResultValS(int64_t val, int32_t bits) {
-    return m_ctxt->mkEvalResultValS(val, bits);
+    if (m_ctxt) {
+        return m_ctxt->mkEvalResultValS(val, bits);
+    } else {
+        return new(&m_result_alloc, bits) EvalResult(
+            &m_result_alloc,
+            bits,
+            val);
+    }
 }
 
 IEvalResult *EvalThread::mkEvalResultValU(uint64_t val, int32_t bits) {
-    return m_ctxt->mkEvalResultValU(val, bits);
+    if (m_ctxt) {
+        return m_ctxt->mkEvalResultValU(val, bits);
+    } else {
+        return new(&m_result_alloc, bits) EvalResult(
+            &m_result_alloc,
+            bits,
+            val);
+    }
 }
 
 IEvalResult *EvalThread::mkEvalResultKind(EvalResultKind kind) {
-    return m_ctxt->mkEvalResultKind(kind);
+    if (m_ctxt) {
+        return m_ctxt->mkEvalResultKind(kind);
+    } else {
+        return new(&m_result_alloc, 0) EvalResult(
+            &m_result_alloc,
+            kind);
+    }
 }
 
 IEvalResult *EvalThread::mkEvalResultRef(vsc::dm::IModelField *ref) {
-    return m_ctxt->mkEvalResultRef(ref);
+    if (m_ctxt) {
+        return m_ctxt->mkEvalResultRef(ref);
+    } else {
+        return new(&m_result_alloc, 0) EvalResult(
+            &m_result_alloc,
+            ref);
+    }
 }
 
 dmgr::IDebug *EvalThread::m_dbg = 0;

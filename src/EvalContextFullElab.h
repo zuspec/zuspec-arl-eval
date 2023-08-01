@@ -20,7 +20,8 @@
  */
 #pragma once
 #include "zsp/arl/dm/IContext.h"
-#include "zsp/arl/eval/IEvalContext.h"
+#include "zsp/arl/eval/IEvalContextActivity.h"
+#include "EvalContextBase.h"
 #include "TaskElaborateActivity.h"
 #include "EvalResultAlloc.h"
 #include "EvalThread.h"
@@ -31,8 +32,8 @@ namespace eval {
 
 
 class EvalContextFullElab :
-    public virtual IEvalContext,
-    public virtual IEvalThread {
+    public virtual IEvalContextActivity,
+    public virtual EvalContextBase {
 public:
     EvalContextFullElab(
         dmgr::IDebugMgr                                 *dmgr,
@@ -51,144 +52,23 @@ public:
 
     virtual int32_t eval() override;
 
-    /**
-     * @brief Push an eval-stack entry
-     */
-    virtual void pushEval(IEval *e, bool owned=false) override;
-
-    /**
-     * @brief Convert eval-stack entry to a suspended entry
-     */
-    virtual void suspendEval(IEval *e) override;
-
-    virtual void popEval(IEval *e) override;
-
-    virtual IEvalBackend *getBackend() const override {
-        return m_backend.get();
-    }
-
-    virtual void setBackend(IEvalBackend *b, bool owned=false) override {
-        m_backend = IEvalBackendUP(b, owned);
-        if (m_backend) {
-            m_backend->init(this);
-        }
-    }
-
-    virtual const std::vector<dm::IDataTypeFunction *> &getSolveFunctions() const override {
-        return m_solve_functions;
-    }
-
-    virtual const std::vector<dm::IDataTypeFunction *> &getTargetFunctions() const override {
-        return m_target_functions;
-    }
+    virtual IEval *clone() override { return 0; }
 
     virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const override {
         return m_activity->executors;
     }
-
-    virtual void setFunctionData(
-        dm::IDataTypeFunction       *func_t,
-        IEvalFunctionData           *data) override;
-
-    virtual void addListener(IEvalListener *l) override {
-        m_listeners.push_back(l);
-    }
-
-    virtual void callListener(const std::function<void (IEvalListener *)> &f) override;
-
-    virtual dmgr::IDebugMgr *getDebugMgr() const override {
-        return m_dmgr;
-    }
-
-    virtual int32_t getIdx() { return -1; }
-
-    virtual void setIdx(int32_t idx) { }
-
-    virtual IEval *clone() override { return 0; }
-
-    virtual const IEvalResult *getResult() const override { return m_result.get(); }
-
-    virtual IEvalResult *moveResult() override { return m_result.release(); }
-
-    virtual void clrResult() override { m_result.reset(); }
-
-    virtual void setResult(IEvalResult *r) override;
-
-    virtual bool haveResult() const override { return false; }
-
-    virtual IEvalThreadId *getThreadId() const override { 
-        return m_thread_id.get();
-    }
-
-    virtual void setThreadId(IEvalThreadId *tid) override { 
-        m_thread_id = IEvalThreadIdUP(tid);
-    }
-
-    virtual void pushStackFrame(IEvalStackFrame *frame) override {
-        m_callstack.push_back(IEvalStackFrameUP(frame));
-    }
-
-    virtual IEvalStackFrame *stackFrame() override {
-        return (m_callstack.size())?m_callstack.back().get():0;
-    }
-
-    virtual void popStackFrame() override {
-        m_callstack.pop_back();
-    }
-
-    virtual int32_t evalMethodCallContext(
-        dm::IDataTypeFunction                   *method,
-        vsc::dm::IModelField                    *method_ctxt,
-        const std::vector<vsc::dm::ITypeExpr *> &params) override;
-
-    virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) override {
-        return m_ctxt->mkModelValS(v, w);
-    }
-
-    virtual vsc::dm::IModelVal *mkModelValU(uint64_t v=0, int32_t w=32) override {
-        return m_ctxt->mkModelValS(v, w);
-    }
-
-    virtual vsc::dm::IModelValOp *getModelValOp() override {
-        return m_ctxt->getModelValOp();
-    }
-
-    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) override;
-
-    virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) override;
-
-    virtual IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits) override;
-
-    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) override;
-
-    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
 
 protected:
     void finalizeComponentTree();
 
 private:
     static dmgr::IDebug                     *m_dbg;
-    dmgr::IDebugMgr                         *m_dmgr;
-    vsc::solvers::IFactory                  *m_solvers_f;
-    dm::IContext                            *m_ctxt;
-    const vsc::solvers::IRandState          *m_randstate;
     dm::IModelFieldComponentRootUP          m_pss_top;
     bool                                    m_pss_top_is_init;
     dm::IDataTypeComponent                  *m_root_comp;
     dm::IDataTypeAction                     *m_root_action;
-    IEvalBackendUP                          m_backend;
     ElabActivityUP                          m_activity;
-    std::vector<dm::IDataTypeFunction *>    m_solve_functions;
-    std::vector<dm::IDataTypeFunction *>    m_target_functions;
     std::vector<dm::IModelFieldExecutor *>  m_executors;
-    std::vector<IEvalListener *>            m_listeners;
-
-    bool                                    m_initial;
-    std::vector<IEvalUP>                    m_eval_s;
-    std::vector<IEvalStackFrameUP>          m_callstack;
-    IEvalResultUP                           m_result;
-    EvalResultAlloc                         m_result_alloc;
-    IEvalThreadIdUP                         m_thread_id;
 
 };
 

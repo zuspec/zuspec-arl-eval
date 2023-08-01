@@ -40,9 +40,8 @@ EvalContextFullElab::EvalContextFullElab(
     dm::IDataTypeComponent                          *root_comp,
     dm::IDataTypeAction                             *root_action,
     IEvalBackend                                    *backend) : 
-        m_dmgr(dmgr), m_solvers_f(solvers_f), m_ctxt(ctxt), 
-        m_randstate(randstate), m_backend(backend), 
-        m_initial(true), m_pss_top(0), m_root_comp(root_comp), 
+        EvalContextBase(dmgr, solvers_f, ctxt, randstate, backend),
+        m_pss_top(0), m_root_comp(root_comp), 
         m_pss_top_is_init(false), m_root_action(root_action) {
     DEBUG_INIT("EvalContextFullElab", dmgr);
 
@@ -154,91 +153,7 @@ int32_t EvalContextFullElab::eval() {
     return ret;
 }
 
-void EvalContextFullElab::pushEval(IEval *e, bool owned) {
-    e->setIdx(m_eval_s.size());
-    m_eval_s.push_back(IEvalUP(e, owned));
-}
 
-void EvalContextFullElab::suspendEval(IEval *e) {
-    m_eval_s.at(e->getIdx()) = IEvalUP(e->clone(), true);
-}
-
-void EvalContextFullElab::popEval(IEval *e) {
-    if (e->haveResult()) {
-        DEBUG("hasResult (%d)", m_eval_s.size());
-        if (m_eval_s.size() > 1) {
-            m_eval_s.at(m_eval_s.size()-2)->setResult(e->moveResult());
-        } else {
-            setResult(e->moveResult());
-        }
-    } else {
-        DEBUG("NOT hasResult");
-    }
-    m_eval_s.pop_back();
-}
-
-void EvalContextFullElab::setFunctionData(
-        dm::IDataTypeFunction       *func_t,
-        IEvalFunctionData           *data) {
-
-}
-
-void EvalContextFullElab::callListener(
-    const std::function<void (IEvalListener *)> &f) {
-
-    for (std::vector<IEvalListener *>::const_iterator
-        it=m_listeners.begin();
-        it!=m_listeners.end(); it++) {
-        f(*it);
-    }
-}
-
-void EvalContextFullElab::setResult(IEvalResult *r) {
-    DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
-    if (m_eval_s.size()) {
-        m_eval_s.back()->setResult(r);
-    }
-    DEBUG_LEAVE("setResult");
-}
-
-int32_t EvalContextFullElab::evalMethodCallContext(
-        dm::IDataTypeFunction                   *method,
-        vsc::dm::IModelField                    *method_ctxt,
-        const std::vector<vsc::dm::ITypeExpr *> &params) {
-    return -1;
-}
-
-IEvalResult *EvalContextFullElab::mkEvalResultVal(const vsc::dm::IModelVal *val) {
-    return new(&m_result_alloc, (val)?val->bits():0) EvalResult(
-        &m_result_alloc,
-        val);
-}
-
-IEvalResult *EvalContextFullElab::mkEvalResultKind(EvalResultKind kind) {
-    return new(&m_result_alloc, 0) EvalResult(
-        &m_result_alloc,
-        kind);
-}
-
-IEvalResult *EvalContextFullElab::mkEvalResultRef(vsc::dm::IModelField *ref) {
-    return new(&m_result_alloc, 0) EvalResult(
-        &m_result_alloc,
-        ref);
-}
-
-IEvalResult *EvalContextFullElab::mkEvalResultValS(int64_t val, int32_t bits) {
-    return new(&m_result_alloc, bits) EvalResult(
-        &m_result_alloc,
-        bits,
-        val);
-}
-
-IEvalResult *EvalContextFullElab::mkEvalResultValU(uint64_t val, int32_t bits) {
-    return new(&m_result_alloc, bits) EvalResult(
-        &m_result_alloc,
-        bits,
-        val);
-}
 
 void EvalContextFullElab::finalizeComponentTree() {
 

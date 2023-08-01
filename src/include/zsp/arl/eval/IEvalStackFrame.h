@@ -21,6 +21,7 @@
 #pragma once
 #include "vsc/dm/impl/UP.h"
 #include "vsc/dm/IModelField.h"
+#include "zsp/arl/eval/IEvalResult.h"
 
 namespace zsp {
 namespace arl {
@@ -33,11 +34,12 @@ public:
 
     virtual ~IEvalStackFrame() { }
 
-    virtual vsc::dm::IModelField *getVariable(uint32_t idx) = 0;
+    virtual IEvalResult *getVariable(uint32_t idx) = 0;
 
-    virtual void addVariable(vsc::dm::IModelField *var) = 0;
+    virtual void setVariable(uint32_t idx, IEvalResult *var) = 0;
+    
+    virtual int32_t getNumVariables() = 0;
 
-    virtual const std::vector<vsc::dm::IModelFieldUP> &getVariables() const = 0;
 
 };
 

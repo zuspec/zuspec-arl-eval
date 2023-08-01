@@ -102,6 +102,28 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
     DEBUG_LEAVE("visitTypeProcStmtExpr");
 }
 
+void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
+    DEBUG_ENTER("visitTypeProcStmtReturn");
+
+    switch (m_idx) {
+        case 0: {
+            m_idx = 1;
+            EvalTypeExpr evaluator(m_ctxt, m_thread, s->getExpr());
+
+            if (evaluator.eval()) {
+                clrResult();
+                break;
+            }
+        }
+
+        case 1: 
+            DEBUG("case 1 (result: %p)", getResult()); 
+            break;
+    }
+
+    DEBUG_LEAVE("visitTypeProcStmtReturn");
+}
+
 dmgr::IDebug *EvalTypeProcStmt::m_dbg = 0;
 
 }

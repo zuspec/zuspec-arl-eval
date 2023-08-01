@@ -43,7 +43,7 @@ union EvalResultVal {
 class IEvalResult;
 using IEvalResultUP=std::unique_ptr<IEvalResult>;
 class IEvalResult : public virtual vsc::dm::IModelVal {
-
+public:
     virtual EvalResultKind getKind() const = 0;
 
     virtual vsc::dm::IModelField *getRef() const = 0;

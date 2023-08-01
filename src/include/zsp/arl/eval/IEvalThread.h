@@ -60,7 +60,7 @@ public:
 
     virtual void pushStackFrame(IEvalStackFrame *frame) = 0;
 
-    virtual IEvalStackFrame *stackFrame() = 0;
+    virtual IEvalStackFrame *stackFrame(int32_t idx=0) = 0;
 
     virtual void popStackFrame() = 0;
 

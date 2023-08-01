@@ -50,6 +50,7 @@ public:
     }
 
 private:
+    static dmgr::IDebug                     *m_dbg;
     dm::IDataTypeFunction                   *m_method;
     vsc::dm::IModelField                    *m_method_ctxt;
     std::vector<vsc::dm::ITypeExpr *>       m_params;

@@ -31,6 +31,7 @@ namespace eval {
 
 class EvalBase : public virtual IEval {
 public:
+
     EvalBase(
         IEvalContext            *ctxt,
         IEvalThread             *thread

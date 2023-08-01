@@ -45,11 +45,9 @@ public:
 
     virtual ~IEvalContext() { }
 
-    virtual int32_t buildCompTree() = 0; 
-
-    virtual int32_t initCompTree() = 0; 
-
     virtual int32_t eval() = 0;
+
+    virtual IEvalResult *getResult() = 0;
 
     virtual IEvalBackend *getBackend() const = 0;
 
@@ -61,13 +59,6 @@ public:
      * Valid after construction
      */
     virtual const std::vector<dm::IDataTypeFunction *> &getSolveFunctions() const = 0;
-
-    /**
-     * Returns the executor objects
-     * 
-     * Valid after initializing the component tree
-     */
-    virtual const std::vector<dm::IModelFieldExecutor *> &getExecutors() const = 0;
 
     /**
      * Return just the target functions
@@ -100,6 +91,8 @@ public:
     virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) = 0;
 
     virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) = 0;
+
+    virtual IEvalStackFrame *mkStackFrame(int32_t n_vars) = 0;
 
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 

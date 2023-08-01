@@ -20,9 +20,11 @@
  */
 #include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "zsp/arl/eval/FactoryExt.h"
+#include "zsp/arl/eval/impl/EvalBackendBase.h"
 #include "EvalContextFullElab.h"
 #include "EvalStackFrame.h"
 #include "EvalThread.h"
+#include "EvalContextFunctionStatic.h"
 #include "Factory.h"
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
@@ -83,12 +85,45 @@ IEvalContext *Factory::mkEvalContextFullElab(
 IEvalThread *Factory::mkEvalThread(
         IEvalBackend                    *backend,
         IEvalThread                     *parent) {
-
+    EvalThread *ret;
+    if (parent) {
+        ret = new EvalThread(parent);
+    } else {
+        ret = new EvalThread(m_dmgr);
+    }
+    if (!backend) {
+        backend = new EvalBackendBase();
+    }
+    ret->setBackend(backend);
+    return ret;
 }
 
+IEvalContext *Factory::mkEvalContextFunctionStatic(
+    vsc::solvers::IFactory                      *solvers_f,
+    arl::dm::IContext                           *ctxt,
+    const vsc::solvers::IRandState              *randstate,
+    IEvalBackend                                *backend,
+    dm::IDataTypeFunction                       *func,
+    const std::vector<vsc::dm::ITypeExpr *>     &params) {
+    return new EvalContextFunctionStatic(
+        m_dmgr,
+        solvers_f,
+        ctxt,
+        randstate,
+        backend,
+        func,
+        params);
+}
 
-IEvalStackFrame *Factory::mkStackFrame() {
-    return new EvalStackFrame();
+IEvalContext *Factory::mkEvalContextFunctionContext(
+    vsc::solvers::IFactory                      *solvers_f,
+    arl::dm::IContext                           *ctxt,
+    const vsc::solvers::IRandState              *randstate,
+    IEvalBackend                                *backend,
+    dm::IDataTypeFunction                       *func,
+    vsc::dm::IModelField                        *func_ctxt,
+    const std::vector<vsc::dm::ITypeExpr *>     &params) {
+
 }
 
 IFactory *Factory::inst() {

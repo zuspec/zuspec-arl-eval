@@ -57,8 +57,22 @@ public:
         IEvalBackend                    *backend,
         IEvalThread                     *parent) = 0;
 
-    virtual IEvalStackFrame *mkStackFrame() = 0;
+    virtual IEvalContext *mkEvalContextFunctionStatic(
+        vsc::solvers::IFactory                      *solvers_f,
+        arl::dm::IContext                           *ctxt,
+        const vsc::solvers::IRandState              *randstate,
+        IEvalBackend                                *backend,
+        dm::IDataTypeFunction                       *func,
+        const std::vector<vsc::dm::ITypeExpr *>     &params) = 0;
 
+    virtual IEvalContext *mkEvalContextFunctionContext(
+        vsc::solvers::IFactory                      *solvers_f,
+        arl::dm::IContext                           *ctxt,
+        const vsc::solvers::IRandState              *randstate,
+        IEvalBackend                                *backend,
+        dm::IDataTypeFunction                       *func,
+        vsc::dm::IModelField                        *func_ctxt,
+        const std::vector<vsc::dm::ITypeExpr *>     &params) = 0;
 
 };
 

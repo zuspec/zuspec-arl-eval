@@ -147,7 +147,30 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
 }
 
 void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) { 
+    DEBUG_ENTER("visitTypeExprFieldRef");
+    switch (e->getRootRefKind()) {
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
+            DEBUG("Bottom-up scope");
+            IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(0));
+            IEvalResult *val = frame->getVariable(e->getPath().at(1));
 
+            if (e->getPath().size() > 2) {
+                DEBUG("TODO: stack-local refernece deeper than 2");
+            }
+
+            setResult(dynamic_cast<IEvalResult *>(val->clone()));
+        } break;
+
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
+            DEBUG("Top-down scope");
+        } break;
+
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::RootExpr: {
+            DEBUG("Root expr");
+        } break;
+    }
+
+    DEBUG_LEAVE("visitTypeExprFieldRef");
 }
 
 void EvalTypeExpr::visitTypeExprRange(vsc::dm::ITypeExprRange *e) { 
@@ -159,9 +182,9 @@ void EvalTypeExpr::visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) {
 }
 
 void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) { 
-    DEBUG_ENTER("visitTypeExprVal");
+    DEBUG_ENTER("visitTypeExprVal %p", getResult());
     setResult(m_ctxt->mkEvalResultVal(e->val()));
-    DEBUG_LEAVE("visitTypeExprVal");
+    DEBUG_LEAVE("visitTypeExprVal %p", getResult());
 }
 
 void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
