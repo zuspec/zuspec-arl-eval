@@ -95,7 +95,7 @@ public:
 
     virtual IEvalResult *getResult() override { return m_result.get(); }
 
-    virtual const IEvalResult *getResult() const override { return m_result.get(); }
+    virtual IEvalResult *getResult() const override { return m_result.get(); }
 
     virtual IEvalResult *moveResult() override { return m_result.release(); }
 

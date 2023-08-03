@@ -33,6 +33,7 @@ class EvalTypeMethodCallContext :
     dm::VisitorBase {
 public:
     EvalTypeMethodCallContext(
+        IEvalContext                                *ctxt,
         IEvalThread                                 *thread,
         dm::IDataTypeFunction                       *method,
         vsc::dm::IModelField                        *method_ctxt,
@@ -54,9 +55,10 @@ private:
     dm::IDataTypeFunction                   *m_method;
     vsc::dm::IModelField                    *m_method_ctxt;
     std::vector<vsc::dm::ITypeExpr *>       m_params;
-    std::vector<IEvalResultUP>              m_pvals;
     uint32_t                                m_idx;
-    uint32_t                                m_subidx;
+    std::vector<IEvalResultUP>              m_pvals;
+    IEvalStackFrameUP                       m_stack_frame;
+    uint32_t                                m_param_idx;
 };
 
 }

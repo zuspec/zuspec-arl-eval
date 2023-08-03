@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/arl/eval/impl/TaskEvalGetLval.h"
 #include "EvalTypeExpr.h"
 #include "EvalTypeProcStmt.h"
 
@@ -80,6 +81,48 @@ IEval *EvalTypeProcStmt::clone() {
     return new EvalTypeProcStmt(this);
 }
 
+void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
+    DEBUG_ENTER("visitTYpeProcStmtAssign");
+    switch (m_idx) {
+        case 0: {
+            m_idx = 1;
+
+            if (EvalTypeExpr(m_ctxt, m_thread, s->getRhs()).eval()) {
+                break;
+            }
+        }
+        case 1: {
+            // TODO: Getting the LHS possibly could be time-consuming (?)
+            // For now, cheat
+            vsc::dm::IModelVal *lval = TaskEvalGetLval(m_thread).eval(s->getLhs());
+            if (!lval) {
+                FATAL("null lval");
+            }
+
+            if (!haveResult()) {
+                FATAL("No result");
+            }
+
+            if (getResult()->getKind() != EvalResultKind::Val) {
+                FATAL("Incorrect result type %d", getResult()->getKind());
+            }
+
+            switch (s->op()) {
+                case dm::TypeProcStmtAssignOp::Eq: {
+                    DEBUG("lval.bits=%d rval.bits=%d", lval->bits(), getResult()->bits());
+                    lval->set(getResult());
+                } break;
+                default: FATAL("unsupported assign op %d", s->op());
+            }
+        }
+        case 2: {
+            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        }
+    }
+
+    DEBUG_LEAVE("visitTYpeProcStmtAssign");
+}
+
 void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
     DEBUG_ENTER("visitTypeProcStmtExpr");
 
@@ -100,6 +143,44 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
     }
 
     DEBUG_LEAVE("visitTypeProcStmtExpr");
+}
+
+void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
+    DEBUG_ENTER("visitTYpeProcStmtIfElse");
+    
+    switch (m_idx) {
+        case 0: {
+            // Evaluate condition
+            m_idx = 1;
+
+            if (EvalTypeExpr(m_ctxt, m_thread, s->getCond()).eval()) {
+                clrResult();
+                break;
+            }
+        }
+        case 1: {
+            m_idx = 2;
+            // Have the condition result
+            DEBUG("Result: kind=%d val_u=%lld", getResult()->getKind(), getResult()->val_u());
+            if (getResult()->val_u() != 0) {
+                DEBUG("True branch");
+                if (EvalTypeProcStmt(m_ctxt, m_thread, s->getTrue()).eval()) {
+                    clrResult();
+                    break;
+                }
+            } else if (s->getFalse()) {
+                DEBUG("False branch");
+                if (EvalTypeProcStmt(m_ctxt, m_thread, s->getFalse()).eval()) {
+                    clrResult();
+                    break;
+                }
+            }
+        }
+        case 2: {
+            // 
+        }
+    }
+    DEBUG_LEAVE("visitTYpeProcStmtIfElse");
 }
 
 void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {

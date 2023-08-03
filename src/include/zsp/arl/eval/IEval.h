@@ -48,7 +48,7 @@ public:
 
     virtual IEval *clone() = 0;
 
-    virtual const IEvalResult *getResult() const = 0;
+    virtual IEvalResult *getResult() const = 0;
 
     /**
      * @brief Moves the result, clearing the result here

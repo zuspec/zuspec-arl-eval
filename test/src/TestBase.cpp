@@ -75,6 +75,21 @@ void TestBase::enableDebug(bool en) {
     m_ctxt->getDebugMgr()->enable(en);
 }
 
+dm::IDataTypeFunction *TestBase::mkFunction(
+        const std::string       &name,
+        vsc::dm::IDataType      *rtype,
+        dm::ITypeProcStmt       *stmt) {
+    dm::IDataTypeFunction *ret = m_ctxt->mkDataTypeFunction(
+        name,
+        rtype,
+        false,
+        false,
+        true);
+    ret->getBody()->addStatement(stmt);
+
+    return ret;
+}
+
 dmgr::IDebug *TestBase::m_dbg = 0;
 
 }

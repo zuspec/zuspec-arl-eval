@@ -45,6 +45,13 @@ public:
     void enableDebug(bool en);
 
 protected:
+
+    dm::IDataTypeFunction *mkFunction(
+        const std::string       &name,
+        vsc::dm::IDataType      *rtype,
+        dm::ITypeProcStmt       *stmt);
+
+protected:
     static dmgr::IDebug         *m_dbg;
     dm::IFactory                *m_arl_dm_factory;
     eval::IFactory              *m_eval_f;

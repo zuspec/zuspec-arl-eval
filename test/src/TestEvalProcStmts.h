@@ -36,10 +36,7 @@ public:
     virtual ~TestEvalProcStmts();
 
 protected:
-    dm::IDataTypeFunction *mkFunction(
-        const std::string       &name,
-        vsc::dm::IDataType      *rtype,
-        dm::ITypeProcStmt       *stmt);
+
 
 };
 

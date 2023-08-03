@@ -110,11 +110,66 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
             IEvalResultUP val = IEvalResultUP(m_ctxt->mkEvalResultVal(m_val_rhs.get()));
 
             switch (e->op()) {
+                case vsc::dm::BinOp::Eq: {
+                    op->eq(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Ne: {
+                    op->ne(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Gt: {
+                    // TODO: determine sign of operands
+                    op->sgt(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Ge: {
+                    // TODO: determine sign of operands
+                    op->sge(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Lt: {
+                    // TODO: determine sign of operands
+                    op->slt(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Le: {
+                    // TODO: determine sign of operands
+                    op->sle(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
                 case vsc::dm::BinOp::Add: {
                     op->add(
                         val.get(), 
                         m_val_lhs.get(),
                         m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Sub: {
+                    op->sub(
+                        val.get(), 
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Div: {
+                    fprintf(stdout, "TODO: BinOp::Div\n");
+                    /*
+                    op->div(
+                        val.get(), 
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                     */
                 } break;
                 case vsc::dm::BinOp::BinAnd: {
                     op->bin_and(
@@ -134,6 +189,48 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
                         m_val_lhs.get(),
                         m_val_rhs.get());
                 } break;
+                case vsc::dm::BinOp::LogAnd: {
+                    op->log_and(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::LogOr: {
+                    op->log_or(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Sll: {
+                    op->sll(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Srl: {
+                    op->srl(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Xor: {
+                    op->log_xor(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                } break;
+                case vsc::dm::BinOp::Not: {
+                    fprintf(stdout, "TODO: BinOp::Not\n");
+                    /*
+                    op->log_xor(
+                        val.get(),
+                        m_val_lhs.get(),
+                        m_val_rhs.get());
+                     */
+                } break;
+                default:
+//                    ERROR("")
+                    break;
             }
 
             setResult(val.release());

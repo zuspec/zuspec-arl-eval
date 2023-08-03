@@ -24,6 +24,7 @@
 #include "EvalContextFullElab.h"
 #include "EvalStackFrame.h"
 #include "EvalThread.h"
+#include "EvalContextFunctionContext.h"
 #include "EvalContextFunctionStatic.h"
 #include "Factory.h"
 #include "ModelEvaluatorFullElab.h"
@@ -123,7 +124,16 @@ IEvalContext *Factory::mkEvalContextFunctionContext(
     dm::IDataTypeFunction                       *func,
     vsc::dm::IModelField                        *func_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) {
-
+    return new EvalContextFunctionContext(
+        m_dmgr,
+        solvers_f,
+        ctxt,
+        randstate,
+        backend,
+        func,
+        func_ctxt,
+        params
+    );
 }
 
 IFactory *Factory::inst() {

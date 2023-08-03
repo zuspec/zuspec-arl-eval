@@ -53,7 +53,7 @@ public:
         m_entry_idx = idx;
     }
 
-    virtual const IEvalResult *getResult() const override {
+    virtual IEvalResult *getResult() const override {
         return m_result.get();
     }
 

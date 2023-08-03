@@ -113,6 +113,52 @@ TEST_F(TestEvalContextFuncCall, func_identified) {
     ));
 }
 
+TEST_F(TestEvalContextFuncCall, stmt_incr_field) {
+    enableDebug(true);
+
+    vsc::dm::IModelValUP val(m_ctxt->mkModelValS(15, 32));
+    vsc::dm::IDataTypeIntUP i32_t(m_ctxt->mkDataTypeInt(true, 32));
+
+    vsc::dm::IDataTypeStruct *dt = m_ctxt->mkDataTypeStruct("dt");
+    dt->addField(m_ctxt->mkTypeFieldPhy("a", i32_t.get(), false, 
+        vsc::dm::TypeFieldAttr::NoAttr, 0));
+    m_ctxt->addDataTypeStruct(dt);
+
+    dm::IDataTypeFunctionUP func(mkFunction(
+        "func",
+        i32_t.get(),
+        m_ctxt->mkTypeProcStmtAssign(
+            m_ctxt->mkTypeExprFieldRef(
+                vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
+                1,
+                {0, 0}),
+            dm::TypeProcStmtAssignOp::Eq,
+            m_ctxt->mkTypeExprVal(val.get())
+        ))
+    );
+
+    vsc::dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    vsc::dm::IModelFieldUP obj(dt->mkRootField(&build_ctxt, "obj", false));
+
+    IEvalContextUP eval_c(m_eval_f->mkEvalContextFunctionContext(
+        m_solvers_f,
+        m_ctxt.get(),
+        m_randstate.get(),
+        0, // &backend,
+        func.get(),
+        obj.get(),
+        {}
+    ));
+
+    ASSERT_EQ(eval_c->eval(), 0);
+//    ASSERT_EQ(eval_c->haveResult());
+    IEvalResult *result = eval_c->getResult();
+    fprintf(stdout, "result: %p\n", result);
+    ASSERT_EQ(result->getKind(), EvalResultKind::Void);
+    ASSERT_EQ(obj->getField(0)->val()->val_i(), 15);
+}
+
+
 }
 }
 }

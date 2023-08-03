@@ -21,6 +21,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "EvalTypeExpr.h"
 #include "EvalTypeMethodCallContext.h"
+#include "EvalTypeProcStmtScope.h"
 
 
 namespace zsp {
@@ -29,12 +30,13 @@ namespace eval {
 
 
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(
+    IEvalContext                                *ctxt,
     IEvalThread                                 *thread,
     dm::IDataTypeFunction                       *method,
     vsc::dm::IModelField                        *method_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-    EvalBase(thread), m_method(method), m_method_ctxt(method_ctxt),
-    m_params(params.begin(), params.end()), m_idx(0), m_subidx(0) {
+    EvalBase(ctxt, thread), m_method(method), m_method_ctxt(method_ctxt),
+    m_params(params.begin(), params.end()), m_idx(0), m_param_idx(0) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
 
 }
@@ -42,7 +44,7 @@ EvalTypeMethodCallContext::EvalTypeMethodCallContext(
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(EvalTypeMethodCallContext *o) :
     EvalBase(o), m_method(o->m_method), m_method_ctxt(o->m_method_ctxt),
     m_params(o->m_params.begin(), o->m_params.end()),
-    m_idx(o->m_idx), m_subidx(o->m_subidx) {
+    m_idx(o->m_idx), m_param_idx(o->m_param_idx) {
 
 }
 
@@ -51,49 +53,87 @@ EvalTypeMethodCallContext::~EvalTypeMethodCallContext() {
 }
 
 int32_t EvalTypeMethodCallContext::eval() {
-    DEBUG_ENTER("eval");
+    bool intf = m_method->getBody();
+    int32_t ret = 0;
+    DEBUG_ENTER("eval: m_idx=%d m_param_idx=%d", m_idx, m_param_idx);
 
     if (m_initial) {
         m_thread->pushEval(this);
-
         // Safety
-        setResult(m_thread->mkEvalResultKind(EvalResultKind::Void));
+        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+
+        if (intf) {
+            m_stack_frame = IEvalStackFrameUP(m_ctxt->mkStackFrame(m_params.size()+1));
+            m_stack_frame->setVariable(0, m_ctxt->mkEvalResultRef(m_method_ctxt));
+        } else {
+            m_pvals.push_back(IEvalResultUP(m_ctxt->mkEvalResultRef(m_method_ctxt)));
+        }
     }
 
     switch (m_idx) {
         case 0: {
-            if (m_subidx > 0 && haveResult()) {
-                m_pvals.push_back(IEvalResultUP(moveResult()));
+            if (m_param_idx > 0 && haveResult()) {
+                if (intf) {
+                    m_stack_frame->setVariable(m_param_idx, moveResult());
+                } else {
+                    m_pvals.push_back(IEvalResultUP(moveResult()));
+                }
             }
-            while (m_subidx < m_params.size()) {
-                EvalTypeExpr evaluator(m_ctxt, m_thread, m_params.at(m_subidx));
+            while (m_param_idx < m_params.size()) {
+                EvalTypeExpr evaluator(
+                    m_ctxt, 
+                    m_thread, 
+                    m_params.at(m_param_idx));
 
-                m_subidx += 1;
+                m_param_idx += 1;
                 clrResult();
                 if (evaluator.eval()) {
                     break;
                 } else {
                     if (haveResult()) {
                         fprintf(stdout, "Note: push expr result\n");
-                        m_pvals.push_back(IEvalResultUP(moveResult()));
+                        if (intf) {
+                            m_stack_frame->setVariable(m_param_idx, moveResult());
+                        } else {
+                            m_pvals.push_back(IEvalResultUP(moveResult()));
+                        }
                     }
                 }
             }
 
             // If we left the loop before achieving enough
             // parameters, suspend...
-            if (m_subidx < m_params.size()) {
+            if (m_param_idx < m_params.size()) {
                 break;
             }
 
             clrResult(); // Clear 'safety' result
 
             m_idx = 1;
-            m_thread->getBackend()->callFuncReq(
-                m_thread,
-                m_method,
-                m_pvals
-            );
+
+            // Determine *what* to call
+            // - If there is a body, evaluate that
+
+            if (m_method->getBody()) {
+                DEBUG("Launching proc-body interpreter");
+
+                // Push parameters
+                m_thread->pushStackFrame(m_stack_frame.release());
+
+                // TODO: push local-vars
+                m_thread->pushStackFrame(m_ctxt->mkStackFrame(0));
+                EvalTypeProcStmtScope(
+                    m_ctxt,
+                    m_thread,
+                    m_method->getBody()).eval();
+            } else {
+                DEBUG("Calling import function");
+                m_ctxt->getBackend()->callFuncReq(
+                    m_thread,
+                    m_method,
+                    m_pvals
+                );
+            }
 
             if (!haveResult()) {
                 break;
@@ -102,23 +142,29 @@ int32_t EvalTypeMethodCallContext::eval() {
 
         case 1: {
             // Wait for a response
-
+            if (haveResult()) {
+                if (m_method->getBody()) {
+                    m_thread->popStackFrame();
+                    m_thread->popStackFrame();
+                }
+            }
         }
-
     }
 
-    int32_t ret = !haveResult();
+    ret = !haveResult();
 
     if (m_initial) {
         m_initial = false;
         if (haveResult()) {
+            DEBUG("popEval");
             m_thread->popEval(this);
         } else {
+            DEBUG("suspendEval");
             m_thread->suspendEval(this);
         }
     }
 
-    DEBUG_LEAVE("eval m_idx=%d %d", m_idx, ret);
+    DEBUG_LEAVE("eval: m_idx=%d m_param_idx=%d %d", m_idx, m_param_idx, ret);
 
     return ret;
 }

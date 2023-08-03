@@ -122,7 +122,7 @@ int32_t EvalThread::evalMethodCallContext(
         dm::IDataTypeFunction                   *method,
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) {
-    EvalTypeMethodCallContext invoke(this, method, method_ctxt, params);
+    EvalTypeMethodCallContext invoke(m_ctxt, this, method, method_ctxt, params);
 
     int32_t ret = invoke.eval();
 

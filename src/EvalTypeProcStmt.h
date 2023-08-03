@@ -47,7 +47,11 @@ public:
 
     virtual IEval *clone() override;
 
+	virtual void visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) override;
+
 	virtual void visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) override;
+
+	virtual void visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) override;
 
 	virtual void visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) override;
 
