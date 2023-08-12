@@ -36,7 +36,21 @@ EvalTypeMethodCallContext::EvalTypeMethodCallContext(
     vsc::dm::IModelField                        *method_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
     EvalBase(ctxt, thread), m_method(method), m_method_ctxt(method_ctxt),
-    m_params(params.begin(), params.end()), m_idx(0), m_param_idx(0) {
+    m_method_ctxt_e(0), m_params(params.begin(), params.end()), 
+    m_idx(0), m_param_idx(0) {
+    DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
+
+}
+
+EvalTypeMethodCallContext::EvalTypeMethodCallContext(
+    IEvalContext                                *ctxt,
+    IEvalThread                                 *thread,
+    dm::IDataTypeFunction                       *method,
+    vsc::dm::ITypeExpr                          *method_ctxt,
+    const std::vector<vsc::dm::ITypeExpr *>     &params) :
+    EvalBase(ctxt, thread), m_method(method), m_method_ctxt(0),
+    m_method_ctxt_e(method_ctxt), m_params(params.begin(), params.end()), 
+    m_idx(0), m_param_idx(0) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
 
 }
@@ -72,6 +86,26 @@ int32_t EvalTypeMethodCallContext::eval() {
 
     switch (m_idx) {
         case 0: {
+            // If we've been invoked with an expression as the root context,
+            // must resolve to a ModelField and determine whether this is
+            // a register.
+            m_idx = 1;
+            if (m_method_ctxt_e) {
+
+            }
+        }
+        case 0: { 
+            // Determine whether a register-group field is on the context path
+            // Check returns:
+            // - Register-group handle (if applicable)
+            // - Total offset of the register relative to the register-group handle
+            // - Size (bits) of the register
+            m_idx = 1;
+
+
+        } 
+        case 1: {
+            // Compute parameter values to pass to the call
             if (m_param_idx > 0 && haveResult()) {
                 if (intf) {
                     m_stack_frame->setVariable(m_param_idx, moveResult());
@@ -109,11 +143,19 @@ int32_t EvalTypeMethodCallContext::eval() {
 
             clrResult(); // Clear 'safety' result
 
-            m_idx = 1;
+            m_idx = 2;
 
             // Determine *what* to call
             // - If there is a body, evaluate that
 
+            // If we have register-call info, we need to:
+            // - Obtain the current-executor handle to use as a context
+            //   - This is where the ability to lookup method types from an object 
+            //     handle becomes useful. We're an interpreter, so it would be
+            //     useful to be able to check whether the target method is 
+            //     internally or externally implemented.
+            // - Obtain the appropriate access method based on register size
+            // - Invoke the relevant target-context function
             if (m_method->getBody()) {
                 DEBUG("Launching proc-body interpreter");
 

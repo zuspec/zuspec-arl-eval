@@ -158,6 +158,84 @@ TEST_F(TestEvalContextFuncCall, stmt_incr_field) {
     ASSERT_EQ(obj->getField(0)->val()->val_i(), 15);
 }
 
+TEST_F(TestEvalContextFuncCall, eval_check_reg_access) {
+    enableDebug(true);
+
+    vsc::dm::IModelValUP val(m_ctxt->mkModelValS(15, 32));
+    vsc::dm::IDataTypeIntUP i32_t(m_ctxt->mkDataTypeInt(true, 32));
+
+    // Need a register group containing a register field
+    dm::IDataTypeComponent *reg_group_t = m_ctxt->mkDataTypeComponent("reg_group_t");
+
+    // Build placeholder read/write functions
+    reg_group_t->addFunction(
+        m_ctxt->mkDataTypeFunction("read32", i32_t.get(), false, true, false));
+    reg_group_t->addFunction(
+        m_ctxt->mkDataTypeFunction("write32", i32_t.get(), false, true, false));
+
+    reg_group_t->addField(
+        m_ctxt->mkTypeFieldReg("reg1", i32_t.get(), false));
+
+//    dm::ITypeFieldRegGroup *reg_group_t = m_ctxt->mkTypeFieldRegGroup(
+    vsc::dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    vsc::dm::IModelField *reg_group_f = reg_group_t->mkRootField(
+        &build_ctxt,
+        "root",
+        false
+    );
+
+    m_eval_f->mkEvalContextFunctionContext(
+        m_solvers_f,
+        m_ctxt,
+        m_randstate.get(),
+        0,
+        
+    )
+    m_ctxt->mkTypeExprMethodCallContext(
+
+    )
+
+    vsc::dm::IDataTypeStruct *dt = m_ctxt->mkDataTypeStruct("dt");
+    dt->addField(m_ctxt->mkTypeFieldPhy("a", i32_t.get(), false, 
+        vsc::dm::TypeFieldAttr::NoAttr, 0));
+    m_ctxt->addDataTypeStruct(dt);
+
+    dm::IDataTypeFunctionUP func(mkFunction(
+        "func",
+        i32_t.get(),
+        m_ctxt->mkTypeProcStmtAssign(
+            m_ctxt->mkTypeExprFieldRef(
+                vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
+                1,
+                {0, 0}),
+            dm::TypeProcStmtAssignOp::Eq,
+            m_ctxt->mkTypeExprVal(val.get())
+        ))
+    );
+
+    vsc::dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    vsc::dm::IModelFieldUP obj(dt->mkRootField(&build_ctxt, "obj", false));
+
+    IEvalContextUP eval_c(m_eval_f->mkEvalContextFunctionContext(
+        m_solvers_f,
+        m_ctxt.get(),
+        m_randstate.get(),
+        0, // &backend,
+        func.get(),
+        obj.get(),
+        {
+
+        }
+    ));
+
+    ASSERT_EQ(eval_c->eval(), 0);
+//    ASSERT_EQ(eval_c->haveResult());
+    IEvalResult *result = eval_c->getResult();
+    fprintf(stdout, "result: %p\n", result);
+    ASSERT_EQ(result->getKind(), EvalResultKind::Void);
+    ASSERT_EQ(obj->getField(0)->val()->val_i(), 15);
+}
+
 
 }
 }
