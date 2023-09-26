@@ -108,7 +108,7 @@ void EvalThread::popEval(IEval *e) {
     DEBUG_LEAVE("popEval");
 }
 
-void EvalThread::setResult(IEvalResult *r) {
+void EvalThread::setResult(vsc::dm::ValRef &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(r);
@@ -127,58 +127,6 @@ int32_t EvalThread::evalMethodCallContext(
     int32_t ret = invoke.eval();
 
     return ret;
-}
-
-IEvalResult *EvalThread::mkEvalResultVal(const vsc::dm::IModelVal *val) {
-    if (m_ctxt) {
-        return m_ctxt->mkEvalResultVal(val);
-    } else {
-        return new(&m_result_alloc, (val)?val->bits():0) EvalResult(
-            &m_result_alloc,
-            val);
-    }
-}
-
-IEvalResult *EvalThread::mkEvalResultValS(int64_t val, int32_t bits) {
-    if (m_ctxt) {
-        return m_ctxt->mkEvalResultValS(val, bits);
-    } else {
-        return new(&m_result_alloc, bits) EvalResult(
-            &m_result_alloc,
-            bits,
-            val);
-    }
-}
-
-IEvalResult *EvalThread::mkEvalResultValU(uint64_t val, int32_t bits) {
-    if (m_ctxt) {
-        return m_ctxt->mkEvalResultValU(val, bits);
-    } else {
-        return new(&m_result_alloc, bits) EvalResult(
-            &m_result_alloc,
-            bits,
-            val);
-    }
-}
-
-IEvalResult *EvalThread::mkEvalResultKind(EvalResultKind kind) {
-    if (m_ctxt) {
-        return m_ctxt->mkEvalResultKind(kind);
-    } else {
-        return new(&m_result_alloc, 0) EvalResult(
-            &m_result_alloc,
-            kind);
-    }
-}
-
-IEvalResult *EvalThread::mkEvalResultRef(vsc::dm::IModelField *ref) {
-    if (m_ctxt) {
-        return m_ctxt->mkEvalResultRef(ref);
-    } else {
-        return new(&m_result_alloc, 0) EvalResult(
-            &m_result_alloc,
-            ref);
-    }
 }
 
 dmgr::IDebug *EvalThread::m_dbg = 0;

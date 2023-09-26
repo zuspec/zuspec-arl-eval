@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "vsc/dm/impl/ValRef.h"
 #include "vsc/dm/impl/UP.h"
 #include "vsc/dm/IModelField.h"
 #include "zsp/arl/eval/IEvalResult.h"
@@ -34,9 +35,9 @@ public:
 
     virtual ~IEvalStackFrame() { }
 
-    virtual IEvalResult *getVariable(uint32_t idx) = 0;
+    virtual const vsc::dm::ValRef &getVariable(uint32_t idx) = 0;
 
-    virtual void setVariable(uint32_t idx, IEvalResult *var) = 0;
+    virtual void setVariable(uint32_t idx, vsc::dm::ValRef &var) = 0;
     
     virtual int32_t getNumVariables() = 0;
 

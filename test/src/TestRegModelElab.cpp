@@ -49,9 +49,9 @@ TEST_F(TestRegModelElab, smoke) {
     vsc::dm::IDataTypeInt *ui32_t = m_ctxt->mkDataTypeInt(false, 32);
     m_ctxt->addDataTypeInt(ui32_t);
     dm::IDataTypePackedStruct *MyReg_t = m_ctxt->mkDataTypePackedStruct("MyReg");
-    vsc::dm::ITypeField *val = m_ctxt->mkTypeFieldPhy("val", ui32_t, false, vsc::dm::TypeFieldAttr::NoAttr, 0);
+    vsc::dm::ITypeField *val = m_ctxt->mkTypeFieldPhy("val", ui32_t, false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef());
     MyReg_t->addField(val);
-//    MyReg_t->addField(m_ctxt->mkTypeFieldPhy("val", ui32_t, false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+//    MyReg_t->addField(m_ctxt->mkTypeFieldPhy("val", ui32_t, false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     m_ctxt->addDataTypePackedStruct(MyReg_t);
 
     // struct MyReg : packed_s<> {
@@ -76,7 +76,7 @@ TEST_F(TestRegModelElab, smoke) {
     dm::IDataTypeComponent *pss_top_t = m_ctxt->mkDataTypeComponent("pss_top");
     pss_top_t->addField(m_ctxt->mkTypeFieldRegGroup("regs", MyRegs_t, false));
 
-    vsc::dm::ITypeField *val1 = m_ctxt->mkTypeFieldPhy("val", ui32_t, false, vsc::dm::TypeFieldAttr::NoAttr, 0);
+    vsc::dm::ITypeField *val1 = m_ctxt->mkTypeFieldPhy("val", ui32_t, false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef());
     pss_top_t->addField(val1);
 
 

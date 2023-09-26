@@ -44,6 +44,8 @@ public:
 
     virtual ~EvalContextBase();
 
+    virtual dm::IContext *ctxt() const { return m_ctxt; }
+
     /**
      * @brief Push an eval-stack entry
      */
@@ -93,15 +95,15 @@ public:
 
     virtual void setIdx(int32_t idx) { }
 
-    virtual IEvalResult *getResult() override { return m_result.get(); }
+    virtual const vsc::dm::ValRef &getResult() const override { return m_result; }
 
-    virtual IEvalResult *getResult() const override { return m_result.get(); }
-
-    virtual IEvalResult *moveResult() override { return m_result.release(); }
+    virtual vsc::dm::ValRef &moveResult() override { return m_result; }
 
     virtual void clrResult() override { m_result.reset(); }
 
-    virtual void setResult(IEvalResult *r) override;
+    virtual void setResult(vsc::dm::ValRef &r) override;
+    
+    void setVoidResult();
 
     virtual bool haveResult() const override { return false; }
 
@@ -140,16 +142,6 @@ public:
         return m_ctxt->getModelValOp();
     }
 
-    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) override;
-
-    virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) override;
-
-    virtual IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits) override;
-
-    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) override;
-
-    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
-
     virtual IEvalStackFrame *mkStackFrame(int32_t n_vars) override;
 
 protected:
@@ -166,8 +158,7 @@ protected:
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;
     std::vector<IEvalStackFrameUP>          m_callstack;
-    IEvalResultUP                           m_result;
-    EvalResultAlloc                         m_result_alloc;
+    vsc::dm::ValRef                         m_result;
     IEvalThreadIdUP                         m_thread_id;
 
 };

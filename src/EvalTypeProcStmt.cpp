@@ -55,7 +55,7 @@ int32_t EvalTypeProcStmt::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
     }
 
 
@@ -94,8 +94,8 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         case 1: {
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
-            vsc::dm::IModelVal *lval = TaskEvalGetLval(m_thread).eval(s->getLhs());
-            if (!lval) {
+            vsc::dm::ValRef lval(TaskEvalGetLval(m_thread).eval(s->getLhs()));
+            if (!lval.valid()) {
                 FATAL("null lval");
             }
 
@@ -103,20 +103,25 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                 FATAL("No result");
             }
 
+            fprintf(stdout, "TODO: Check of result kind\n");
+            /*
             if (getResult()->getKind() != EvalResultKind::Val) {
                 FATAL("Incorrect result type %d", getResult()->getKind());
             }
+             */
 
             switch (s->op()) {
                 case dm::TypeProcStmtAssignOp::Eq: {
+                    /*
                     DEBUG("lval.bits=%d rval.bits=%d", lval->bits(), getResult()->bits());
                     lval->set(getResult());
+                     */
                 } break;
                 default: FATAL("unsupported assign op %d", s->op());
             }
         }
         case 2: {
-            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+            setVoidResult();
         }
     }
 
@@ -138,7 +143,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
         }
         case 1: {
             // Result from the previous has been reflected up. 
-            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+            setVoidResult();
         }
     }
 
@@ -161,6 +166,8 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
         case 1: {
             m_idx = 2;
             // Have the condition result
+            fprintf(stdout, "TODO: process condition result\n");
+            /*
             DEBUG("Result: kind=%d val_u=%lld", getResult()->getKind(), getResult()->val_u());
             if (getResult()->val_u() != 0) {
                 DEBUG("True branch");
@@ -175,6 +182,7 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
                     break;
                 }
             }
+             */
         }
         case 2: {
             // 

@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "vsc/dm/impl/ValRefInt.h"
 #include "EvalBase.h"
 
 
@@ -61,6 +62,16 @@ int32_t EvalBase::eval(const std::function<void()> &body) {
     }
 
     return !haveResult();
+}
+
+void EvalBase::setVoidResult() {
+    vsc::dm::IDataTypeInt *i32 = m_ctxt->ctxt()->findDataTypeInt(true, 32);
+    if (!i32) {
+        i32 = m_ctxt->ctxt()->mkDataTypeInt(true, 32);
+        m_ctxt->ctxt()->addDataTypeInt(i32);
+    }
+    vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
+    setResult(v);
 }
 
 }

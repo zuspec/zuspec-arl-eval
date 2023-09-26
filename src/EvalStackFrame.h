@@ -35,12 +35,12 @@ public:
 
     void *operator new(size_t size, int32_t n_vars);
 
-    virtual IEvalResult *getVariable(uint32_t idx) override {
-        return m_variables[idx].get();
+    virtual const vsc::dm::ValRef &getVariable(uint32_t idx) override {
+        return m_variables[idx];
     }
 
-    virtual void setVariable(uint32_t idx, IEvalResult *var) override {
-        m_variables[idx] = IEvalResultUP(var);
+    virtual void setVariable(uint32_t idx, vsc::dm::ValRef &var) override {
+        m_variables[idx].set(var);
     }
 
     virtual int32_t getNumVariables() override {
@@ -49,7 +49,7 @@ public:
 
 private:
     int32_t                                     m_num_variables;
-    IEvalResultUP                               m_variables[1];
+    vsc::dm::ValRef                             m_variables[1];
 
 };
 

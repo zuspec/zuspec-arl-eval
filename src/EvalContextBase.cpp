@@ -83,15 +83,25 @@ void EvalContextBase::callListener(
     }
 }
 
-void EvalContextBase::setResult(IEvalResult *r) {
+void EvalContextBase::setResult(vsc::dm::ValRef &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(r);
     } else {
-        m_result = IEvalResultUP(r);
+        m_result.set(r);
     }
     DEBUG_LEAVE("setResult");
 }
+
+void EvalContextBase::setVoidResult() {
+    vsc::dm::IDataTypeInt *i32 = m_ctxt->findDataTypeInt(true, 32);
+    if (!i32) {
+        i32 = m_ctxt->mkDataTypeInt(true, 32);
+        m_ctxt->addDataTypeInt(i32);
+    }
+    vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
+    setResult(v);
+}    
 
 IEvalStackFrame *EvalContextBase::stackFrame(int32_t idx) {
     DEBUG_ENTER("stackFrame: idx=%d m_callstack.size=%d", idx, m_callstack.size());
@@ -107,38 +117,6 @@ int32_t EvalContextBase::evalMethodCallContext(
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) {
     return -1;
-}
-
-IEvalResult *EvalContextBase::mkEvalResultVal(const vsc::dm::IModelVal *val) {
-    return new(&m_result_alloc, (val)?val->bits():0) EvalResult(
-        &m_result_alloc,
-        val);
-}
-
-IEvalResult *EvalContextBase::mkEvalResultKind(EvalResultKind kind) {
-    return new(&m_result_alloc, 0) EvalResult(
-        &m_result_alloc,
-        kind);
-}
-
-IEvalResult *EvalContextBase::mkEvalResultRef(vsc::dm::IModelField *ref) {
-    return new(&m_result_alloc, 0) EvalResult(
-        &m_result_alloc,
-        ref);
-}
-
-IEvalResult *EvalContextBase::mkEvalResultValS(int64_t val, int32_t bits) {
-    return new(&m_result_alloc, bits) EvalResult(
-        &m_result_alloc,
-        bits,
-        val);
-}
-
-IEvalResult *EvalContextBase::mkEvalResultValU(uint64_t val, int32_t bits) {
-    return new(&m_result_alloc, bits) EvalResult(
-        &m_result_alloc,
-        bits,
-        val);
 }
 
 IEvalStackFrame *EvalContextBase::mkStackFrame(int32_t n_vars) {

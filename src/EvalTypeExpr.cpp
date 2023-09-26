@@ -54,7 +54,7 @@ int32_t EvalTypeExpr::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
     }
 
     m_expr->accept(m_this);
@@ -91,7 +91,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
         }
         case 1: { // Operand 2
             m_idx = 2;
-            m_val_lhs = IEvalResultUP(moveResult()); // Preserve LHS
+            setVoidResult();
 
             EvalTypeExpr evaluator(m_ctxt, m_thread, e->rhs());
 
@@ -102,11 +102,12 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
         }
         case 2: { // Perform operation
             m_idx = 3;
-            m_val_rhs = IEvalResultUP(moveResult()); // Preserve RHS
+            m_val_rhs.set(moveResult()); // Preserve RHS
 
             vsc::dm::IModelValOp *op = m_ctxt->getModelValOp();
             // Copy size of the RHS for now
             // TODO: need to consider context
+#ifdef UNDEFINED
             IEvalResultUP val = IEvalResultUP(m_ctxt->mkEvalResultVal(m_val_rhs.get()));
 
             switch (e->op()) {
@@ -234,6 +235,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
             }
 
             setResult(val.release());
+#endif
         }
 
         case 3: {
@@ -249,13 +251,15 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
         case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
             DEBUG("Bottom-up scope");
             IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(0));
-            IEvalResult *val = frame->getVariable(e->getPath().at(1));
+            vsc::dm::ValRef val(frame->getVariable(e->getPath().at(1)));
 
             if (e->getPath().size() > 2) {
                 DEBUG("TODO: stack-local refernece deeper than 2");
             }
 
-            setResult(dynamic_cast<IEvalResult *>(val->clone()));
+            // TODO:
+            fprintf(stdout, "TODO: Set cloned result\n");
+//              setResult(dynamic_cast<IEvalResult *>(val->clone()));
         } break;
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
@@ -279,9 +283,10 @@ void EvalTypeExpr::visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) {
 }
 
 void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) { 
-    DEBUG_ENTER("visitTypeExprVal %p", getResult());
-    setResult(m_ctxt->mkEvalResultVal(e->val()));
-    DEBUG_LEAVE("visitTypeExprVal %p", getResult());
+    DEBUG_ENTER("visitTypeExprVal");
+    fprintf(stdout, "TODO: setResult\n");
+//    setResult(m_ctxt->mkEvalResultVal(e->val()));
+    DEBUG_LEAVE("visitTypeExprVal");
 }
 
 void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
@@ -303,7 +308,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
     switch (m_idx) {
         case 0: {
             if (m_subidx > 0 && haveResult()) {
-                m_params.push_back(IEvalResultUP(moveResult()));
+                m_params.push_back(vsc::dm::ValRef(moveResult()));
             }
             while (m_subidx < e->getParameters().size()) {
                 EvalTypeExpr evaluator(m_ctxt, m_thread, e->getParameters().at(m_subidx).get());
@@ -315,7 +320,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 } else {
                     if (haveResult()) {
                         fprintf(stdout, "Note: push expr result\n");
-                        m_params.push_back(IEvalResultUP(moveResult()));
+                        m_params.push_back(vsc::dm::ValRef(moveResult()));
                     }
                 }
             }

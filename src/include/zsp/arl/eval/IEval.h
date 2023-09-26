@@ -20,6 +20,7 @@
  */
 #pragma once
 #include "vsc/dm/IModelVal.h"
+#include "vsc/dm/impl/ValRef.h"
 #include "vsc/dm/impl/UP.h"
 #include "zsp/arl/eval/IEvalResult.h"
 
@@ -48,21 +49,23 @@ public:
 
     virtual IEval *clone() = 0;
 
-    virtual IEvalResult *getResult() const = 0;
+    virtual const vsc::dm::ValRef &getResult() const = 0;
 
     /**
      * @brief Moves the result, clearing the result here
      * 
      * @return EvalResult& 
      */
-    virtual IEvalResult *moveResult() = 0;
+    virtual vsc::dm::ValRef &moveResult() = 0;
 
     /**
      * @brief Sets the result, taking ownership of value data
      * 
      * @param r 
      */
-    virtual void setResult(IEvalResult *r) = 0;
+    virtual void setResult(vsc::dm::ValRef &r) = 0;
+
+    virtual void setVoidResult() = 0;
 
     virtual void clrResult() = 0;
 

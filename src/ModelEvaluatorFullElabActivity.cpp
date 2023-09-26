@@ -121,6 +121,7 @@ void ModelEvaluatorFullElabActivity::visitModelActivityTraverse(dm::IModelActivi
 //    vsc::solvers::ICompoundSolverUP solver(/*m_ctxt->mkCompoundSolver()*/);
     vsc::solvers::ICompoundSolverUP solver;
 
+    /** TODO:
     bool result = solver->solve(
         m_randstate.get(),
         {a->getTarget()},
@@ -128,6 +129,7 @@ void ModelEvaluatorFullElabActivity::visitModelActivityTraverse(dm::IModelActivi
         vsc::solvers::SolveFlags::Randomize
             | vsc::solvers::SolveFlags::RandomizeDeclRand
             | vsc::solvers::SolveFlags::RandomizeTopFields);
+     */
 
     m_type = dm::ModelEvalNodeT::Action;
     m_action = a->getTarget();

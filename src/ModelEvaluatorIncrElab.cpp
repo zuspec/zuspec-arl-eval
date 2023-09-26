@@ -110,6 +110,7 @@ void ModelEvaluatorIncrElab::visitModelActivityTraverse(dm::IModelActivityTraver
 		constraints.push_back(a->getWithC());
 	}
 
+    /** TODO:
 	solver->solve(
 		m_randstate.get(),
 		{a->getTarget()},
@@ -118,6 +119,7 @@ void ModelEvaluatorIncrElab::visitModelActivityTraverse(dm::IModelActivityTraver
         | vsc::solvers::SolveFlags::RandomizeDeclRand
         | vsc::solvers::SolveFlags::RandomizeTopFields
 	);
+     */
 
 	DEBUG("ModelActivityTraverse: target=%p", a->getTarget());
 

@@ -55,13 +55,20 @@ void EvalBackendTestFixture::leaveThreads(
 void EvalBackendTestFixture::callFuncReq(
     IEvalThread                         *thread,
     dm::IDataTypeFunction               *func_t,
-    const std::vector<IEvalResultUP>    &params) {
+    const std::vector<vsc::dm::ValRef>  &params) {
     m_func_calls.push_back({thread,func_t});
     if (m_call_req) {
         m_call_req(thread, func_t, params);
     } else {
         // In the absence of a handler, respond as if it is a void non-blocking return
-        thread->setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        vsc::dm::IDataTypeInt *i32 = m_ctxt->ctxt()->findDataTypeInt(true, 32);
+        if (!i32) {
+            i32 = m_ctxt->ctxt()->mkDataTypeInt(true, 32);
+            m_ctxt->ctxt()->addDataTypeInt(i32);
+        }
+        vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
+
+        thread->setResult(v);
     }
 }
 

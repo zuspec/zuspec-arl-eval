@@ -64,9 +64,9 @@ public:
         dm::IModelFieldAction               *action) = 0;
 
     virtual void callFuncReq(
-            IEvalThread                      *thread,
-            dm::IDataTypeFunction            *func_t,
-            const std::vector<IEvalResultUP> &params
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<vsc::dm::ValRef>  &params
     ) = 0;
 
 };

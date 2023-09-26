@@ -61,7 +61,7 @@ int32_t EvalContextFunctionStatic::eval() {
             setBackend(new EvalBackendBase());
         }
 
-        setResult(mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
 
         ret = EvalTypeMethodCallStatic(
                 this, 

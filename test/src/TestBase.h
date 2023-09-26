@@ -26,6 +26,8 @@
 #include "zsp/arl/dm/IFactory.h"
 #include "zsp/arl/eval/IFactory.h"
 
+#define ZSP_DATACLASSES(T, C, A, S)
+
 
 namespace zsp {
 namespace arl {

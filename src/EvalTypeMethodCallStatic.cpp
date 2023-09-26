@@ -43,10 +43,10 @@ EvalTypeMethodCallStatic::EvalTypeMethodCallStatic(
 EvalTypeMethodCallStatic::EvalTypeMethodCallStatic(EvalTypeMethodCallStatic *o) :
     EvalBase(o), m_func(o->m_func), m_params(o->m_params.begin(), o->m_params.end()),
     m_idx(o->m_idx), m_param_idx(o->m_param_idx) {
-    for (std::vector<IEvalResultUP>::iterator
+    for (std::vector<vsc::dm::ValRef>::iterator
         it=o->m_pvals.begin();
         it!=o->m_pvals.end(); it++) {
-        m_pvals.push_back(IEvalResultUP(it->release()));
+        m_pvals.push_back(*it);
     }
 }
 
@@ -62,7 +62,7 @@ int32_t EvalTypeMethodCallStatic::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
         // Safety
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
 
         if (intf) {
             m_stack_frame = IEvalStackFrameUP(m_ctxt->mkStackFrame(m_params.size()));
@@ -75,7 +75,8 @@ int32_t EvalTypeMethodCallStatic::eval() {
                 if (intf) {
                     m_stack_frame->setVariable(m_param_idx-1, moveResult());
                 } else {
-                    m_pvals.push_back(IEvalResultUP(moveResult()));
+                    vsc::dm::ValRef pval(moveResult());
+                    m_pvals.push_back(pval);
                 }
             }
             while (m_param_idx < m_params.size()) {
@@ -94,7 +95,8 @@ int32_t EvalTypeMethodCallStatic::eval() {
                         if (intf) {
                             m_stack_frame->setVariable(m_param_idx-1, moveResult());
                         } else {
-                            m_pvals.push_back(IEvalResultUP(moveResult()));
+                            vsc::dm::ValRef pval(moveResult());
+                            m_pvals.push_back(pval);
                         }
                     }
                 }

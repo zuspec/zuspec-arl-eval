@@ -52,7 +52,7 @@ private:
     dm::IDataTypeFunction                           *m_func;
     std::vector<vsc::dm::ITypeExpr *>               m_params;
     int32_t                                         m_idx;
-    std::vector<IEvalResultUP>                      m_pvals;
+    std::vector<vsc::dm::ValRef>                    m_pvals;
     IEvalStackFrameUP                               m_stack_frame;
     int32_t                                         m_param_idx;
 

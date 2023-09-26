@@ -120,9 +120,10 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
     //     (*it)->accept(m_this);
     // }
     // m_scope_s.pop_back();
+#ifdef UNDEFINED
     dm::CopyVisitor cv(m_ctxt);
 
-    DEBUG("Replicate size: %lld\n", a->getCountField()->val()->val_u());
+//    DEBUG("Replicate size: %lld\n", a->getCountField()->val()->val_u());
 
     // Copy any local fields, skipping __count and __index
     for (uint32_t i=2; i<a->getFields().size(); i++) {
@@ -150,6 +151,7 @@ void TaskElaborateActivityExpandReplicate::visitModelActivityReplicate(
             m_scope_s.back()->addActivity(cv.copyT<dm::IModelActivity>(*it), true);
         }
     }
+#endif /* UNDEFINED */
 
     DEBUG_LEAVE("visitModelActivityReplicate");
 }

@@ -28,6 +28,7 @@
 #include "zsp/arl/eval/IEvalListener.h"
 #include "zsp/arl/eval/IEvalFunctionData.h"
 #include "zsp/arl/eval/IEvalResult.h"
+#include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/dm/IDataTypeFunctionImport.h"
 #include "zsp/arl/dm/IModelFieldExecutor.h"
@@ -47,7 +48,11 @@ public:
 
     virtual int32_t eval() = 0;
 
-    virtual IEvalResult *getResult() = 0;
+    virtual dm::IContext *ctxt() const = 0;
+
+    virtual const vsc::dm::ValRef &getResult() const = 0;
+
+    virtual vsc::dm::ValRef &moveResult() = 0;
 
     virtual IEvalBackend *getBackend() const = 0;
 
@@ -81,16 +86,6 @@ public:
     virtual vsc::dm::IModelVal *mkModelValU(uint64_t v=0, int32_t w=32) = 0;
 
     virtual vsc::dm::IModelValOp *getModelValOp() = 0;
-
-    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) = 0;
-
-    virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) = 0;
-
-    virtual IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits) = 0;
-
-    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) = 0;
-
-    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) = 0;
 
     virtual IEvalStackFrame *mkStackFrame(int32_t n_vars) = 0;
 

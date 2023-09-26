@@ -90,7 +90,7 @@ void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
         }
 
         case 1: {
-            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+            setVoidResult();
         }
     }
 
@@ -159,7 +159,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                 m_thread, 
                 a->getTarget());
 
-            setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+            setVoidResult();
         } break;
     }
 

@@ -63,7 +63,7 @@ int32_t EvalContextFunctionContext::eval() {
             setBackend(new EvalBackendBase());
         }
 
-        setResult(mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
 
         ret = EvalTypeMethodCallContext(
                 this, 

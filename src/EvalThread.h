@@ -78,7 +78,7 @@ public:
         m_thread_id = IEvalThreadIdUP(tid);
     }
 
-    virtual void setResult(IEvalResult *r) override;
+    virtual void setResult(vsc::dm::ValRef &r) override;
 
     virtual void pushStackFrame(IEvalStackFrame *frame) override {
         m_callstack.push_back(IEvalStackFrameUP(frame));
@@ -100,16 +100,6 @@ public:
         dm::IDataTypeFunction                   *method,
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) override;
-
-    virtual IEvalResult *mkEvalResultVal(const vsc::dm::IModelVal *val) override;
-
-    virtual IEvalResult *mkEvalResultValS(int64_t val, int32_t bits) override;
-
-    virtual IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits) override;
-
-    virtual IEvalResult *mkEvalResultKind(EvalResultKind kind) override;
-
-    virtual IEvalResult *mkEvalResultRef(vsc::dm::IModelField *ref) override;
 
     virtual dmgr::IDebugMgr *getDebugMgr() const override {
         return m_dmgr;

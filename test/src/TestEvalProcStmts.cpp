@@ -38,14 +38,14 @@ TestEvalProcStmts::~TestEvalProcStmts() {
 TEST_F(TestEvalProcStmts, stmt_return_i) {
     enableDebug(true);
 
-    vsc::dm::IModelValUP val(m_ctxt->mkModelValS(15, 32));
+    vsc::dm::ValRef val(m_ctxt->mkValRefInt(15, true, 32));
     vsc::dm::IDataTypeIntUP i32_t(m_ctxt->mkDataTypeInt(true, 32));
 
     dm::IDataTypeFunctionUP func(mkFunction(
         "func",
         i32_t.get(),
         m_ctxt->mkTypeProcStmtReturn(
-            m_ctxt->mkTypeExprVal(val.get())
+            m_ctxt->mkTypeExprVal(i32_t.get(), val.vp())
         ))
     );
 
@@ -61,10 +61,10 @@ TEST_F(TestEvalProcStmts, stmt_return_i) {
 
     ASSERT_EQ(eval_c->eval(), 0);
 //    ASSERT_EQ(eval_c->haveResult());
-    IEvalResult *result = eval_c->getResult();
+    vsc::dm::ValRefInt result(eval_c->getResult());
     fprintf(stdout, "result: %p\n", result);
-    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
-    ASSERT_EQ(result->val_i(), 15);
+//    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
+    ASSERT_EQ(result.get_val_s(), 15);
 }
 
 TEST_F(TestEvalProcStmts, stmt_return_param_i) {
@@ -84,7 +84,7 @@ TEST_F(TestEvalProcStmts, stmt_return_param_i) {
         ))
     );
 
-    vsc::dm::IModelValUP val(m_ctxt->mkModelValS(15, 32));
+    vsc::dm::ValRef val(m_ctxt->mkValRefInt(15, true, 32));
     IEvalContextUP eval_c(m_eval_f->mkEvalContextFunctionStatic(
         m_solvers_f,
         m_ctxt.get(),
@@ -92,23 +92,23 @@ TEST_F(TestEvalProcStmts, stmt_return_param_i) {
         0, // &backend,
         func.get(),
         {
-            m_ctxt->mkTypeExprVal(val.get())
+            m_ctxt->mkTypeExprVal(val.type(), val.vp())
         }
     ));
 
     ASSERT_EQ(eval_c->eval(), 0);
 //    ASSERT_EQ(eval_c->haveResult());
-    IEvalResult *result = eval_c->getResult();
-    fprintf(stdout, "result: %p\n", result);
-    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
-    ASSERT_EQ(result->val_i(), 15);
+    vsc::dm::ValRefInt result(eval_c->getResult());
+//    fprintf(stdout, "result: %p\n", result);
+//    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
+    ASSERT_EQ(result.get_val_s(), 15);
 }
 
 TEST_F(TestEvalProcStmts, stmt_return_ite_param_gt_true) {
     enableDebug(true);
 
-    vsc::dm::IModelValUP val_true(m_ctxt->mkModelValS(15, 32));
-    vsc::dm::IModelValUP val_false(m_ctxt->mkModelValS(20, 32));
+    vsc::dm::ValRef val_true(m_ctxt->mkValRefInt(15, true, 32));
+    vsc::dm::ValRef val_false(m_ctxt->mkValRefInt(20, true, 32));
     vsc::dm::IDataTypeIntUP i32_t(m_ctxt->mkDataTypeInt(true, 32));
 
     dm::IDataTypeFunctionUP func(mkFunction(
@@ -128,13 +128,15 @@ TEST_F(TestEvalProcStmts, stmt_return_ite_param_gt_true) {
                     {1}
                 )
             ),
-            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(val_true.get())),
-            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(val_false.get()))
+            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(
+                val_true.type(), val_true.vp())),
+            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(
+                val_false.type(), val_false.vp()))
         ))
     );
 
-    vsc::dm::IModelValUP val_1(m_ctxt->mkModelValS(15, 32));
-    vsc::dm::IModelValUP val_2(m_ctxt->mkModelValS(10, 32));
+    vsc::dm::ValRef val_1(m_ctxt->mkValRefInt(15, true, 32));
+    vsc::dm::ValRef val_2(m_ctxt->mkValRefInt(10, true, 32));
     IEvalContextUP eval_c(m_eval_f->mkEvalContextFunctionStatic(
         m_solvers_f,
         m_ctxt.get(),
@@ -142,24 +144,24 @@ TEST_F(TestEvalProcStmts, stmt_return_ite_param_gt_true) {
         0, // &backend,
         func.get(),
         {
-            m_ctxt->mkTypeExprVal(val_1.get()),
-            m_ctxt->mkTypeExprVal(val_2.get())
+            m_ctxt->mkTypeExprVal(val_1),
+            m_ctxt->mkTypeExprVal(val_2)
         }
     ));
 
     ASSERT_EQ(eval_c->eval(), 0);
 //    ASSERT_EQ(eval_c->haveResult());
-    IEvalResult *result = eval_c->getResult();
-    fprintf(stdout, "result: %p\n", result);
-    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
-    ASSERT_EQ(result->val_i(), 15);
+    vsc::dm::ValRefInt result(eval_c->getResult());
+//    fprintf(stdout, "result: %p\n", result);
+//    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
+    ASSERT_EQ(result.get_val_s(), 15);
 }
 
 TEST_F(TestEvalProcStmts, stmt_return_ite_param_gt_false) {
     enableDebug(true);
 
-    vsc::dm::IModelValUP val_true(m_ctxt->mkModelValS(15, 32));
-    vsc::dm::IModelValUP val_false(m_ctxt->mkModelValS(20, 32));
+    vsc::dm::ValRef val_true(m_ctxt->mkValRefInt(15, true, 32));
+    vsc::dm::ValRef val_false(m_ctxt->mkValRefInt(20, true, 32));
     vsc::dm::IDataTypeIntUP i32_t(m_ctxt->mkDataTypeInt(true, 32));
 
     dm::IDataTypeFunctionUP func(mkFunction(
@@ -179,13 +181,13 @@ TEST_F(TestEvalProcStmts, stmt_return_ite_param_gt_false) {
                     {1}
                 )
             ),
-            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(val_true.get())),
-            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(val_false.get()))
+            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(val_true)),
+            m_ctxt->mkTypeProcStmtReturn(m_ctxt->mkTypeExprVal(val_false))
         ))
     );
 
-    vsc::dm::IModelValUP val_1(m_ctxt->mkModelValS(15, 32));
-    vsc::dm::IModelValUP val_2(m_ctxt->mkModelValS(10, 32));
+    vsc::dm::ValRef val_1(m_ctxt->mkValRefInt(15, true, 32));
+    vsc::dm::ValRef val_2(m_ctxt->mkValRefInt(10, true, 32));
     IEvalContextUP eval_c(m_eval_f->mkEvalContextFunctionStatic(
         m_solvers_f,
         m_ctxt.get(),
@@ -193,17 +195,17 @@ TEST_F(TestEvalProcStmts, stmt_return_ite_param_gt_false) {
         0, // &backend,
         func.get(),
         {
-            m_ctxt->mkTypeExprVal(val_2.get()),
-            m_ctxt->mkTypeExprVal(val_1.get())
+            m_ctxt->mkTypeExprVal(val_2),
+            m_ctxt->mkTypeExprVal(val_1)
         }
     ));
 
     ASSERT_EQ(eval_c->eval(), 0);
 //    ASSERT_EQ(eval_c->haveResult());
-    IEvalResult *result = eval_c->getResult();
-    fprintf(stdout, "result: %p\n", result);
-    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
-    ASSERT_EQ(result->val_i(), 20);
+    vsc::dm::ValRefInt result(eval_c->getResult());
+//    fprintf(stdout, "result: %p\n", result);
+//    ASSERT_EQ(result->getKind(), EvalResultKind::Val);
+    ASSERT_EQ(result.get_val_s(), 20);
 }
 
 

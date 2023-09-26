@@ -77,8 +77,8 @@ TEST_F(TestElaborateActivity, resource_wildcard_1t_1p) {
     //     }
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -201,9 +201,9 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_1c) {
     //     c1;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -324,10 +324,10 @@ TEST_F(TestElaborateActivity, buffer_wildcard_2p_2c) {
     //     c2;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("c2", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p2", prod2_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("c1", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("c2", cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -443,12 +443,12 @@ TEST_F(TestElaborateActivity, buffer_1p_manyc) {
     //     c1..N;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("p1", prod1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
 
     for (uint32_t i=1; i<=n_consumers; i++) {
         char name[16];
         sprintf(name, "c%d", i);
-        entry_t->addField(m_ctxt->mkTypeFieldPhy(name, cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+        entry_t->addField(m_ctxt->mkTypeFieldPhy(name, cons1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     }
 
     entry_t->setComponentType(pss_top_t.get());
@@ -499,6 +499,19 @@ TEST_F(TestElaborateActivity, buffer_1p_manyc) {
         pss_top.get(),
         entry_t.get()
     );
+}
+
+TEST_F(TestElaborateActivity, null_action) {
+    ZSP_DATACLASSES(TestElaborateActivity_null_action, pss_top, pss_top.Entry, R"(
+        @zdc.component
+        class pss_top(object):
+
+            @zdc.action
+            class Entry(object):
+                pass
+
+    )");
+    #include "TestElaborateActivity_null_action.h"
 }
 
 }

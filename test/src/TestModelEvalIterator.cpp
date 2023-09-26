@@ -52,8 +52,8 @@ TEST_F(TestModelEvalIterator, two_branch_parallel) {
     comp_t->addActionType(action_t.get());
 
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(comp_t.get());
     comp_t->addActionType(entry_t.get());
 
@@ -185,7 +185,7 @@ TEST_F(TestModelEvalIterator, par_single_resource) {
     m_ctxt->addDataTypeInt(ui4);
     dm::IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
     action1_t->addField(m_ctxt->mkTypeFieldClaim("l1", rsrc_t.get(), true));
-    action1_t->addField(m_ctxt->mkTypeFieldPhy("v1", ui4, false, vsc::dm::TypeFieldAttr::Rand, 0));
+    action1_t->addField(m_ctxt->mkTypeFieldPhy("v1", ui4, false, vsc::dm::TypeFieldAttr::Rand, vsc::dm::ValRef()));
     action1_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(action1_t.get());
 
@@ -200,9 +200,9 @@ TEST_F(TestModelEvalIterator, par_single_resource) {
     //     }
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("v1", ui4, false, vsc::dm::TypeFieldAttr::Rand, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("v1", ui4, false, vsc::dm::TypeFieldAttr::Rand, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -260,7 +260,7 @@ TEST_F(TestModelEvalIterator, par_single_resource) {
     vsc::dm::IModelField *e1 = it1->action();
     vsc::dm::IModelField *ef1 = e1->getField(3);
     ASSERT_TRUE(ef1);
-    fprintf(stdout, "ef1=%lld\n", ef1->val()->val_u());
+//    fprintf(stdout, "ef1=%lld\n", ef1->val()->val_u());
 
     ASSERT_TRUE(it1->next());
     ASSERT_EQ(it1->type(), dm::ModelEvalNodeT::Sequence);
@@ -276,7 +276,7 @@ TEST_F(TestModelEvalIterator, par_single_resource) {
     ASSERT_TRUE(br1);
     vsc::dm::IModelField *f1 = br1->getField(2); 
     ASSERT_TRUE(f1);
-    fprintf(stdout, "f1: %lld\n", f1->val()->val_u());
+//    fprintf(stdout, "f1: %lld\n", f1->val()->val_u());
 
     ASSERT_TRUE(it_p->next());
     ASSERT_EQ(it_p->type(), dm::ModelEvalNodeT::Action);
@@ -284,7 +284,7 @@ TEST_F(TestModelEvalIterator, par_single_resource) {
     ASSERT_TRUE(br2);
     vsc::dm::IModelField *f2 = br2->getField(2); 
     ASSERT_TRUE(f2);
-    fprintf(stdout, "f2: %lld\n", f2->val()->val_u());
+//    fprintf(stdout, "f2: %lld\n", f2->val()->val_u());
 
     ASSERT_FALSE(it_p->next());
 

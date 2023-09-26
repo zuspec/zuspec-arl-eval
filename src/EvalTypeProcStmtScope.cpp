@@ -51,7 +51,7 @@ int32_t EvalTypeProcStmtScope::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
         // Safety
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
     }
 
     int32_t ret = false;

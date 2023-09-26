@@ -36,7 +36,7 @@ EvalStackFrame::~EvalStackFrame() {
 
 void *EvalStackFrame::operator new(size_t size, int32_t n_vars) {
     if (n_vars > 1) {
-        size += (sizeof(IEvalResultUP)*(n_vars-1));
+        size += (sizeof(vsc::dm::ValRef)*(n_vars-1));
     }
     return ::operator new(size);
 }

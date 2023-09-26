@@ -66,8 +66,8 @@ TEST_F(TestEvalContextFullElab, two_action_seq) {
     //     a2;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -162,8 +162,8 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
     //     a2;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -202,7 +202,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
     EvalBackendTestFixture backend;
 
     // Don't respond to call request
-    backend.setCallReq([](IEvalThread*,dm::IDataTypeFunction*,const std::vector<IEvalResultUP>&) {});
+    backend.setCallReq([](IEvalThread*,dm::IDataTypeFunction*,const std::vector<vsc::dm::ValRef>&) {});
 
     IEvalContextUP eval_ctxt(m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
@@ -223,8 +223,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
 
     // Send a response
     DEBUG_ENTER("setResult");
-    backend.getFuncCalls().back().first->setResult(
-        eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+    backend.getFuncCalls().back().first->setVoidResult();
     DEBUG_LEAVE("setResult");
 
     // Should terminate this time
@@ -233,8 +232,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
     ASSERT_EQ(backend.getFuncCalls().size(), 2);
 
     DEBUG_ENTER("setResult");
-    backend.getFuncCalls().back().first->setResult(
-        eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+    backend.getFuncCalls().back().first->setVoidResult();
     DEBUG_LEAVE("setResult");
 
     ASSERT_FALSE(eval_ctxt->eval());
@@ -289,8 +287,8 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb) {
     //     }
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -384,8 +382,8 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
     //     }
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -425,10 +423,10 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
         &backend
     ));
 
-    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<IEvalResultUP> &p) {
+    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<vsc::dm::ValRef> &p) {
         if (backend.getFuncCalls().size() == 1) {
             // Immediately respond to this
-            t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+            t->setVoidResult();
         }
     });
 
@@ -440,8 +438,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
     ASSERT_EQ(listener.getActions().size(), 1);
 
     // Now, release the second function
-    backend.getFuncCalls().back().first->setResult(
-        eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+    backend.getFuncCalls().back().first->setVoidResult();
     ASSERT_FALSE(eval_ctxt->eval());
     ASSERT_EQ(backend.getFuncCalls().size(), 2);
     ASSERT_EQ(listener.getActions().size(), 3);
@@ -494,8 +491,8 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
     //     }
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -535,10 +532,10 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
         &backend
     ));
 
-    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<IEvalResultUP> &p) {
+    backend.setCallReq([&](IEvalThread *t, dm::IDataTypeFunction *f, const std::vector<vsc::dm::ValRef> &p) {
         if (backend.getFuncCalls().size() == 2) {
             // Immediately respond to this
-            t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+            t->setVoidResult();
         }
     });
 
@@ -550,8 +547,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
     ASSERT_EQ(listener.getActions().size(), 1);
 
     // Now, release the first function
-    backend.getFuncCalls().at(0).first->setResult(
-            eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+    backend.getFuncCalls().at(0).first->setVoidResult();
     ASSERT_FALSE(eval_ctxt->eval());
     ASSERT_EQ(backend.getFuncCalls().size(), 2);
     for (std::vector<dm::IModelFieldAction *>::const_iterator
@@ -598,12 +594,15 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
 
     dm::IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
     dm::ITypeProcStmtScopeUP exec_body_b(m_ctxt->mkTypeProcStmtScope());
+    FAIL();
+    /*
     vsc::dm::IModelValUP val(m_ctxt->mkModelValS(6, 32));
     exec_body_b->addStatement(m_ctxt->mkTypeProcStmtExpr(
         m_ctxt->mkTypeExprMethodCallStatic(doit.get(), {
             m_ctxt->mkTypeExprVal(val.get())
         }
     )));
+     */
     dm::ITypeExecUP exec_body(m_ctxt->mkTypeExecProc(
         dm::ExecKindT::Body,
         exec_body_b.release()));
@@ -619,7 +618,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
     //     a1;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -654,11 +653,12 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
     backend.setCallReq([&](
         IEvalThread                     *t,
         dm::IDataTypeFunction           *f,
-        const std::vector<IEvalResultUP>   &params) {
+        const std::vector<vsc::dm::ValRef>   &params) {
         for (uint32_t i=0; i<params.size(); i++) {
-            pvals.push_back(params.at(i)->val_u());
+            vsc::dm::ValRefInt ival(params.at(i));
+            pvals.push_back(ival.get_val_u());
         }
-        t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        t->setVoidResult();
     });
 
     CollectingEvalListener listener;
@@ -674,6 +674,12 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
 TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
     vsc::dm::ITypeExprFieldRef *ref;
     m_ctxt->getDebugMgr()->enable(true);
+
+    vsc::dm::IDataTypeInt *i32 = m_ctxt->findDataTypeInt(true, 32);
+    if (!i32) {
+        i32 = m_ctxt->mkDataTypeInt(true, 32);
+        m_ctxt->addDataTypeInt(i32);
+    }
 
     // Import function
     dm::IDataTypeFunctionUP doit(m_ctxt->mkDataTypeFunction(
@@ -707,14 +713,15 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
 
     dm::IDataTypeActionUP action1_t(m_ctxt->mkDataTypeAction("action1_t"));
     dm::ITypeProcStmtScopeUP exec_body_b(m_ctxt->mkTypeProcStmtScope());
-    vsc::dm::IModelValUP val1(m_ctxt->mkModelValS(6, 32));
-    vsc::dm::IModelValUP val2(m_ctxt->mkModelValS(5, 32));
+
+    vsc::dm::ValRef val1(m_ctxt->mkValRefInt(6, true, 32));
+    vsc::dm::ValRef val2(m_ctxt->mkValRefInt(5, true, 32));
     exec_body_b->addStatement(m_ctxt->mkTypeProcStmtExpr(
         m_ctxt->mkTypeExprMethodCallStatic(doit.get(), {
             m_ctxt->mkTypeExprBin(
-                m_ctxt->mkTypeExprVal(val1.get()),
+                m_ctxt->mkTypeExprVal(i32, val1.vp()),
                 vsc::dm::BinOp::Add,
-                m_ctxt->mkTypeExprVal(val2.get()))
+                m_ctxt->mkTypeExprVal(i32, val2.vp()))
         }
     )));
     dm::ITypeExecUP exec_body(m_ctxt->mkTypeExecProc(
@@ -732,7 +739,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
     //     a1;
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 
@@ -765,13 +772,14 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
     ));
 
     backend.setCallReq([&](
-        IEvalThread                     *t,
-        dm::IDataTypeFunction           *f,
-        const std::vector<IEvalResultUP>   &params) {
+        IEvalThread                        *t,
+        dm::IDataTypeFunction              *f,
+        const std::vector<vsc::dm::ValRef> &params) {
         for (uint32_t i=0; i<params.size(); i++) {
-            pvals.push_back(params.at(i)->val_u());
+            vsc::dm::ValRefInt ival(params.at(i));
+            pvals.push_back(ival.get_val_u());
         }
-        t->setResult(eval_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        t->setVoidResult();
     });
 
     CollectingEvalListener listener;

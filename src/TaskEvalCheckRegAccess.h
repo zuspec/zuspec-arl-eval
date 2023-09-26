@@ -47,6 +47,7 @@ public:
         dm::IDataTypeFunction       *func);
 
 private:
+    IEvalContext                    *m_ctxt;
 
 };
 

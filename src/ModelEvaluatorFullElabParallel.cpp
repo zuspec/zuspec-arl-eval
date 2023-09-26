@@ -108,6 +108,8 @@ void ModelEvaluatorFullElabParallel::visitModelActivityTraverse(
     vsc::solvers::ICompoundSolverUP solver;
 
     vsc::solvers::IRandStateUP state(m_randstate->next());
+    /**
+     * TODO:
     bool result = solver->solve(
         state.get(),
         {a->getTarget()},
@@ -115,6 +117,7 @@ void ModelEvaluatorFullElabParallel::visitModelActivityTraverse(
         vsc::solvers::SolveFlags::Randomize
             | vsc::solvers::SolveFlags::RandomizeDeclRand
             | vsc::solvers::SolveFlags::RandomizeTopFields);
+     */
 
     m_type = dm::ModelEvalNodeT::Action;
     m_action = a->getTarget();

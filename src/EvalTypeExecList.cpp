@@ -52,7 +52,7 @@ int32_t EvalTypeExecList::eval() {
         m_thread->pushEval(this);
 
         // Safety...
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
     }
 
     int32_t ret = 0;

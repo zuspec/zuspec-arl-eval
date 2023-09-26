@@ -48,10 +48,11 @@ bool TaskElaborateActivitySelectReplicateSizes::eval(
     // Now that we have the fields, solve all at once to arrive at a
     // consistent result
     // TODO:
-    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver(m_ctxt));
+    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver());
 
     DEBUG("Fields: %d ; Constraints: %d", m_count_fields.size(), m_constraints.size());
 
+#ifdef UNDEFINED
     bool ret = solver->solve(
         randstate,
         m_count_fields,
@@ -62,6 +63,7 @@ bool TaskElaborateActivitySelectReplicateSizes::eval(
     );
 
     return ret;
+#endif
 }
 
 void TaskElaborateActivitySelectReplicateSizes::visitModelActivityReplicate(

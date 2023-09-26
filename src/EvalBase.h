@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <functional>
+#include "vsc/dm/impl/ValRef.h"
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalContext.h"
 #include "zsp/arl/eval/IEvalThread.h"
@@ -53,24 +54,26 @@ public:
         m_entry_idx = idx;
     }
 
-    virtual IEvalResult *getResult() const override {
-        return m_result.get();
+    virtual const vsc::dm::ValRef &getResult() const override {
+        return m_result;
     }
 
-    virtual IEvalResult *moveResult() override {
-        return m_result.release();
+    virtual vsc::dm::ValRef &moveResult() override {
+        return m_result;
     }
 
     virtual void clrResult() override {
         m_result.reset();
     }
 
-    virtual void setResult(IEvalResult *r) override {
-        m_result = IEvalResultUP(r);
+    virtual void setResult(vsc::dm::ValRef &r) override {
+        m_result.set(r);
     }
 
+    void setVoidResult();
+
     virtual bool haveResult() const override {
-        return m_result.get();
+        return m_result.type();
     }
 
 protected:
@@ -78,7 +81,7 @@ protected:
     int32_t                     m_entry_idx;
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
-    IEvalResultUP               m_result;
+    vsc::dm::ValRef             m_result;
 
 };
 

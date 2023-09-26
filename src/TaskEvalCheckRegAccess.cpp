@@ -26,7 +26,7 @@ namespace arl {
 namespace eval {
 
 
-TaskEvalCheckRegAccess::TaskEvalCheckRegAccess() {
+TaskEvalCheckRegAccess::TaskEvalCheckRegAccess(IEvalContext *ctxt) : m_ctxt(ctxt) {
 
 }
 

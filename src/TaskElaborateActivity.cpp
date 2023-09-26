@@ -126,7 +126,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
         constraints_i);
 
     // TODO:
-    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver(m_ctxt));
+    vsc::solvers::ICompoundSolverUP solver(m_solvers_f->mkCompoundSolver());
 
     std::vector<vsc::dm::IModelField *> selector_fields;
     std::vector<vsc::dm::IModelConstraint *> selector_constraints;
@@ -148,6 +148,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
         selector_constraints.push_back(it->get());
     }
 
+    /** TODO:
     solver->solve(
         randstate,
         selector_fields,
@@ -155,6 +156,7 @@ ElabActivity *TaskElaborateActivity::elaborate(
         vsc::solvers::SolveFlags::Randomize
         | vsc::solvers::SolveFlags::RandomizeDeclRand
         | vsc::solvers::SolveFlags::RandomizeTopFields);
+     */
 
     // Gen3: Assign flow-object claims and infer actions as needed
 

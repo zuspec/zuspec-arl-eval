@@ -77,8 +77,8 @@ TEST_F(TestActivitySolveModel, par_single_resource) {
     //     }
     //  }
     dm::IDataTypeActionUP entry_t(m_ctxt->mkDataTypeAction("entry_t"));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
-    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, 0));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a1", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
+    entry_t->addField(m_ctxt->mkTypeFieldPhy("a2", action1_t.get(), false, vsc::dm::TypeFieldAttr::NoAttr, vsc::dm::ValRef()));
     entry_t->setComponentType(pss_top_t.get());
     pss_top_t->addActionType(entry_t.get());
 

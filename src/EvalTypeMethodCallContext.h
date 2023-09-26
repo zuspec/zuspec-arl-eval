@@ -65,7 +65,7 @@ private:
     vsc::dm::IModelField                    *m_method_ctxt;
     std::vector<vsc::dm::ITypeExpr *>       m_params;
     uint32_t                                m_idx;
-    std::vector<IEvalResultUP>              m_pvals;
+    std::vector<vsc::dm::ValRef>            m_pvals;
     IEvalStackFrameUP                       m_stack_frame;
     uint32_t                                m_param_idx;
 };

@@ -23,6 +23,15 @@ ExternalProject_Get_Property(GTEST source_dir binary_dir)
 
 # find_package(Gtest)
 
+file(GLOB test_CPP_SRC
+  "src/*.cpp"
+  )
+
+add_custom_target(
+    GEN_CODE_SNIPPETS
+    COMMAND ${PYTHON} -m zsp_dataclasses.util.gen_cpp_dt_defs ${test_CPP_SRC} -o ${CMAKE_CURRENT_BINARY_DIR}/zspdefs -d ${CMAKE_CURRENT_BINARY_DIR}/zspdefs.d
+)
+
 add_library(libgtest IMPORTED STATIC GLOBAL)
 add_dependencies(libgtest GTEST)
 
@@ -49,12 +58,14 @@ include_directories(
     "${vsc_dm_INCDIR}"
     "${vsc_solvers_INCDIR}"
     "${debug_mgr_INCDIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}/zspdefs"
 	)
 
 file(GLOB test_zsp_arl_eval_SRC
   "src/*.h"
   "src/*.cpp"
   )
+
 
 add_executable(test-zsp-arl-eval ${test_zsp_arl_eval_SRC})
 target_include_directories(test-zsp-arl-eval PUBLIC
@@ -92,7 +103,7 @@ target_link_libraries(test-zsp-arl-eval
 	libgmock
 	gtest_main 
 	)
-add_dependencies(test-zsp-arl-eval GTEST)
+add_dependencies(test-zsp-arl-eval GTEST GEN_CODE_SNIPPETS)
 #set_property(TARGET test_libvsc PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)
 
 gtest_discover_tests(test-zsp-arl-eval)

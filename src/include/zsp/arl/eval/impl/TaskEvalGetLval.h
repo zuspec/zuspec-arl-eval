@@ -39,36 +39,38 @@ public:
 
     virtual ~TaskEvalGetLval() { };
 
-    vsc::dm::IModelVal *eval(vsc::dm::ITypeExpr *expr) {
+    vsc::dm::ValRef eval(vsc::dm::ITypeExpr *expr) {
         DEBUG_ENTER("eval");
-        m_val = 0;
+        m_val.reset();
         expr->accept(m_this);
         DEBUG_LEAVE("eval %p", m_val);
         return m_val;
     }
 
 	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override {
-        IEvalResult *var = 0;
+        vsc::dm::ValRef var;
         int32_t path_idx = 0;
         DEBUG_ENTER("visitTypeExprFieldRef");
 
         switch (e->getRootRefKind()) {
             case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
                 IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(path_idx++));
-                var = frame->getVariable(e->getPath().at(path_idx++));
+                var.setWeakRef(frame->getVariable(e->getPath().at(path_idx++)));
             } break;
         }
 
-        if (!var) {
+        if (!var.valid()) {
             FATAL("No root var");
         }
 
         vsc::dm::IModelField *field = 0;
 
         if (path_idx >= e->getPath().size()) {
-            m_val = var;
+            m_val.setWeakRef(var);
         } else {
         while (path_idx < e->getPath().size()) {
+            fprintf(stdout, "TODO: query value type\n");
+            /** TODO:
             switch (var->getKind()) {
                 case EvalResultKind::Val: {
                     FATAL("TODO: support val-kind intermediate var");
@@ -88,6 +90,8 @@ public:
                 } break;
                 default: FATAL("Unsupported var-result kind %d", var->getKind());
             }
+             */
+            path_idx++;
         }
         }
 
@@ -97,7 +101,7 @@ public:
 private:
     dmgr::IDebug            *m_dbg;
     IEvalThread             *m_thread;
-    vsc::dm::IModelVal      *m_val;
+    vsc::dm::ValRef         m_val;
 
 };
 

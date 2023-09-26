@@ -74,13 +74,15 @@ int32_t EvalTypeMethodCallContext::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
         // Safety
-        setResult(m_ctxt->mkEvalResultKind(EvalResultKind::Void));
+        setVoidResult();
 
         if (intf) {
             m_stack_frame = IEvalStackFrameUP(m_ctxt->mkStackFrame(m_params.size()+1));
-            m_stack_frame->setVariable(0, m_ctxt->mkEvalResultRef(m_method_ctxt));
+            vsc::dm::ValRef method_h(m_ctxt->ctxt()->mkValRefRawPtr(m_method_ctxt));
+            m_stack_frame->setVariable(0, method_h);
         } else {
-            m_pvals.push_back(IEvalResultUP(m_ctxt->mkEvalResultRef(m_method_ctxt)));
+            vsc::dm::ValRef method_h(m_ctxt->ctxt()->mkValRefRawPtr(m_method_ctxt));
+            m_pvals.push_back(method_h);
         }
     }
 
@@ -94,6 +96,7 @@ int32_t EvalTypeMethodCallContext::eval() {
 
             }
         }
+        /*
         case 0: { 
             // Determine whether a register-group field is on the context path
             // Check returns:
@@ -104,13 +107,15 @@ int32_t EvalTypeMethodCallContext::eval() {
 
 
         } 
+         */
         case 1: {
             // Compute parameter values to pass to the call
             if (m_param_idx > 0 && haveResult()) {
                 if (intf) {
                     m_stack_frame->setVariable(m_param_idx, moveResult());
                 } else {
-                    m_pvals.push_back(IEvalResultUP(moveResult()));
+                    vsc::dm::ValRef pval(moveResult());
+                    m_pvals.push_back(pval);
                 }
             }
             while (m_param_idx < m_params.size()) {
@@ -129,7 +134,8 @@ int32_t EvalTypeMethodCallContext::eval() {
                         if (intf) {
                             m_stack_frame->setVariable(m_param_idx, moveResult());
                         } else {
-                            m_pvals.push_back(IEvalResultUP(moveResult()));
+                            vsc::dm::ValRef pval(moveResult());
+                            m_pvals.push_back(pval);
                         }
                     }
                 }
@@ -182,6 +188,7 @@ int32_t EvalTypeMethodCallContext::eval() {
             }
         }
 
+        /*
         case 1: {
             // Wait for a response
             if (haveResult()) {
@@ -191,6 +198,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 }
             }
         }
+         */
     }
 
     ret = !haveResult();
