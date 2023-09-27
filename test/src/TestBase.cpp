@@ -24,6 +24,7 @@
 #include "zsp/arl/eval/FactoryExt.h"
 #include "vsc/dm/FactoryExt.h"
 #include "vsc/solvers/FactoryExt.h"
+#include "EvalBackendTestFixture.h"
 #include "TestBase.h"
 
 
@@ -88,6 +89,34 @@ dm::IDataTypeFunction *TestBase::mkFunction(
     ret->getBody()->addStatement(stmt);
 
     return ret;
+}
+
+void TestBase::createEvalContext(
+        IEvalContextUP              &ctxt,
+        dm::IDataTypeComponent      *root_comp,
+        dm::IDataTypeAction         *root_action,
+        IEvalBackend                *backend) {
+        
+    ASSERT_TRUE(root_comp);
+    ASSERT_TRUE(root_action);
+    
+    IEvalContext *eval_ctxt = m_eval_f->mkEvalContextFullElab(
+        m_solvers_f,
+        m_ctxt.get(),
+        m_randstate.get(),
+        root_comp,
+        root_action,
+        backend);
+    ASSERT_TRUE(eval_ctxt);
+    ctxt = IEvalContextUP(eval_ctxt);
+}
+
+void TestBase::createBackend(
+        IEvalBackendUP              &backend,
+        const std::function<void(IEvalThread*, dm::IDataTypeFunction*,const std::vector<vsc::dm::ValRef> &)> &f) {
+    EvalBackendTestFixture *b = new EvalBackendTestFixture();
+    b->setCallReq(f);
+    backend = IEvalBackendUP(b);
 }
 
 dmgr::IDebug *TestBase::m_dbg = 0;

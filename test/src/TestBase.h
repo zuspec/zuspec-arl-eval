@@ -53,6 +53,17 @@ protected:
         vsc::dm::IDataType      *rtype,
         dm::ITypeProcStmt       *stmt);
 
+    void createEvalContext(
+        IEvalContextUP              &ctxt,
+        dm::IDataTypeComponent      *root_comp,
+        dm::IDataTypeAction         *root_action,
+        IEvalBackend                *backend);
+
+    void createBackend(
+        IEvalBackendUP              &backend,
+        const std::function<void(IEvalThread*, dm::IDataTypeFunction*,const std::vector<vsc::dm::ValRef> &)> &f);
+
+
 protected:
     static dmgr::IDebug         *m_dbg;
     dm::IFactory                *m_arl_dm_factory;

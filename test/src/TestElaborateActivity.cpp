@@ -512,6 +512,27 @@ TEST_F(TestElaborateActivity, null_action) {
 
     )");
     #include "TestElaborateActivity_null_action.h"
+
+    IEvalContextUP eval_ctxt;
+    createEvalContext(
+        eval_ctxt,
+        pss_top_t,
+        Entry_t,
+        0);
+    ASSERT_TRUE(eval_ctxt.get());
+
+    ASSERT_FALSE(eval_ctxt->eval());
+
+/*
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
+        &build_ctxt,
+        "pss_top",
+        false));
+    ASSERT_TRUE(pss_top.get());
+ */
+
+
 }
 
 }
