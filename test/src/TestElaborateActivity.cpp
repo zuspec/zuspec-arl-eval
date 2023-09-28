@@ -532,6 +532,44 @@ TEST_F(TestElaborateActivity, null_action) {
     ASSERT_TRUE(pss_top.get());
  */
 
+}
+
+TEST_F(TestElaborateActivity, void_func_call) {
+    ZSP_DATACLASSES(TestElaborateActivity_void_func_call, pss_top, pss_top.Entry, R"(
+        @zdc.import_fn
+        def ext_f():
+            pass 
+        @zdc.component
+        class pss_top(object):
+
+            @zdc.action
+            class Entry(object):
+                @zdc.exec.body
+                def body(self):
+                    ext_f()
+                pass
+
+    )");
+    #include "TestElaborateActivity_void_func_call.h"
+
+    IEvalContextUP eval_ctxt;
+    createEvalContext(
+        eval_ctxt,
+        pss_top_t,
+        Entry_t,
+        0);
+    ASSERT_TRUE(eval_ctxt.get());
+
+    ASSERT_FALSE(eval_ctxt->eval());
+
+/*
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
+        &build_ctxt,
+        "pss_top",
+        false));
+    ASSERT_TRUE(pss_top.get());
+ */
 
 }
 

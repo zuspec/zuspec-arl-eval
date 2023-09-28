@@ -7,6 +7,7 @@
                 "src",
                 "src/include",
                 "test/src",
+                "build/test/zspdefs",
                 "packages/debug-mgr/src/include",
                 "packages/gtest/googletest/include",
                 "packages/vsc-dm/src",
