@@ -54,13 +54,13 @@ protected:
         dm::ITypeProcStmt       *stmt);
 
     void createEvalContext(
-        IEvalContextUP              &ctxt,
+        IEvalContext                **ctxt,
         dm::IDataTypeComponent      *root_comp,
         dm::IDataTypeAction         *root_action,
         IEvalBackend                *backend);
 
     void createBackend(
-        IEvalBackendUP              &backend,
+        IEvalBackend                **backend,
         const std::function<void(IEvalThread*, dm::IDataTypeFunction*,const std::vector<vsc::dm::ValRef> &)> &f);
 
 

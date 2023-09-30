@@ -101,7 +101,7 @@ public:
 
     virtual void clrResult() override { m_result.reset(); }
 
-    virtual void setResult(vsc::dm::ValRef &r) override;
+    virtual void setResult(const vsc::dm::ValRef &r) override;
     
     void setVoidResult();
 

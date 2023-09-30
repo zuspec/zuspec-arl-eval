@@ -108,7 +108,7 @@ void EvalThread::popEval(IEval *e) {
     DEBUG_LEAVE("popEval");
 }
 
-void EvalThread::setResult(vsc::dm::ValRef &r) {
+void EvalThread::setResult(const vsc::dm::ValRef &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(r);

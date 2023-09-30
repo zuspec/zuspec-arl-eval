@@ -19,6 +19,8 @@
  *     Author:
  */
 #include "TestElaborateActivity.h"
+#include "vsc/dm/impl/ValRef.h"
+#include "vsc/dm/impl/ValRefInt.h"
 #include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "TaskElaborateActivity.h"
 
@@ -513,13 +515,14 @@ TEST_F(TestElaborateActivity, null_action) {
     )");
     #include "TestElaborateActivity_null_action.h"
 
-    IEvalContextUP eval_ctxt;
+    IEvalContext *eval_ctxt = 0;
     createEvalContext(
-        eval_ctxt,
+        &eval_ctxt,
         pss_top_t,
         Entry_t,
         0);
-    ASSERT_TRUE(eval_ctxt.get());
+    IEvalContextUP eval_ctxt_o(eval_ctxt);
+    ASSERT_TRUE(eval_ctxt);
 
     ASSERT_FALSE(eval_ctxt->eval());
 
@@ -539,6 +542,7 @@ TEST_F(TestElaborateActivity, void_func_call) {
         @zdc.import_fn
         def ext_f():
             pass 
+
         @zdc.component
         class pss_top(object):
 
@@ -552,15 +556,27 @@ TEST_F(TestElaborateActivity, void_func_call) {
     )");
     #include "TestElaborateActivity_void_func_call.h"
 
-    IEvalContextUP eval_ctxt;
+    IEvalContext *eval_ctxt = 0;
+    IEvalBackend *eval_backend = 0;
+    createBackend(
+        &eval_backend,
+        [&](
+            IEvalThread *thread, 
+            dm::IDataTypeFunction *func, 
+            const std::vector<vsc::dm::ValRef> &params) {
+            fprintf(stdout, "Function\n");
+            thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
+        }
+    );
     createEvalContext(
-        eval_ctxt,
+        &eval_ctxt,
         pss_top_t,
         Entry_t,
-        0);
-    ASSERT_TRUE(eval_ctxt.get());
+        eval_backend);
+    IEvalContextUP eval_ctxt_o(eval_ctxt);
+    ASSERT_TRUE(eval_ctxt_o.get());
 
-    ASSERT_FALSE(eval_ctxt->eval());
+    ASSERT_FALSE(eval_ctxt_o->eval());
 
 /*
     dm::ModelBuildContext build_ctxt(m_ctxt.get());

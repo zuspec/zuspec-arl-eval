@@ -78,7 +78,7 @@ public:
         m_thread_id = IEvalThreadIdUP(tid);
     }
 
-    virtual void setResult(vsc::dm::ValRef &r) override;
+    virtual void setResult(const vsc::dm::ValRef &r) override;
 
     virtual void pushStackFrame(IEvalStackFrame *frame) override {
         m_callstack.push_back(IEvalStackFrameUP(frame));

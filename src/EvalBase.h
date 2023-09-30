@@ -66,7 +66,7 @@ public:
         m_result.reset();
     }
 
-    virtual void setResult(vsc::dm::ValRef &r) override {
+    virtual void setResult(const vsc::dm::ValRef &r) override {
         m_result.set(r);
     }
 

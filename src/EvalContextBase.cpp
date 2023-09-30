@@ -83,7 +83,7 @@ void EvalContextBase::callListener(
     }
 }
 
-void EvalContextBase::setResult(vsc::dm::ValRef &r) {
+void EvalContextBase::setResult(const vsc::dm::ValRef &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
         m_eval_s.back()->setResult(r);

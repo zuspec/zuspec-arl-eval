@@ -63,7 +63,7 @@ public:
      * 
      * @param r 
      */
-    virtual void setResult(vsc::dm::ValRef &r) = 0;
+    virtual void setResult(const vsc::dm::ValRef &r) = 0;
 
     virtual void setVoidResult() = 0;
 

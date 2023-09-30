@@ -92,7 +92,7 @@ dm::IDataTypeFunction *TestBase::mkFunction(
 }
 
 void TestBase::createEvalContext(
-        IEvalContextUP              &ctxt,
+        IEvalContext                **ctxt,
         dm::IDataTypeComponent      *root_comp,
         dm::IDataTypeAction         *root_action,
         IEvalBackend                *backend) {
@@ -108,15 +108,15 @@ void TestBase::createEvalContext(
         root_action,
         backend);
     ASSERT_TRUE(eval_ctxt);
-    ctxt = IEvalContextUP(eval_ctxt);
+    *ctxt = eval_ctxt;
 }
 
 void TestBase::createBackend(
-        IEvalBackendUP              &backend,
+        IEvalBackend               **backend,
         const std::function<void(IEvalThread*, dm::IDataTypeFunction*,const std::vector<vsc::dm::ValRef> &)> &f) {
     EvalBackendTestFixture *b = new EvalBackendTestFixture();
     b->setCallReq(f);
-    backend = IEvalBackendUP(b);
+    *backend = b;
 }
 
 dmgr::IDebug *TestBase::m_dbg = 0;
