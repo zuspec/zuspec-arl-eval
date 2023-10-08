@@ -32,13 +32,14 @@ namespace eval {
 EvalTypeProcStmtScope::EvalTypeProcStmtScope(
     IEvalContext                *ctxt,
     IEvalThread                 *thread,
+    IEvalValProvider            *vp,
     dm::ITypeProcStmtScope      *scope) : 
-        EvalBase(ctxt, thread), m_scope(scope), m_idx(0) {
+        EvalBase(ctxt, thread), m_vp(vp), m_scope(scope), m_idx(0) {
     DEBUG_INIT("EvalTypeProcStmtScope", ctxt->getDebugMgr());
 }
 
 EvalTypeProcStmtScope::EvalTypeProcStmtScope(const EvalTypeProcStmtScope *o) : 
-    EvalBase(o), m_scope(o->m_scope), m_idx(o->m_idx) {
+    EvalBase(o), m_vp(o->m_vp), m_scope(o->m_scope), m_idx(o->m_idx) {
 }
 
 EvalTypeProcStmtScope::~EvalTypeProcStmtScope() {
@@ -58,7 +59,10 @@ int32_t EvalTypeProcStmtScope::eval() {
     if (m_idx < m_scope->getStatements().size()) {
         while (m_idx < m_scope->getStatements().size()) {
             EvalTypeProcStmt evaluator(
-                m_ctxt, m_thread, m_scope->getStatements().at(m_idx).get());
+                m_ctxt, 
+                m_thread, 
+                m_vp,
+                m_scope->getStatements().at(m_idx).get());
 
             m_idx++;
 

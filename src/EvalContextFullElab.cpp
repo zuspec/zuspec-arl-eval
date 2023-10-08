@@ -23,7 +23,6 @@
 #include "zsp/arl/eval/impl/EvalBackendBase.h"
 #include "EvalActivityScopeFullElab.h"
 #include "EvalContextFullElab.h"
-#include "EvalResult.h"
 #include "TaskElaborateRegGroupTypes.h"
 
 

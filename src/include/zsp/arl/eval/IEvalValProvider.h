@@ -1,5 +1,5 @@
 /**
- * EvalResult.h
+ * IEvalValProvider.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,38 +19,29 @@
  *     Author: 
  */
 #pragma once
-#include "vsc/dm/IModelVal.h"
-#include "vsc/dm/IModelField.h"
+#include "vsc/dm/ITypeExprFieldRef.h"
+#include "vsc/dm/impl/ValRef.h"
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
-enum class EvalResultKind {
-    None,
-    Void,
-    Val,
-    Ref,
-    Break,
-    Continue
-};
 
-union EvalResultVal {
-    vsc::dm::IModelValUP    val;
-    vsc::dm::IModelField    *ref;
-};
 
-class IEvalResult;
-using IEvalResultUP=std::unique_ptr<IEvalResult>;
-class IEvalResult : public virtual vsc::dm::IModelVal {
+class IEvalValProvider {
 public:
-    virtual EvalResultKind getKind() const = 0;
 
-    virtual vsc::dm::IModelField *getRef() const = 0;
+    virtual ~IEvalValProvider() { }
 
-    EvalResultKind              kind;
-    vsc::dm::IModelValUP        val;
-    vsc::dm::IModelField        *ref;
+    virtual vsc::dm::ValRef getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) const = 0;
+
+    virtual vsc::dm::ValRef getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) = 0;
 
 };
 

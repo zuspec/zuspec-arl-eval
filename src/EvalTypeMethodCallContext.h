@@ -35,6 +35,7 @@ public:
     EvalTypeMethodCallContext(
         IEvalContext                                *ctxt,
         IEvalThread                                 *thread,
+        IEvalValProvider                            *vp,
         dm::IDataTypeFunction                       *method,
         vsc::dm::IModelField                        *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *>     &params
@@ -43,6 +44,7 @@ public:
     EvalTypeMethodCallContext(
         IEvalContext                                *ctxt,
         IEvalThread                                 *thread,
+        IEvalValProvider                            *vp,
         dm::IDataTypeFunction                       *method,
         vsc::dm::ITypeExpr                          *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *>     &params
@@ -60,6 +62,7 @@ public:
 
 private:
     static dmgr::IDebug                     *m_dbg;
+    IEvalValProvider                        *m_vp;
     dm::IDataTypeFunction                   *m_method;
     vsc::dm::ITypeExpr                      *m_method_ctxt_e;
     vsc::dm::IModelField                    *m_method_ctxt;

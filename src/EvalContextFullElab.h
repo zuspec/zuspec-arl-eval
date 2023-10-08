@@ -23,7 +23,6 @@
 #include "zsp/arl/eval/IEvalContextActivity.h"
 #include "EvalContextBase.h"
 #include "TaskElaborateActivity.h"
-#include "EvalResultAlloc.h"
 #include "EvalThread.h"
 
 namespace zsp {

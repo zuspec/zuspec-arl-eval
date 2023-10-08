@@ -565,6 +565,7 @@ TEST_F(TestElaborateActivity, void_func_call) {
             dm::IDataTypeFunction *func, 
             const std::vector<vsc::dm::ValRef> &params) {
             fprintf(stdout, "Function\n");
+            // TODO: Need a 'Valid but empty' value
             thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
         }
     );

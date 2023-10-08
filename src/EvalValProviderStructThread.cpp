@@ -1,0 +1,64 @@
+/*
+ * EvalValProviderStructThread.cpp
+ *
+ * Copyright 2023 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author:
+ */
+#include "EvalValProviderStructThread.h"
+
+
+namespace zsp {
+namespace arl {
+namespace eval {
+
+
+EvalValProviderStructThread::EvalValProviderStructThread(IEvalThread *thread) 
+    : m_thread(thread), m_scope(vsc::dm::ValRef()) {
+
+}
+
+EvalValProviderStructThread::EvalValProviderStructThread(
+    IEvalThread                 *thread,
+    const vsc::dm::ValRefStruct &scope) : m_thread(thread), m_scope(scope) {
+
+}
+
+EvalValProviderStructThread::EvalValProviderStructThread(
+    const EvalValProviderStructThread &o) : 
+        m_thread(o.m_thread), m_scope(o.m_scope) { }
+
+EvalValProviderStructThread::~EvalValProviderStructThread() {
+
+}
+
+vsc::dm::ValRef EvalValProviderStructThread::getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) const {
+
+}
+
+vsc::dm::ValRef EvalValProviderStructThread::getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
+
+}
+
+}
+}
+}

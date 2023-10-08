@@ -33,13 +33,13 @@ EvalActivityFullElab::EvalActivityFullElab(
     IEvalContext        *ctxt,
     IEvalThread         *thread,
     dm::IModelActivity  *activity) : 
-        EvalBase(ctxt, thread), m_activity(activity), m_idx(0) {
+        EvalBase(ctxt, thread), m_vp(thread), m_activity(activity), m_idx(0) {
     
     DEBUG_INIT("EvalActivityFullElab", ctxt->getDebugMgr());
 }
 
 EvalActivityFullElab::EvalActivityFullElab(const EvalActivityFullElab *o) :
-    EvalBase(o), m_activity(o->m_activity), m_idx(o->m_idx) {
+    EvalBase(o), m_vp(o->m_vp), m_activity(o->m_activity), m_idx(o->m_idx) {
 
 }
 
@@ -140,7 +140,8 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                     DEBUG("Note: Have an exec body block");
                     EvalTypeExecList evaluator(
                         m_ctxt, 
-                        m_thread, 
+                        m_thread,
+                        &m_vp,
                         action_t->getExecs(dm::ExecKindT::Body));
                     
                     if (evaluator.eval()) {

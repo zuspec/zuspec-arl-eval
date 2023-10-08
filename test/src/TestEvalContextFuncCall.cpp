@@ -168,9 +168,11 @@ TEST_F(TestEvalContextFuncCall, eval_check_reg_access) {
 
     // Build placeholder read/write functions
     reg_group_t->addFunction(
-        m_ctxt->mkDataTypeFunction("read32", i32_t.get(), false, true, false));
+        m_ctxt->mkDataTypeFunction("read32", i32_t.get(), false, 
+        dm::DataTypeFunctionFlags::Target));
     reg_group_t->addFunction(
-        m_ctxt->mkDataTypeFunction("write32", i32_t.get(), false, true, false));
+        m_ctxt->mkDataTypeFunction("write32", i32_t.get(), false, 
+        dm::DataTypeFunctionFlags::Target));
 
     reg_group_t->addField(
         m_ctxt->mkTypeFieldReg("reg1", i32_t.get(), false));

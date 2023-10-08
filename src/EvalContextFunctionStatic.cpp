@@ -66,6 +66,7 @@ int32_t EvalContextFunctionStatic::eval() {
         ret = EvalTypeMethodCallStatic(
                 this, 
                 this,
+                0, // TODO: ValProvider
                 m_func,
                 m_params).eval();
     }

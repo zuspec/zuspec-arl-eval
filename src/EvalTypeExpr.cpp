@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/ITypeExprVal.h"
+#include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
 
 
@@ -31,14 +32,15 @@ namespace eval {
 EvalTypeExpr::EvalTypeExpr(
     IEvalContext        *ctxt,
     IEvalThread         *thread,
+    IEvalValProvider    *vp,
     vsc::dm::ITypeExpr  *expr) :
-        EvalBase(ctxt, thread), 
+        EvalBase(ctxt, thread), m_vp(vp),
         m_expr(expr), m_idx(0), m_subidx(0) {
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
 
 EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
-    EvalBase(o), m_expr(o->m_expr), 
+    EvalBase(o), m_vp(o->m_vp), m_expr(o->m_expr), 
     m_val_lhs(std::move(o->m_val_lhs)),
     m_val_rhs(std::move(o->m_val_rhs)), 
     m_idx(o->m_idx), m_subidx(o->m_subidx) {
@@ -83,7 +85,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
     switch (m_idx) {
         case 0: { // Operand 1
             m_idx = 1;
-            EvalTypeExpr evaluator(m_ctxt, m_thread, e->lhs());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, e->lhs());
 
             if (evaluator.eval()) {
                 break;
@@ -93,7 +95,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
             m_idx = 2;
             setVoidResult();
 
-            EvalTypeExpr evaluator(m_ctxt, m_thread, e->rhs());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, e->rhs());
 
             if (evaluator.eval()) {
                 break;
@@ -291,6 +293,11 @@ void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) {
 
 void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
     DEBUG_ENTER("visitTypeExprMethodCallContext");
+    const TaskEvalCheckRegAccess::Result &res = TaskEvalCheckRegAccess(
+            m_ctxt,
+            m_vp).check(
+        e->getContext(),
+        e->getTarget());
     // Determine whether this is a call to a register
     // If so: 
     // - What is the base address?
@@ -311,7 +318,11 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 m_params.push_back(vsc::dm::ValRef(moveResult()));
             }
             while (m_subidx < e->getParameters().size()) {
-                EvalTypeExpr evaluator(m_ctxt, m_thread, e->getParameters().at(m_subidx).get());
+                EvalTypeExpr evaluator(
+                    m_ctxt, 
+                    m_thread, 
+                    m_vp,
+                    e->getParameters().at(m_subidx).get());
 
                 m_subidx += 1;
                 clrResult();

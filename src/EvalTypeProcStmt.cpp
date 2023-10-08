@@ -32,8 +32,9 @@ namespace eval {
 EvalTypeProcStmt::EvalTypeProcStmt(
     IEvalContext            *ctxt,
     IEvalThread             *thread,
+    IEvalValProvider        *vp,
     dm::ITypeProcStmt       *stmt) : EvalBase(ctxt, thread),
-        m_stmt(stmt), m_idx(0) {
+        m_vp(vp), m_stmt(stmt), m_idx(0) {
     DEBUG_INIT("EvalTypeProcStmt", ctxt->getDebugMgr());
 
 }
@@ -87,7 +88,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         case 0: {
             m_idx = 1;
 
-            if (EvalTypeExpr(m_ctxt, m_thread, s->getRhs()).eval()) {
+            if (EvalTypeExpr(m_ctxt, m_thread, m_vp, s->getRhs()).eval()) {
                 break;
             }
         }
@@ -104,11 +105,6 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
             }
 
             fprintf(stdout, "TODO: Check of result kind\n");
-            /*
-            if (getResult()->getKind() != EvalResultKind::Val) {
-                FATAL("Incorrect result type %d", getResult()->getKind());
-            }
-             */
 
             switch (s->op()) {
                 case dm::TypeProcStmtAssignOp::Eq: {
@@ -134,7 +130,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
     switch (m_idx) {
         case 0: {
             m_idx = 1; // Always move forward
-            EvalTypeExpr evaluator(m_ctxt, m_thread, s->getExpr());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, s->getExpr());
             if (evaluator.eval()) {
                 // expression evaluation blocked
                 clrResult();
@@ -158,7 +154,7 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
             // Evaluate condition
             m_idx = 1;
 
-            if (EvalTypeExpr(m_ctxt, m_thread, s->getCond()).eval()) {
+            if (EvalTypeExpr(m_ctxt, m_thread, m_vp, s->getCond()).eval()) {
                 clrResult();
                 break;
             }
@@ -197,7 +193,7 @@ void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
     switch (m_idx) {
         case 0: {
             m_idx = 1;
-            EvalTypeExpr evaluator(m_ctxt, m_thread, s->getExpr());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, s->getExpr());
 
             if (evaluator.eval()) {
                 clrResult();

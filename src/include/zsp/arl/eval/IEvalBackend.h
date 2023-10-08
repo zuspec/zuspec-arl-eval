@@ -20,7 +20,6 @@
  */
 #pragma once
 #include <vector>
-#include "zsp/arl/eval/IEvalResult.h"
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"

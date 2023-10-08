@@ -21,6 +21,7 @@
 #pragma once
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEvalContext.h"
+#include "zsp/arl/eval/IEvalValProvider.h"
 
 namespace zsp {
 namespace arl {
@@ -38,16 +39,23 @@ public:
     };
 
 public:
-    TaskEvalCheckRegAccess(IEvalContext *ctxt);
+    TaskEvalCheckRegAccess(
+        IEvalContext            *ctxt,
+        IEvalValProvider        *vp);
 
     virtual ~TaskEvalCheckRegAccess();
 
-    Result check(
+    const Result &check(
         vsc::dm::ITypeExpr          *func_ctxt, 
         dm::IDataTypeFunction       *func);
 
+	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
+
 private:
+    static dmgr::IDebug             *m_dbg;
     IEvalContext                    *m_ctxt;
+    IEvalValProvider                *m_vp;
+    Result                          m_res;
 
 };
 

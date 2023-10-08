@@ -68,6 +68,7 @@ int32_t EvalContextFunctionContext::eval() {
         ret = EvalTypeMethodCallContext(
                 this, 
                 this,
+                0, // TODO: ValProvider
                 m_func,
                 m_func_ctxt,
                 m_params).eval();

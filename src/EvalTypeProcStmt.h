@@ -37,6 +37,7 @@ public:
     EvalTypeProcStmt(
         IEvalContext                *ctxt,
         IEvalThread                 *thread,
+        IEvalValProvider            *vp,
         dm::ITypeProcStmt           *stmt);
 
     EvalTypeProcStmt(const EvalTypeProcStmt *o);
@@ -57,6 +58,7 @@ public:
 
 private:
     static dmgr::IDebug             *m_dbg;
+    IEvalValProvider                *m_vp;
     dm::ITypeProcStmt               *m_stmt;
     uint32_t                        m_idx;
 

@@ -31,9 +31,10 @@ namespace eval {
 EvalTypeMethodCallStatic::EvalTypeMethodCallStatic(
     IEvalContext                                *ctxt,
     IEvalThread                                 *thread,
+    IEvalValProvider                            *vp,
     dm::IDataTypeFunction                       *func,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-    EvalBase(ctxt, thread), m_func(func),
+    EvalBase(ctxt, thread), m_vp(vp), m_func(func),
     m_params(params.begin(), params.end()),
     m_idx(0), m_param_idx(0) {
 
@@ -83,6 +84,7 @@ int32_t EvalTypeMethodCallStatic::eval() {
                 EvalTypeExpr evaluator(
                     m_ctxt, 
                     m_thread, 
+                    m_vp,
                     m_params.at(m_param_idx));
 
                 m_param_idx += 1;
@@ -126,6 +128,7 @@ int32_t EvalTypeMethodCallStatic::eval() {
                 EvalTypeProcStmtScope(
                     m_ctxt,
                     m_thread,
+                    m_vp,
                     m_func->getBody()).eval();
             } else {
                 DEBUG("Calling import function");

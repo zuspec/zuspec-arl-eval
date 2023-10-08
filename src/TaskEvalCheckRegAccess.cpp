@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskEvalCheckRegAccess.h"
 
 
@@ -26,13 +27,52 @@ namespace arl {
 namespace eval {
 
 
-TaskEvalCheckRegAccess::TaskEvalCheckRegAccess(IEvalContext *ctxt) : m_ctxt(ctxt) {
+TaskEvalCheckRegAccess::TaskEvalCheckRegAccess(
+    IEvalContext        *ctxt,
+    IEvalValProvider    *vp) : m_ctxt(ctxt), m_vp(vp) {
+    DEBUG_INIT("zsp::arl::eval::TaskEvalCheckRegAccess", ctxt->getDebugMgr());
 
 }
 
 TaskEvalCheckRegAccess::~TaskEvalCheckRegAccess() {
 
 }
+
+const TaskEvalCheckRegAccess::Result &TaskEvalCheckRegAccess::check(
+        vsc::dm::ITypeExpr          *func_ctxt, 
+        dm::IDataTypeFunction       *func) {
+    DEBUG_ENTER("check");
+    m_res.root_block = 0;
+
+    func_ctxt->accept(m_this);
+
+    DEBUG_LEAVE("check");
+    return m_res;
+}
+
+void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
+    DEBUG_ENTER("visitTypeExprFieldRef");
+
+    vsc::dm::IModelField *field = 0;
+
+    // switch (e->getRootRefKind()) {
+    //     case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope:
+	// 		field = m_ctxt->getTopDownScope();
+    //         break;
+    //     case ITypeExprFieldRef::RootRefKind::BottomUpScope:
+	// 		m_field = m_ctxt->getScope();
+    //         break;
+    // }
+	// for (std::vector<int32_t>::const_iterator
+	// 	it=e->getPath().begin(); 
+    //     it!=e->getPath().end(); it++) {
+	// 	m_field = m_field->getField(*it);
+	// }
+
+    DEBUG_LEAVE("visitTypeExprFieldRef");
+}
+
+dmgr::IDebug *TaskEvalCheckRegAccess::m_dbg = 0;
 
 }
 }

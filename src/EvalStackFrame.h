@@ -21,7 +21,6 @@
 #pragma once
 #include <vector>
 #include "zsp/arl/eval/IEvalStackFrame.h"
-#include "zsp/arl/eval/IEvalResult.h"
 
 namespace zsp {
 namespace arl {

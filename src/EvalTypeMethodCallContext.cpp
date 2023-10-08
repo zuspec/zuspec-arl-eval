@@ -32,10 +32,12 @@ namespace eval {
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(
     IEvalContext                                *ctxt,
     IEvalThread                                 *thread,
+    IEvalValProvider                            *vp,
     dm::IDataTypeFunction                       *method,
     vsc::dm::IModelField                        *method_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-    EvalBase(ctxt, thread), m_method(method), m_method_ctxt(method_ctxt),
+    EvalBase(ctxt, thread), m_vp(vp),
+    m_method(method), m_method_ctxt(method_ctxt),
     m_method_ctxt_e(0), m_params(params.begin(), params.end()), 
     m_idx(0), m_param_idx(0) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
@@ -45,10 +47,11 @@ EvalTypeMethodCallContext::EvalTypeMethodCallContext(
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(
     IEvalContext                                *ctxt,
     IEvalThread                                 *thread,
+    IEvalValProvider                            *vp,
     dm::IDataTypeFunction                       *method,
     vsc::dm::ITypeExpr                          *method_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-    EvalBase(ctxt, thread), m_method(method), m_method_ctxt(0),
+    EvalBase(ctxt, thread), m_vp(vp), m_method(method), m_method_ctxt(0),
     m_method_ctxt_e(method_ctxt), m_params(params.begin(), params.end()), 
     m_idx(0), m_param_idx(0) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
@@ -122,6 +125,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 EvalTypeExpr evaluator(
                     m_ctxt, 
                     m_thread, 
+                    m_vp,
                     m_params.at(m_param_idx));
 
                 m_param_idx += 1;
@@ -173,6 +177,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 EvalTypeProcStmtScope(
                     m_ctxt,
                     m_thread,
+                    m_vp,
                     m_method->getBody()).eval();
             } else {
                 DEBUG("Calling import function");

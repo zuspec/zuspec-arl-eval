@@ -23,7 +23,6 @@
 #include <vector>
 #include "zsp/arl/eval/IEvalThread.h"
 #include "EvalBase.h"
-#include "EvalResultAlloc.h"
 
 namespace zsp {
 namespace arl {
@@ -114,7 +113,6 @@ protected:
     std::vector<IEvalUP>                m_eval_s;
     IEvalThreadIdUP                     m_thread_id;
     std::vector<IEvalStackFrameUP>      m_callstack;
-    EvalResultAlloc                     m_result_alloc;
 
 };
 

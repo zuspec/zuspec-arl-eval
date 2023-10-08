@@ -26,6 +26,7 @@
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalStackFrame.h"
 #include "zsp/arl/eval/IEvalThreadId.h"
+#include "zsp/arl/eval/IEvalValProvider.h"
 
 namespace zsp {
 namespace arl {

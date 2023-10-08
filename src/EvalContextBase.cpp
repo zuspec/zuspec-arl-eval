@@ -20,7 +20,6 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "EvalContextBase.h"
-#include "EvalResult.h"
 #include "EvalStackFrame.h"
 
 

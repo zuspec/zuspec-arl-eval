@@ -23,7 +23,6 @@
 #include "zsp/arl/dm/IFactory.h"
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/eval/IEvalContext.h"
-#include "EvalResultAlloc.h"
 
 namespace zsp {
 namespace arl {

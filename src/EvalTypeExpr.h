@@ -21,6 +21,7 @@
 #pragma once
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEval.h"
+#include "zsp/arl/eval/IEvalValProvider.h"
 #include "EvalBase.h"
 
 namespace zsp {
@@ -37,6 +38,7 @@ public:
     EvalTypeExpr(
         IEvalContext        *ctxt,
         IEvalThread         *thread,
+        IEvalValProvider    *vp,
         vsc::dm::ITypeExpr  *expr);
 
     EvalTypeExpr(EvalTypeExpr *o);
@@ -63,6 +65,7 @@ public:
 
 protected:
     static dmgr::IDebug             *m_dbg;
+    IEvalValProvider                *m_vp;
     vsc::dm::ITypeExpr              *m_expr;
     vsc::dm::ValRef                 m_val_lhs;
     vsc::dm::ValRef                 m_val_rhs;

@@ -84,8 +84,7 @@ dm::IDataTypeFunction *TestBase::mkFunction(
         name,
         rtype,
         false,
-        false,
-        true);
+        dm::DataTypeFunctionFlags::Target);
     ret->getBody()->addStatement(stmt);
 
     return ret;

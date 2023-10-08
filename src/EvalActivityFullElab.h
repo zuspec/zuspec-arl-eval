@@ -25,6 +25,7 @@
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "EvalBase.h"
+#include "EvalValProviderStructThread.h"
 
 namespace zsp {
 namespace arl {
@@ -58,6 +59,7 @@ public:
 
 protected:
     static dmgr::IDebug             *m_dbg;
+    EvalValProviderStructThread     m_vp;
     dm::IModelActivity              *m_activity;
     uint32_t                        m_idx;
 

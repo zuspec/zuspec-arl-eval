@@ -19,7 +19,6 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
-#include "EvalResult.h"
 #include "EvalThread.h"
 #include "EvalTypeMethodCallContext.h"
 
@@ -122,7 +121,13 @@ int32_t EvalThread::evalMethodCallContext(
         dm::IDataTypeFunction                   *method,
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) {
-    EvalTypeMethodCallContext invoke(m_ctxt, this, method, method_ctxt, params);
+    EvalTypeMethodCallContext invoke(
+        m_ctxt, 
+        this, 
+        0, // TODO: ValProvider
+        method, 
+        method_ctxt, 
+        params);
 
     int32_t ret = invoke.eval();
 
