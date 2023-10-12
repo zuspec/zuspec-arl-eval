@@ -1,5 +1,5 @@
 /**
- * EvalContextFullElab.h
+ * EvalContextIncrElab.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -30,11 +30,12 @@ namespace arl {
 namespace eval {
 
 
-class EvalContextFullElab :
+
+class EvalContextIncrElab :
     public virtual IEvalContextActivity,
     public virtual EvalContextBase {
 public:
-    EvalContextFullElab(
+    EvalContextIncrElab(
         dmgr::IDebugMgr                                 *dmgr,
         vsc::solvers::IFactory                          *solvers_f,
         dm::IContext                                    *ctxt,
@@ -43,7 +44,7 @@ public:
         dm::IDataTypeAction                             *root_action,
         IEvalBackend                                    *backend=0);
 
-    virtual ~EvalContextFullElab();
+    virtual ~EvalContextIncrElab();
 
     virtual int32_t buildCompTree() override;
     
@@ -75,6 +76,7 @@ private:
     bool                                    m_pss_top_is_init;
     dm::IDataTypeComponent                  *m_root_comp;
     dm::IDataTypeAction                     *m_root_action;
+    vsc::dm::IModelField                    *m_root_action_f;
     ElabActivityUP                          m_activity;
     std::vector<dm::IModelFieldExecutor *>  m_executors;
 

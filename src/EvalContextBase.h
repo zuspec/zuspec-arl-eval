@@ -45,6 +45,10 @@ public:
 
     virtual dm::IContext *ctxt() const { return m_ctxt; }
 
+    virtual dm::IModelFieldComponentRoot *getRootComponent() override {
+        return 0;
+    }
+
     /**
      * @brief Push an eval-stack entry
      */

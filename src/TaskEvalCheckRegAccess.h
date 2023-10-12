@@ -32,7 +32,7 @@ namespace eval {
 class TaskEvalCheckRegAccess : public dm::VisitorBase {
 public:
     struct Result {
-        vsc::dm::IModelField        *root_block;
+        vsc::dm::ValRef             root;
         int64_t                     offset;
         bool                        is_write;
         int32_t                     access_sz;
@@ -51,10 +51,15 @@ public:
 
 	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
 
+	virtual void visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *f) override;
+
+	virtual void visitTypeFieldRef(vsc::dm::ITypeFieldRef *f) override;
+
 private:
     static dmgr::IDebug             *m_dbg;
     IEvalContext                    *m_ctxt;
     IEvalValProvider                *m_vp;
+    vsc::dm::ValRef                 m_val;
     Result                          m_res;
 
 };

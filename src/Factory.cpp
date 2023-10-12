@@ -22,6 +22,7 @@
 #include "zsp/arl/eval/FactoryExt.h"
 #include "zsp/arl/eval/impl/EvalBackendBase.h"
 #include "EvalContextFullElab.h"
+#include "EvalContextIncrElab.h"
 #include "EvalStackFrame.h"
 #include "EvalThread.h"
 #include "EvalContextFunctionContext.h"
@@ -71,7 +72,9 @@ IEvalContext *Factory::mkEvalContextFullElab(
         IEvalBackend                    *backend) {
 
 
-    IEvalContext *ret = new EvalContextFullElab(
+    IEvalContext *ret = 0;
+#ifdef UNDEFINED
+    ret = new EvalContextFullElab(
         m_dmgr,
         solvers_f,
         ctxt,
@@ -79,6 +82,16 @@ IEvalContext *Factory::mkEvalContextFullElab(
         root_comp,
         root_action,
         backend);
+#else
+    ret = new EvalContextIncrElab(
+        m_dmgr,
+        solvers_f,
+        ctxt,
+        randstate,
+        root_comp,
+        root_action,
+        backend);
+#endif
 
     return ret;
 }

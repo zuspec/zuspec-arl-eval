@@ -1,5 +1,5 @@
 /*
- * EvalContextFullElab.cpp
+ * EvalContextIncrElab.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -21,8 +21,8 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "zsp/arl/eval/impl/EvalBackendBase.h"
-#include "EvalActivityScopeFullElab.h"
-#include "EvalContextFullElab.h"
+#include "EvalContextIncrElab.h"
+#include "EvalTypeActionIncrElab.h"
 #include "TaskElaborateRegGroupTypes.h"
 #include "TaskEvalComponentExecInit.h"
 
@@ -32,7 +32,7 @@ namespace arl {
 namespace eval {
 
 
-EvalContextFullElab::EvalContextFullElab(
+EvalContextIncrElab::EvalContextIncrElab(
     dmgr::IDebugMgr                                 *dmgr,
     vsc::solvers::IFactory                          *solvers_f,
     dm::IContext                                    *ctxt,
@@ -43,18 +43,19 @@ EvalContextFullElab::EvalContextFullElab(
         EvalContextBase(dmgr, solvers_f, ctxt, randstate, backend),
         m_pss_top(0), m_root_comp(root_comp), 
         m_pss_top_is_init(false), m_root_action(root_action) {
-    DEBUG_INIT("EvalContextFullElab", dmgr);
+    DEBUG_INIT("zsp::arl::eval::EvalContextIncrElab", dmgr);
 
     if (backend) {
         backend->init(this);
     }
-}
-
-EvalContextFullElab::~EvalContextFullElab() {
 
 }
 
-int32_t EvalContextFullElab::buildCompTree() {
+EvalContextIncrElab::~EvalContextIncrElab() {
+
+}
+
+int32_t EvalContextIncrElab::buildCompTree() {
     dm::ModelBuildContext build_ctxt(m_ctxt);
 
     // Build component tree
@@ -82,7 +83,7 @@ int32_t EvalContextFullElab::buildCompTree() {
     return 0;
 }
 
-int32_t EvalContextFullElab::initCompTree() {
+int32_t EvalContextIncrElab::initCompTree() {
 
     m_pss_top->initCompTree();
 
@@ -98,11 +99,12 @@ int32_t EvalContextFullElab::initCompTree() {
     return 0;
 }
 
-int32_t EvalContextFullElab::eval() {
+int32_t EvalContextIncrElab::eval() {
     bool ret = false;
     DEBUG_ENTER("eval");
 
     if (m_initial) {
+        dm::ModelBuildContext build_ctxt(m_ctxt);
         if (!m_pss_top) {
             buildCompTree();
         }
@@ -116,16 +118,24 @@ int32_t EvalContextFullElab::eval() {
             setBackend(new EvalBackendBase());
         }
 
+        m_root_action_f = m_root_action->mkRootField(
+            &build_ctxt,
+            m_root_action->name(),
+            false);
+
+        /*
         m_activity = ElabActivityUP(TaskElaborateActivity(
             m_solvers_f, 
             m_ctxt).elaborate(
                 m_randstate->clone(),
                 m_pss_top.get(),
                 m_root_action));
+         */
 
         // Add an eval scope for the top-level activity
         getBackend()->enterThread(this);
 
+        /*
         EvalActivityScopeFullElab evaluator(
             this,
             this,
@@ -133,6 +143,12 @@ int32_t EvalContextFullElab::eval() {
         );
 
         ret = evaluator.eval();
+         */
+        ret = EvalTypeActionIncrElab(
+                this,
+                this, 
+                m_pss_top->getImmVal(),
+                m_root_action_f->getMutVal()).eval();
 
         m_initial = false;
     } else {
@@ -156,7 +172,7 @@ int32_t EvalContextFullElab::eval() {
     return ret;
 }
 
-void EvalContextFullElab::evalExecInit(
+void EvalContextIncrElab::evalExecInit(
         dm::IDataTypeComponent      *comp_t,
         const vsc::dm::ValRef       &val) {
     // TODO: Create a value provider
@@ -166,12 +182,11 @@ void EvalContextFullElab::evalExecInit(
 }
 
 
-void EvalContextFullElab::finalizeComponentTree() {
+void EvalContextIncrElab::finalizeComponentTree() {
 
 }
 
-dmgr::IDebug *EvalContextFullElab::m_dbg = 0;
-
+dmgr::IDebug *EvalContextIncrElab::m_dbg = 0;
 
 }
 }

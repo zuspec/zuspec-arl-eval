@@ -57,6 +57,8 @@ public:
 
     virtual void setBackend(IEvalBackend *b, bool owned=false) = 0;
 
+    virtual dm::IModelFieldComponentRoot *getRootComponent() = 0;
+
     /**
      * Return just the global solve functions
      * 

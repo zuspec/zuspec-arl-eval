@@ -95,7 +95,8 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         case 1: {
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
-            vsc::dm::ValRef lval(TaskEvalGetLval(m_thread).eval(s->getLhs()));
+            vsc::dm::ValRef lval(TaskEvalGetLval(
+                m_thread->getDebugMgr(), m_vp).eval(s->getLhs()));
             if (!lval.valid()) {
                 FATAL("null lval");
             }
@@ -108,6 +109,9 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
 
             switch (s->op()) {
                 case dm::TypeProcStmtAssignOp::Eq: {
+                    vsc::dm::ValRefInt val_i(lval);
+                    vsc::dm::ValRefInt val_r(getResult());
+                    val_i.set_val(val_r.get_val_u());
                     /*
                     DEBUG("lval.bits=%d rval.bits=%d", lval->bits(), getResult()->bits());
                     lval->set(getResult());

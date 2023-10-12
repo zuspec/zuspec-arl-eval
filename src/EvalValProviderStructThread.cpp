@@ -33,7 +33,7 @@ EvalValProviderStructThread::EvalValProviderStructThread(IEvalThread *thread)
 
 EvalValProviderStructThread::EvalValProviderStructThread(
     IEvalThread                 *thread,
-    const vsc::dm::ValRefStruct &scope) : m_thread(thread), m_scope(scope) {
+    const vsc::dm::ValRef       &scope) : m_thread(thread), m_scope(scope) {
 
 }
 
@@ -45,18 +45,48 @@ EvalValProviderStructThread::~EvalValProviderStructThread() {
 
 }
 
+void EvalValProviderStructThread::setScope(const vsc::dm::ValRefStruct &scope) {
+    m_scope = scope;
+};
+
 vsc::dm::ValRef EvalValProviderStructThread::getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
         int32_t                                 val_offset) const {
+    vsc::dm::ValRef var;
 
+    switch (root_kind) {
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
+            IEvalStackFrame *frame = m_thread->stackFrame(root_offset);
+            var.setWeakRef(frame->getVariable(val_offset));
+        } break;
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
+            vsc::dm::ValRefStruct scope_s(m_scope);
+            var.setWeakRef(scope_s.getFieldRef(val_offset));
+        } break;
+    }
+
+    return var.toImmutable();
 }
 
 vsc::dm::ValRef EvalValProviderStructThread::getMutVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
         int32_t                                 val_offset) {
+    vsc::dm::ValRef var;
 
+    switch (root_kind) {
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
+            IEvalStackFrame *frame = m_thread->stackFrame(root_offset);
+            var.setWeakRef(frame->getVariable(val_offset));
+        } break;
+        case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
+            vsc::dm::ValRefStruct scope_s(m_scope);
+            var.setWeakRef(scope_s.getFieldRef(val_offset));
+        } break;
+    }
+
+    return var.toMutable();
 }
 
 }

@@ -76,6 +76,10 @@ public:
         return m_result.type();
     }
 
+    template <class T> T *ctxtT() const {
+        return dynamic_cast<T *>(m_ctxt);
+    }
+
 protected:
     bool                        m_initial;
     int32_t                     m_entry_idx;

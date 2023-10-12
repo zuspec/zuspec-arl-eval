@@ -286,8 +286,7 @@ void EvalTypeExpr::visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) {
 
 void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) { 
     DEBUG_ENTER("visitTypeExprVal");
-    fprintf(stdout, "TODO: setResult\n");
-//    setResult(m_ctxt->mkEvalResultVal(e->val()));
+    setResult(e->val().toImmutable());
     DEBUG_LEAVE("visitTypeExprVal");
 }
 

@@ -42,7 +42,7 @@ const TaskEvalCheckRegAccess::Result &TaskEvalCheckRegAccess::check(
         vsc::dm::ITypeExpr          *func_ctxt, 
         dm::IDataTypeFunction       *func) {
     DEBUG_ENTER("check");
-    m_res.root_block = 0;
+    m_res.root = vsc::dm::ValRef();
 
     func_ctxt->accept(m_this);
 
@@ -52,6 +52,17 @@ const TaskEvalCheckRegAccess::Result &TaskEvalCheckRegAccess::check(
 
 void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
     DEBUG_ENTER("visitTypeExprFieldRef");
+
+    m_val = m_vp->getImmVal(
+        e->getRootRefKind(),
+        e->getRootRefOffset(),
+        e->getPath().at(0)
+    );
+
+    if (m_val.field()) {
+        m_val.field()->accept(m_this);
+    }
+//    val.type()->accept(m_this);
 
     vsc::dm::IModelField *field = 0;
 
@@ -70,6 +81,17 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
 	// }
 
     DEBUG_LEAVE("visitTypeExprFieldRef");
+}
+
+void TaskEvalCheckRegAccess::visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *f) {
+    DEBUG_ENTER("visitTypeFieldRegGroup");
+
+    DEBUG_LEAVE("visitTypeFieldRegGroup");
+}
+
+void TaskEvalCheckRegAccess::visitTypeFieldRef(vsc::dm::ITypeFieldRef *f) {
+    DEBUG_ENTER("visitTypeFieldRef");
+    DEBUG_LEAVE("visitTypeFieldRef");
 }
 
 dmgr::IDebug *TaskEvalCheckRegAccess::m_dbg = 0;

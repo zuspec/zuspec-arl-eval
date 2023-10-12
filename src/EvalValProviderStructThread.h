@@ -35,7 +35,7 @@ public:
 
     EvalValProviderStructThread(
         IEvalThread                     *thread,
-        const vsc::dm::ValRefStruct     &scope);
+        const vsc::dm::ValRef           &scope);
 
     EvalValProviderStructThread(const EvalValProviderStructThread &o);
 
@@ -55,7 +55,7 @@ public:
 
 private:
     IEvalThread                     *m_thread;
-    vsc::dm::ValRefStruct           m_scope;
+    vsc::dm::ValRef                 m_scope;
 
 };
 

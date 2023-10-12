@@ -137,6 +137,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                 dm::IDataTypeAction *action_t = a->getTarget()->getDataTypeT<dm::IDataTypeAction>();
 
                 if (action_t->getExecs(dm::ExecKindT::Body).size()) {
+                    m_vp.setScope(a->getTarget()->getImmVal());
                     DEBUG("Note: Have an exec body block");
                     EvalTypeExecList evaluator(
                         m_ctxt, 

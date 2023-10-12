@@ -20,6 +20,7 @@
  */
 #pragma once
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/ValRefStruct.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEvalThread.h"
 
@@ -32,8 +33,10 @@ namespace eval {
 class TaskEvalGetLval : 
     public virtual dm::VisitorBase {
 public:
-    TaskEvalGetLval(IEvalThread *thread) : m_thread(thread), m_dbg(0) { 
-        DEBUG_INIT("zsp::arl::eval::TaskEvalGetLval", thread->getDebugMgr());
+    TaskEvalGetLval(
+        dmgr::IDebugMgr     *dmgr,
+        IEvalValProvider    *vp) : m_vp(vp), m_dbg(0) { 
+        DEBUG_INIT("zsp::arl::eval::TaskEvalGetLval", dmgr);
 
     }
 
@@ -52,12 +55,21 @@ public:
         int32_t path_idx = 0;
         DEBUG_ENTER("visitTypeExprFieldRef");
 
-        switch (e->getRootRefKind()) {
-            case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
-                IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(path_idx++));
-                var.setWeakRef(frame->getVariable(e->getPath().at(path_idx++)));
-            } break;
-        }
+        var = m_vp->getMutVal(
+            e->getRootRefKind(),
+            0, // TODO:
+            e->getPath().at(path_idx++)
+        );
+        // switch (e->getRootRefKind()) {
+        //     case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
+        //         IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(path_idx++));
+        //         var.setWeakRef(frame->getVariable(e->getPath().at(path_idx++)));
+        //     } break;
+        //     case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
+        //         vsc::dm::ValRefStruct scope_s(m_scope);
+        //         var.setWeakRef(scope_s.getFieldRef(e->getPath().at(path_idx++)));
+        //     } break;
+        // }
 
         if (!var.valid()) {
             FATAL("No root var");
@@ -68,8 +80,9 @@ public:
         if (path_idx >= e->getPath().size()) {
             m_val.setWeakRef(var);
         } else {
-        while (path_idx < e->getPath().size()) {
-            fprintf(stdout, "TODO: query value type\n");
+            while (path_idx < e->getPath().size()) {
+                vsc::dm::ValRefStruct val_s(var);
+                var = val_s.getFieldRef(path_idx);
             /** TODO:
             switch (var->getKind()) {
                 case EvalResultKind::Val: {
@@ -91,8 +104,9 @@ public:
                 default: FATAL("Unsupported var-result kind %d", var->getKind());
             }
              */
-            path_idx++;
-        }
+                path_idx++;
+            }
+            m_val.setWeakRef(var);
         }
 
         DEBUG_LEAVE("visitTypeExprFieldRef");
@@ -100,7 +114,7 @@ public:
 
 private:
     dmgr::IDebug            *m_dbg;
-    IEvalThread             *m_thread;
+    IEvalValProvider        *m_vp;
     vsc::dm::ValRef         m_val;
 
 };
