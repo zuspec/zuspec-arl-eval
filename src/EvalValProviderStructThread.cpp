@@ -47,7 +47,7 @@ EvalValProviderStructThread::~EvalValProviderStructThread() {
 
 void EvalValProviderStructThread::setScope(const vsc::dm::ValRefStruct &scope) {
     m_scope = scope;
-};
+}
 
 vsc::dm::ValRef EvalValProviderStructThread::getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
@@ -58,11 +58,11 @@ vsc::dm::ValRef EvalValProviderStructThread::getImmVal(
     switch (root_kind) {
         case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
             IEvalStackFrame *frame = m_thread->stackFrame(root_offset);
-            var.setWeakRef(frame->getVariable(val_offset));
+            var = frame->getVariable(val_offset);
         } break;
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
             vsc::dm::ValRefStruct scope_s(m_scope);
-            var.setWeakRef(scope_s.getFieldRef(val_offset));
+            var = scope_s.getFieldRef(val_offset);
         } break;
     }
 

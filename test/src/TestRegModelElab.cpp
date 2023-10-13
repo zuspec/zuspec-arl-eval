@@ -120,6 +120,9 @@ TEST_F(TestRegModelElab, reg_smoke) {
                 @zdc.exec.body
                 def body(self):
                     self.comp.regs.r1.read()
+                    self.comp.regs.r2.read()
+                    self.comp.regs.r3.read()
+                    self.comp.regs.r4.read()
                 pass
 
     )");

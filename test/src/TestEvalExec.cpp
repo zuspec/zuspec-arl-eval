@@ -40,11 +40,19 @@ TEST_F(TestEvalExec, single_action_single_fcall) {
         def func():
             pass
 
+        @zdc.import_fn
+        def pre_solve_f():
+            pass
+
         @zdc.component
         class pss_top(object):
 
             @zdc.action
             class Entry(object):
+                @zdc.exec.pre_solve
+                def pre_solve(self):
+                    pre_solve_f()
+
                 @zdc.exec.body
                 def body(self):
                     func()
@@ -56,6 +64,7 @@ TEST_F(TestEvalExec, single_action_single_fcall) {
 
     IEvalContext *eval_ctxt = 0;
     IEvalBackend *eval_backend = 0;
+    std::vector<std::pair<std::string,int32_t>> calls;
     createBackend(
         &eval_backend,
         [&](
@@ -64,6 +73,7 @@ TEST_F(TestEvalExec, single_action_single_fcall) {
             const std::vector<vsc::dm::ValRef> &params) {
             fprintf(stdout, "Function %s\n", func->name().c_str());
             // TODO: Need a 'Valid but empty' value
+            calls.push_back({func->name(), 1});
             thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
         }
     );
@@ -76,6 +86,9 @@ TEST_F(TestEvalExec, single_action_single_fcall) {
     ASSERT_TRUE(eval_ctxt_o.get());
 
     ASSERT_FALSE(eval_ctxt_o->eval());
+    ASSERT_EQ(calls.size(), 2);
+    ASSERT_EQ(calls.at(0).first, "pre_solve_f");
+    ASSERT_EQ(calls.at(0).second, 1);
 }
 
 }

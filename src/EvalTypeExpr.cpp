@@ -297,6 +297,13 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
             m_vp).check(
         e->getContext(),
         e->getTarget());
+    
+    if (res.root.valid()) {
+        DEBUG("Is a register access");
+    } else {
+        DEBUG("Is NOT a register access");
+    }
+
     // Determine whether this is a call to a register
     // If so: 
     // - What is the base address?

@@ -51,6 +51,8 @@ public:
 
 	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
 
+	virtual void visitTypeFieldReg(dm::ITypeFieldReg *f) override;
+
 	virtual void visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *f) override;
 
 	virtual void visitTypeFieldRef(vsc::dm::ITypeFieldRef *f) override;
@@ -60,6 +62,7 @@ private:
     IEvalContext                    *m_ctxt;
     IEvalValProvider                *m_vp;
     vsc::dm::ValRef                 m_val;
+    bool                            m_is_reg_ref;
     Result                          m_res;
 
 };

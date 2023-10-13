@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/ValRefPtr.h"
 #include "EvalTypeActionIncrElab.h"
 #include "EvalTypeExecList.h"
 
@@ -35,6 +36,7 @@ EvalTypeActionIncrElab::EvalTypeActionIncrElab(
     const vsc::dm::ValRef           &action) : 
         EvalBase(ctxt, thread), m_idx(0), m_comp(comp), m_action(action),
         m_vp(thread, action) {
+    DEBUG_INIT("zsp::arl::eval::EvalTypeActionIncrElab", ctxt->getDebugMgr());
 
 }
 
@@ -55,11 +57,25 @@ int32_t EvalTypeActionIncrElab::eval() {
 
     switch (m_idx) {
         case 0: {
+            dm::IDataTypeAction *action_t = m_action.typeT<dm::IDataTypeAction>();
             m_idx = 1;
 
             // TODO: assign component
-            m_action.getFieldRef(0).setWeakRef(m_comp);
+            vsc::dm::ValRefPtr comp_p(m_action.getFieldRef(0));
+//            DEBUG("Initial Comp: %p", comp_p.get_val());
+            DEBUG("  %p", m_comp.vp());
+            DEBUG("Initial Comp: %p", comp_p.get_val());
+            comp_p.set_val(m_comp.vp());
+            DEBUG("FieldVal: %p", m_action.getFieldRef(0).vp());
+            fflush(stdout);
+
+            EvalTypeExecList(m_ctxt, m_thread, &m_vp,
+                action_t->getExecs(dm::ExecKindT::PreSolve)).eval();
+
             // TODO: randomize action
+
+            EvalTypeExecList(m_ctxt, m_thread, &m_vp,
+                action_t->getExecs(dm::ExecKindT::PostSolve)).eval();
         }
         case 1: {
             dm::IDataTypeAction *action_t = m_action.typeT<dm::IDataTypeAction>();
