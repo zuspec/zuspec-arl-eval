@@ -134,26 +134,29 @@ cdef class Eval(object):
     cpdef bool eval(self):
         return self._hndl.eval()
 
-    cpdef EvalResult getResult(self):
-        ret = EvalResult()
-        ret._hndl = const_cast[decl.IEvalResultP](self._hndl.getResult())
-        ret._owned = False
-        return ret
+    cpdef vsc.ValRef getResult(self):
+        # ret = EvalResult()
+        # ret._hndl = const_cast[decl.IEvalResultP](self._hndl.getResult())
+        # ret._owned = False
+        # return ret
+        return None
 
-    cpdef void setResult(self, EvalResult r):
-        cdef decl.IEvalResult *rp = NULL
-        if r is not None:
-            if not r._owned:
-                raise Exception("Attempting to set result from a non-owned Result object")
-            r._owned = False
-            rp = r.asResult()
-        self._hndl.setResult(rp)
+    cpdef void setResult(self, vsc.ValRef r):
+        # cdef decl.IEvalResult *rp = NULL
+        # if r is not None:
+        #     if not r._owned:
+        #         raise Exception("Attempting to set result from a non-owned Result object")
+        #     r._owned = False
+        #     rp = r.asResult()
+        # self._hndl.setResult(rp)
+        pass
 
-    cpdef EvalResult moveResult(self):
-        self._owned = False
-        ret = EvalResult.mk(self._hndl.moveResult(), True)
-        self._hndl = NULL
-        return ret
+    cpdef vsc.ValRef moveResult(self):
+        return None
+        # self._owned = False
+        # ret = EvalResult.mk(self._hndl.moveResult(), True)
+        # self._hndl = NULL
+        # return ret
 
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=True):
@@ -184,21 +187,21 @@ cdef class EvalContext(object):
                 self._hndl.getTargetFunctions().at(i), False))
         return ret
 
-    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
-        return EvalResult.mk(self._hndl.mkEvalResultVal(v._hndl), True)
+    # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
+    #     return EvalResult.mk(self._hndl.mkEvalResultVal(v._hndl), True)
 
-    cpdef EvalResult mkEvalResultValS(self, int val, int bits=64):
-        return EvalResult.mk(self._hndl.mkEvalResultValS(val, bits), True)
+    # cpdef EvalResult mkEvalResultValS(self, int val, int bits=64):
+    #     return EvalResult.mk(self._hndl.mkEvalResultValS(val, bits), True)
 
-    cpdef EvalResult mkEvalResultValU(self, int val, int bits=64):
-        return EvalResult.mk(self._hndl.mkEvalResultValU(val, bits), True)
+    # cpdef EvalResult mkEvalResultValU(self, int val, int bits=64):
+    #     return EvalResult.mk(self._hndl.mkEvalResultValU(val, bits), True)
 
-    cpdef EvalResult mkEvalResultKind(self, kind):
-        cdef int kind_i = int(kind)
-        return EvalResult.mk(self._hndl.mkEvalResultKind(<decl.EvalResultKind>(kind_i)), True)
+    # cpdef EvalResult mkEvalResultKind(self, kind):
+    #     cdef int kind_i = int(kind)
+    #     return EvalResult.mk(self._hndl.mkEvalResultKind(<decl.EvalResultKind>(kind_i)), True)
 
-    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref):
-        return EvalResult.mk(self._hndl.mkEvalResultRef(ref.asField()), True)
+    # cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref):
+    #     return EvalResult.mk(self._hndl.mkEvalResultRef(ref.asField()), True)
 
     @staticmethod
     cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=True):
@@ -269,8 +272,8 @@ cdef public void EvalBackendClosure_callFuncReq(
     obj,
     decl.IEvalThread                        *thread,
     arl_dm_decl.IDataTypeFunction           *func_t,
-    const cpp_vector[decl.IEvalResultUP]    &params) with gil:
-    cdef decl.IEvalResult *param
+    const cpp_vector[vsc_decl.ValRef]       &params) with gil:
+#    cdef decl.IEvalResult *param
 
     params_l = []
 #    for i in range(params.size()):
@@ -284,25 +287,6 @@ cdef public void EvalBackendClosure_callFuncReq(
             params_l)
     except Exception as e:
         print("Exception: %s" % str(e))
-
-class EvalResultKind(IntEnum):
-    Void = decl.EvalResultKind.ResultKind_Void
-    Val = decl.EvalResultKind.ResultKind_Val
-    Ref = decl.EvalResultKind.ResultKind_Ref
-    Break = decl.EvalResultKind.ResultKind_Break
-    Continue = decl.EvalResultKind.ResultKind_Continue
-
-cdef class EvalResult(vsc.ModelVal):
-
-    cdef decl.IEvalResult *asResult(self):
-        return dynamic_cast[decl.IEvalResultP](self._hndl)
-
-    @staticmethod
-    cdef EvalResult mk(decl.IEvalResult *hndl, bool owned=True):
-        ret = EvalResult()
-        ret._hndl = hndl
-        ret._owned = owned
-        return ret
 
 cdef class EvalThread(Eval):
 
@@ -320,21 +304,21 @@ cdef class EvalThread(Eval):
         else:
             return data.getData()
 
-    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
-        return EvalResult.mk(self.asThread().mkEvalResultVal(v._hndl), True)
+    # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
+    #     return EvalResult.mk(self.asThread().mkEvalResultVal(v._hndl), True)
 
-    cpdef EvalResult mkEvalResultValS(self, int val, int bits=64):
-        return EvalResult.mk(self.asThread().mkEvalResultValS(val, bits), True)
+    # cpdef EvalResult mkEvalResultValS(self, int val, int bits=64):
+    #     return EvalResult.mk(self.asThread().mkEvalResultValS(val, bits), True)
 
-    cpdef EvalResult mkEvalResultValU(self, int val, int bits=64):
-        return EvalResult.mk(self.asThread().mkEvalResultValU(val, bits), True)
+    # cpdef EvalResult mkEvalResultValU(self, int val, int bits=64):
+    #     return EvalResult.mk(self.asThread().mkEvalResultValU(val, bits), True)
 
-    cpdef EvalResult mkEvalResultKind(self, kind):
-        cdef int kind_i = int(kind)
-        return EvalResult.mk(self.asThread().mkEvalResultKind(<decl.EvalResultKind>(kind_i)), True)
+    # cpdef EvalResult mkEvalResultKind(self, kind):
+    #     cdef int kind_i = int(kind)
+    #     return EvalResult.mk(self.asThread().mkEvalResultKind(<decl.EvalResultKind>(kind_i)), True)
 
-    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref):
-        return EvalResult.mk(self.asThread().mkEvalResultRef(ref.asField()), True)
+    # cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref):
+    #     return EvalResult.mk(self.asThread().mkEvalResultRef(ref.asField()), True)
 
     cdef decl.IEvalThread *asThread(self):
         return dynamic_cast[decl.IEvalThreadP](self._hndl)

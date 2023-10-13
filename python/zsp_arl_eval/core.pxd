@@ -42,11 +42,11 @@ cdef class Eval(object):
 
     cpdef bool eval(self)
 
-    cpdef EvalResult getResult(self)
+    cpdef vsc.ValRef getResult(self)
 
-    cpdef void setResult(self, EvalResult r)
+    cpdef void setResult(self, vsc.ValRef r)
 
-    cpdef EvalResult moveResult(self)
+    cpdef vsc.ValRef moveResult(self)
 
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=*)
@@ -61,27 +61,20 @@ cdef class EvalContext(object):
 
     cpdef getTargetFunctions(self)
 
-    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
+    # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
 
-    cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
+    # cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
 
-    cpdef EvalResult mkEvalResultValU(self, int val, int bits=*)
+    # cpdef EvalResult mkEvalResultValU(self, int val, int bits=*)
 
-    cpdef EvalResult mkEvalResultKind(self, kind)
+    # cpdef EvalResult mkEvalResultKind(self, kind)
 
-    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
+    # cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
 
     cdef decl.IEvalContext *asContext(self)
 
     @staticmethod
     cdef EvalContext mk(decl.IEvalContext *hndl, bool owned=*)
-
-cdef class EvalResult(vsc.ModelVal):
-
-    cdef decl.IEvalResult *asResult(self)
-
-    @staticmethod
-    cdef EvalResult mk(decl.IEvalResult *hndl, bool owned=*)
 
 cdef class EvalThread(Eval):
 
@@ -89,15 +82,15 @@ cdef class EvalThread(Eval):
     
     cpdef object getThreadId(self)
 
-    cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
+    # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
 
-    cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
+    # cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
 
-    cpdef EvalResult mkEvalResultValU(self, int val, int bits=*)
+    # cpdef EvalResult mkEvalResultValU(self, int val, int bits=*)
 
-    cpdef EvalResult mkEvalResultKind(self, kind)
+    # cpdef EvalResult mkEvalResultKind(self, kind)
 
-    cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
+    # cpdef EvalResult mkEvalResultRef(self, vsc.ModelField ref)
 
     cdef decl.IEvalThread *asThread(self)
 
