@@ -65,11 +65,7 @@ int32_t EvalBase::eval(const std::function<void()> &body) {
 }
 
 void EvalBase::setResult(const vsc::dm::ValRef &r) {
-    fprintf(stdout, "--> EvalBase.setResult\n");
-    fflush(stdout);
     m_result.set(r);
-    fprintf(stdout, "<-- EvalBase.setResult\n");
-    fflush(stdout);
 }
 
 void EvalBase::setVoidResult() {

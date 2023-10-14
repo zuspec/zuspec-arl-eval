@@ -94,6 +94,7 @@ int32_t EvalTypeActionIncrElab::eval() {
         }
         case 2: {
             // End
+            setVoidResult();
         }
     }
 
