@@ -22,6 +22,7 @@
 #include <vector>
 #include "dmgr/IDebugMgr.h"
 #include "vsc/dm/impl/UP.h"
+#include "vsc/dm/impl/ValRefInt.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalStackFrame.h"
@@ -82,6 +83,11 @@ public:
         const std::vector<vsc::dm::ITypeExpr *> &params) =  0;
 
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
+
+    virtual vsc::dm::ValRefInt mkValRefInt(
+        int64_t value, 
+        bool is_signed, 
+        int32_t width) = 0;
 
 };
 

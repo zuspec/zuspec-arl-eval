@@ -78,6 +78,7 @@ cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getSolveFunctions() const
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getTargetFunctions() const
 
+        vsc.ValRefInt mkValRefInt(int64_t value, bool is_signed, int32_t width)
         # IEvalResult *mkEvalResultVal(vsc.IModelVal *val)
         # IEvalResult *mkEvalResultValS(int64_t val, int32_t bits)
         # IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits)
@@ -98,6 +99,7 @@ cdef extern from "zsp/arl/eval/IEvalThread.h" namespace "zsp::arl::eval":
     cdef cppclass IEvalThread(IEval):
         void setThreadId(IEvalThreadId *)
         IEvalThreadId *getThreadId()
+        vsc.ValRefInt mkValRefInt(int64_t value, bool is_signed, int32_t width)
         # IEvalResult *mkEvalResultVal(vsc.IModelVal *val)
         # IEvalResult *mkEvalResultValS(int64_t val, int32_t bits)
         # IEvalResult *mkEvalResultValU(uint64_t val, int32_t bits)

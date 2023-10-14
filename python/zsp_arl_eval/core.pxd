@@ -61,6 +61,8 @@ cdef class EvalContext(object):
 
     cpdef getTargetFunctions(self)
 
+    cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width)
+
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
 
     # cpdef EvalResult mkEvalResultValS(self, int val, int bits=*)
@@ -81,6 +83,8 @@ cdef class EvalThread(Eval):
     cpdef void setThreadId(self, obj)
     
     cpdef object getThreadId(self)
+
+    cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width)
 
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)
 

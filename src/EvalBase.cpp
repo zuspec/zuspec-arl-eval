@@ -64,6 +64,14 @@ int32_t EvalBase::eval(const std::function<void()> &body) {
     return !haveResult();
 }
 
+void EvalBase::setResult(const vsc::dm::ValRef &r) {
+    fprintf(stdout, "--> EvalBase.setResult\n");
+    fflush(stdout);
+    m_result.set(r);
+    fprintf(stdout, "<-- EvalBase.setResult\n");
+    fflush(stdout);
+}
+
 void EvalBase::setVoidResult() {
     vsc::dm::IDataTypeInt *i32 = m_ctxt->ctxt()->findDataTypeInt(true, 32);
     if (!i32) {

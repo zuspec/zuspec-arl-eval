@@ -82,6 +82,11 @@ public:
 
     virtual void callListener(const std::function<void (IEvalListener *)> &f) = 0;
 
+    virtual vsc::dm::ValRefInt mkValRefInt(
+        int64_t value, 
+        bool is_signed, 
+        int32_t width) = 0;
+
     virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) = 0;
 
     virtual vsc::dm::IModelVal *mkModelValU(uint64_t v=0, int32_t w=32) = 0;

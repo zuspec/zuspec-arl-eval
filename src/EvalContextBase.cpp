@@ -52,7 +52,11 @@ void EvalContextBase::pushEval(IEval *e, bool owned) {
 }
 
 void EvalContextBase::suspendEval(IEval *e) {
+    DEBUG_ENTER("suspendEval");
     m_eval_s.at(e->getIdx()) = IEvalUP(e->clone(), true);
+    m_eval_s.at(e->getIdx())->clrResult();
+    DEBUG("haveResult: %d", m_eval_s.at(e->getIdx())->haveResult());
+    DEBUG_LEAVE("suspendEval");
 }
 
 void EvalContextBase::popEval(IEval *e) {
@@ -116,6 +120,13 @@ int32_t EvalContextBase::evalMethodCallContext(
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) {
     return -1;
+}
+
+vsc::dm::ValRefInt EvalContextBase::mkValRefInt(
+        int64_t value, 
+        bool is_signed, 
+        int32_t width) {
+    return m_ctxt->mkValRefInt(value, is_signed, width);
 }
 
 IEvalStackFrame *EvalContextBase::mkStackFrame(int32_t n_vars) {

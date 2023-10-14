@@ -135,6 +135,9 @@ cdef class Eval(object):
         return self._hndl.eval()
 
     cpdef vsc.ValRef getResult(self):
+        cdef vsc.ValRef ret = vsc.ValRef()
+        ret.val = self._hndl.getResult()
+        return ret
         # ret = EvalResult()
         # ret._hndl = const_cast[decl.IEvalResultP](self._hndl.getResult())
         # ret._owned = False
@@ -142,14 +145,7 @@ cdef class Eval(object):
         return None
 
     cpdef void setResult(self, vsc.ValRef r):
-        # cdef decl.IEvalResult *rp = NULL
-        # if r is not None:
-        #     if not r._owned:
-        #         raise Exception("Attempting to set result from a non-owned Result object")
-        #     r._owned = False
-        #     rp = r.asResult()
-        # self._hndl.setResult(rp)
-        pass
+        self._hndl.setResult(r.val)
 
     cpdef vsc.ValRef moveResult(self):
         return None
@@ -185,6 +181,11 @@ cdef class EvalContext(object):
         for i in range(self._hndl.getTargetFunctions().size()):
             ret.append(arl_dm.DataTypeFunction.mk(
                 self._hndl.getTargetFunctions().at(i), False))
+        return ret
+
+    cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width):
+        cdef vsc.ValRefInt ret = vsc.ValRefInt()
+        ret.val = self._hndl.mkValRefInt(value, is_signed, width)
         return ret
 
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
@@ -303,6 +304,11 @@ cdef class EvalThread(Eval):
             return None
         else:
             return data.getData()
+
+    cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width):
+        cdef vsc.ValRefInt ret = vsc.ValRefInt()
+        ret.val = self.asThread().mkValRefInt(value, is_signed, width)
+        return ret
 
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
     #     return EvalResult.mk(self.asThread().mkEvalResultVal(v._hndl), True)

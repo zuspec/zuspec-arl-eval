@@ -104,6 +104,11 @@ public:
         return m_dmgr;
     }
 
+    virtual vsc::dm::ValRefInt mkValRefInt(
+        int64_t value, 
+        bool is_signed, 
+        int32_t width) override;
+
 protected:
 
 protected:
