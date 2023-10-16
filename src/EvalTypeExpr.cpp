@@ -51,7 +51,7 @@ EvalTypeExpr::~EvalTypeExpr() {
 }
 
 int32_t EvalTypeExpr::eval() {
-    DEBUG_ENTER("[%d] eval", getIdx());
+    DEBUG_ENTER("[%d] eval (initial=%d)", getIdx(), m_initial);
     if (m_initial) {
         m_thread->pushEval(this);
 

@@ -277,9 +277,9 @@ cdef public void EvalBackendClosure_callFuncReq(
 #    cdef decl.IEvalResult *param
 
     params_l = []
-#    for i in range(params.size()):
+    for i in range(params.size()):
 #        param = params.at(i).get()
-#        params_l.append(EvalResult.mk(param, False))
+        params_l.append(vsc.ValRef.mk(params.at(i), False))
 
     try:
         obj.callFuncReq(
