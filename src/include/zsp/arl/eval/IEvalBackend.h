@@ -68,6 +68,8 @@ public:
             const std::vector<vsc::dm::ValRef>  &params
     ) = 0;
 
+    virtual void emitMessage(const std::string &msg) = 0;
+
 };
 
 } /* namespace eval */

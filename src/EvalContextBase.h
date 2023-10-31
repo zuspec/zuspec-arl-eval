@@ -136,6 +136,11 @@ public:
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) override;
 
+    virtual vsc::dm::ValRefInt mkValRefInt(
+        int64_t value, 
+        bool is_signed, 
+        int32_t width) override;
+
     virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) override {
         return m_ctxt->mkModelValS(v, w);
     }

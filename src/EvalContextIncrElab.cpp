@@ -45,6 +45,10 @@ EvalContextIncrElab::EvalContextIncrElab(
         m_pss_top_is_init(false), m_root_action(root_action) {
     DEBUG_INIT("zsp::arl::eval::EvalContextIncrElab", dmgr);
 
+    if (!m_pss_top) {
+        buildCompTree();
+    }
+
     if (backend) {
         backend->init(this);
     }
@@ -56,6 +60,12 @@ EvalContextIncrElab::~EvalContextIncrElab() {
 }
 
 int32_t EvalContextIncrElab::buildCompTree() {
+    DEBUG_ENTER("buildCompTree");
+    std::set<std::string> ignore = {
+        "make_handle_from_claim",
+        "make_handle_from_handle",
+        "addr_value"
+    };
     dm::ModelBuildContext build_ctxt(m_ctxt);
 
     // Build component tree
@@ -69,17 +79,25 @@ int32_t EvalContextIncrElab::buildCompTree() {
     for (std::vector<dm::IDataTypeFunction *>::const_iterator
         it=m_ctxt->getDataTypeFunctions().begin();
         it!=m_ctxt->getDataTypeFunctions().end(); it++) {
-        bool is_solve = false;
-        for (std::vector<dm::IDataTypeFunctionImportUP>::const_iterator
-            ii=(*it)->getImportSpecs().begin();
-            ii!=(*it)->getImportSpecs().end(); ii++) {
-            is_solve |= (*ii)->isSolve();
-        }
-        if (is_solve) {
-            m_solve_functions.push_back(*it);
+        if (ignore.find((*it)->name()) == ignore.end()) {
+            bool is_solve = false;
+            DEBUG("Process Function %s", (*it)->name().c_str());
+            for (std::vector<dm::IDataTypeFunctionImportUP>::const_iterator
+                ii=(*it)->getImportSpecs().begin();
+                ii!=(*it)->getImportSpecs().end(); ii++) {
+                is_solve |= (*ii)->isSolve();
+            }
+            if (is_solve) {
+                m_solve_functions.push_back(*it);
+            } else {
+                m_target_functions.push_back(*it);
+            }
         }
     }
 
+    DEBUG_LEAVE("buildCompTree %d %d",
+        m_solve_functions.size(),
+        m_target_functions.size());
     return 0;
 }
 
@@ -105,9 +123,6 @@ int32_t EvalContextIncrElab::eval() {
 
     if (m_initial) {
         dm::ModelBuildContext build_ctxt(m_ctxt);
-        if (!m_pss_top) {
-            buildCompTree();
-        }
 
         if (!m_pss_top_is_init) {
             initCompTree();

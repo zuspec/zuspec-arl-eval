@@ -52,8 +52,8 @@ int32_t EvalTypeProcStmtScope::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
         // Safety
-        setVoidResult();
     }
+    setVoidResult();
 
     int32_t ret = false;
     if (m_idx < m_scope->getStatements().size()) {

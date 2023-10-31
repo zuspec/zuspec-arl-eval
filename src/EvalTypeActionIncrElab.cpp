@@ -49,7 +49,7 @@ EvalTypeActionIncrElab::~EvalTypeActionIncrElab() {
 }
 
 int32_t EvalTypeActionIncrElab::eval() {
-
+    DEBUG_ENTER("eval");
     if (m_initial) {
         m_thread->pushEval(this);
         setVoidResult();
@@ -86,12 +86,15 @@ int32_t EvalTypeActionIncrElab::eval() {
             } else if (action_t->getExecs(dm::ExecKindT::Body).size()) {
                 if (EvalTypeExecList(m_ctxt, m_thread, &m_vp, 
                     action_t->getExecs(dm::ExecKindT::Body)).eval()) {
+                    DEBUG("Suspend due to execs");
+                    clrResult();
                     break;
                 }
             }
         }
         case 2: {
             // End
+            setVoidResult();
         }
     }
 
@@ -106,6 +109,7 @@ int32_t EvalTypeActionIncrElab::eval() {
         }
     }
 
+    DEBUG_LEAVE("eval %d", ret);
     return ret;
 }
 

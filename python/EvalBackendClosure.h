@@ -56,7 +56,7 @@ public:
     virtual void callFuncReq(
             IEvalThread                         *thread,
             dm::IDataTypeFunction               *func_t,
-            const std::vector<IEvalResultUP>    &params
+            const std::vector<vsc::dm::ValRef>  &params
     ) override;
 
 private:

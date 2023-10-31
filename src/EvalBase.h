@@ -66,14 +66,12 @@ public:
         m_result.reset();
     }
 
-    virtual void setResult(const vsc::dm::ValRef &r) override {
-        m_result.set(r);
-    }
+    virtual void setResult(const vsc::dm::ValRef &r) override;
 
     void setVoidResult();
 
     virtual bool haveResult() const override {
-        return m_result.type();
+        return m_result.valid();
     }
 
     template <class T> T *ctxtT() const {

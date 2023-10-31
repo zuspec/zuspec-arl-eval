@@ -134,6 +134,13 @@ int32_t EvalThread::evalMethodCallContext(
     return ret;
 }
 
+vsc::dm::ValRefInt EvalThread::mkValRefInt(
+        int64_t value, 
+        bool is_signed, 
+        int32_t width) {
+    return m_ctxt->ctxt()->mkValRefInt(value, is_signed, width);
+}
+
 dmgr::IDebug *EvalThread::m_dbg = 0;
 
 }
