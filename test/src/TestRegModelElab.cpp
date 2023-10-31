@@ -117,6 +117,7 @@ TEST_F(TestRegModelElab, reg_smoke) {
 
             @zdc.exec.init_down
             def init_down(self):
+                zdc.print("init_down")
                 self.regs.set_handle(0x20)
 
             @zdc.action

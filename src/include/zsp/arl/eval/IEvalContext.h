@@ -52,6 +52,7 @@ enum class EvalContextFunc {
     RegRead,
     RegReadVal,
     RegGroupSetHandle,
+    Print,
     NumFunctions
 };
 

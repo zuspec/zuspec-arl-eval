@@ -24,6 +24,7 @@
 #include "zsp/arl/dm/IFactory.h"
 #include "zsp/arl/eval/IEvalThread.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
+#include "CoreLibImpl.h"
 
 namespace zsp {
 namespace arl {
@@ -162,10 +163,6 @@ public:
     ) override;
 
 protected:
-    virtual void RegGroupSetHandle(
-            IEvalThread                         *thread,
-            dm::IDataTypeFunction               *func_t,
-            const std::vector<vsc::dm::ValRef>  &params);
 
 protected:
     using FuncT=std::function<void(
@@ -176,6 +173,7 @@ protected:
 protected:
     static dmgr::IDebug                     *m_dbg;
     dmgr::IDebugMgr                         *m_dmgr;
+    CoreLibImpl                             m_corelib;
     vsc::solvers::IFactory                  *m_solvers_f;
     dm::IContext                            *m_ctxt;
     const vsc::solvers::IRandState          *m_randstate;
@@ -183,8 +181,8 @@ protected:
     std::vector<dm::IDataTypeFunction *>    m_solve_functions;
     std::vector<dm::IDataTypeFunction *>    m_target_functions;
     std::vector<IEvalListener *>            m_listeners;
-    dm::IDataTypeFunction                   *m_functions[(int)EvalContextFunc::NumFunctions];
-    FuncT                                   m_func_impl[(int)EvalContextFunc::NumFunctions];
+    dm::IDataTypeFunction                               *m_functions[(int)EvalContextFunc::NumFunctions];
+    std::unordered_map<dm::IDataTypeFunction *, FuncT>  m_func_impl;
 
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;
