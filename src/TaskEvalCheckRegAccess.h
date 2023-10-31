@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "vsc/dm/impl/ValRefInt.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEvalContext.h"
 #include "zsp/arl/eval/IEvalValProvider.h"
@@ -63,6 +64,7 @@ private:
     IEvalValProvider                *m_vp;
     vsc::dm::ValRef                 m_val;
     bool                            m_is_reg_ref;
+    dm::IDataTypeFunction           *m_functions[4];
     Result                          m_res;
 
 };

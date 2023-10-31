@@ -115,6 +115,10 @@ TEST_F(TestRegModelElab, reg_smoke) {
         class pss_top(object):
             regs : my_regs
 
+            @zdc.exec.init_down
+            def init_down(self):
+                self.regs.set_handle(0x20)
+
             @zdc.action
             class Entry(object):
                 @zdc.exec.body

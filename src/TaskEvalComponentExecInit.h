@@ -44,6 +44,9 @@ public:
 
 	virtual void visitDataTypeComponent(dm::IDataTypeComponent *t) override;
 
+    // Reg fields don't contain init blocks
+    virtual void visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *t) override { }
+
 private:
     static dmgr::IDebug                 *m_dbg;
     IEvalContext                        *m_ctxt;

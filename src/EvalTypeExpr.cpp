@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/ITypeExprVal.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 #include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
 
@@ -304,6 +305,13 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
         DEBUG("Is NOT a register access");
     }
 
+    DEBUG_ENTER("Calling callFuncReq");
+    ctxtT<IEvalContextInt>()->callFuncReq(
+        m_thread,
+        e->getTarget(),
+        {});
+    DEBUG_LEAVE("Calling callFuncReq");
+
     // Determine whether this is a call to a register
     // If so: 
     // - What is the base address?
@@ -351,7 +359,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             clrResult(); // Clear 'safety' result
 
             m_idx = 1;
-            m_ctxt->getBackend()->callFuncReq(
+            ctxtT<IEvalContextInt>()->callFuncReq(
                 m_thread,
                 e->getTarget(),
                 m_params

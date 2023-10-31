@@ -27,12 +27,20 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
+static const EvalContextFunc RegAccessFuncs[] = {
+        EvalContextFunc::RegWrite,
+        EvalContextFunc::RegWriteVal,
+        EvalContextFunc::RegRead,
+        EvalContextFunc::RegReadVal};
 
 TaskEvalCheckRegAccess::TaskEvalCheckRegAccess(
     IEvalContext        *ctxt,
     IEvalValProvider    *vp) : m_ctxt(ctxt), m_vp(vp) {
     DEBUG_INIT("zsp::arl::eval::TaskEvalCheckRegAccess", ctxt->getDebugMgr());
 
+    for (uint32_t i=0; i<sizeof(RegAccessFuncs)/sizeof(EvalContextFunc); i++) {
+        m_functions[i] = ctxt->getFunction(RegAccessFuncs[i]);
+    }
 }
 
 TaskEvalCheckRegAccess::~TaskEvalCheckRegAccess() {
@@ -43,12 +51,27 @@ const TaskEvalCheckRegAccess::Result &TaskEvalCheckRegAccess::check(
         vsc::dm::ITypeExpr          *func_ctxt, 
         dm::IDataTypeFunction       *func) {
     DEBUG_ENTER("check %s", func->name().c_str());
+
+    m_res.is_write = false;
+    bool is_reg_access = false;
+    for (uint32_t i=0; i<sizeof(m_functions)/sizeof(dm::IDataTypeFunction *); i++) {
+        if (m_functions[i] == func) {
+            is_reg_access = true;
+            m_res.is_write = (i == (int)EvalContextFunc::RegWrite ||
+                            i == (int)EvalContextFunc::RegWriteVal);
+            /*m_res.is_write = (i == (int)EvalContextFunc::RegReadVal ||
+                            i == (int)EvalContextFunc::RegWriteVal); */
+            break;
+        }
+    }
+
     m_res.root = vsc::dm::ValRef();
     m_res.offset = 0;
-    m_res.is_write = (func->name() == "pss::core::reg_write");
     m_res.access_sz = 0;
 
-    func_ctxt->accept(m_this);
+    if (is_reg_access) {
+        func_ctxt->accept(m_this);
+    }
 
     DEBUG_LEAVE("check");
     return m_res;
@@ -68,26 +91,31 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
         m_val.field()->accept(m_this);
     }
 
+    // First, determine where the root is
+    uint32_t i=0;
+    vsc::dm::IDataTypeStruct *field_t = 0;
     if (m_is_reg_ref) {
         // Root is the ref
+        vsc::dm::IDataTypeWrapper *dt_w = m_val.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>();
         m_res.root = m_val;
+        field_t = dynamic_cast<vsc::dm::IDataTypeStruct *>(dt_w->getDataTypeVirt());
+        i++;
     } else {
         vsc::dm::ValRefStruct val_s(m_val);
-        for (uint32_t i=1; i<e->getPath().size(); i++) {
+        for (; i<e->getPath().size(); i++) {
             vsc::dm::ValRef val = val_s.getFieldRef(e->getPath().at(i));
 
             if (val.field()) {
                 DEBUG_ENTER("val.field()->accept");
+                val.field()->accept(m_this);
                 if (m_is_reg_ref) {
-                    val.field()->accept(m_this);
-                } else {
-                    val.field()->accept(m_this);
-                    if (m_is_reg_ref) {
-                        // Capture the origin
-                        m_res.root = val;
-                    }
+                    DEBUG("Found root @ %d", i);
+                    vsc::dm::IDataTypeWrapper *dt_w = val.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>();
+                    field_t = dynamic_cast<vsc::dm::IDataTypeStruct *>(dt_w->getDataTypeVirt());
+                    m_res.root = val;
+                    i++;
+                    break;
                 }
-                DEBUG_LEAVE("val.field()->accept");
             } else {
                 DEBUG("Null field");
                 break;
@@ -96,27 +124,28 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
         }
     }
 
+    if (field_t) {
+        // Now, compute the office with the type model
+        for (i; i<e->getPath().size(); i++) {
+            vsc::dm::ITypeField *field = field_t->getField(e->getPath().at(i));
+            field->accept(m_this);
+
+            if (i+2 < e->getPath().size()) {
+                field_t = field->getDataTypeT<vsc::dm::IDataTypeStruct>();
+                if (!field_t) {
+                    DEBUG("Field type is not struct");
+                    break;
+                } 
+            } else {
+                // Looking at the 
+                DEBUG("Last field: %d", field_t->getByteSize());
+            }
+        }
+    }
+
     if (m_is_reg_ref) {
         DEBUG("Accessing offset %d", m_res.offset);
     }
-
-//    val.type()->accept(m_this);
-
-    vsc::dm::IModelField *field = 0;
-
-    // switch (e->getRootRefKind()) {
-    //     case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope:
-	// 		field = m_ctxt->getTopDownScope();
-    //         break;
-    //     case ITypeExprFieldRef::RootRefKind::BottomUpScope:
-	// 		m_field = m_ctxt->getScope();
-    //         break;
-    // }
-	// for (std::vector<int32_t>::const_iterator
-	// 	it=e->getPath().begin(); 
-    //     it!=e->getPath().end(); it++) {
-	// 	m_field = m_field->getField(*it);
-	// }
 
     DEBUG_LEAVE("visitTypeExprFieldRef");
 }

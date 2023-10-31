@@ -38,6 +38,23 @@ namespace eval {
 
 class IEvalResult;
 
+enum class EvalContextFunc {
+    Write8,
+    Write16,
+    Write32,
+    Write64,
+    Read8,
+    Read16,
+    Read32,
+    Read64,
+    RegWrite,
+    RegWriteVal,
+    RegRead,
+    RegReadVal,
+    RegGroupSetHandle,
+    NumFunctions
+};
+
 class IEvalContext;
 using IEvalContextUP=vsc::dm::UP<IEvalContext>;
 class IEvalContext {
@@ -81,6 +98,8 @@ public:
     virtual void addListener(IEvalListener *l) = 0;
 
     virtual void callListener(const std::function<void (IEvalListener *)> &f) = 0;
+
+    virtual dm::IDataTypeFunction *getFunction(EvalContextFunc func) = 0;
 
     virtual vsc::dm::IModelVal *mkModelValS(int64_t v=0, int32_t w=32) = 0;
 

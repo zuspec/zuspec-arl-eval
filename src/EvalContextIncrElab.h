@@ -71,7 +71,6 @@ protected:
     void finalizeComponentTree();
 
 private:
-    static dmgr::IDebug                     *m_dbg;
     dm::IModelFieldComponentRootUP          m_pss_top;
     bool                                    m_pss_top_is_init;
     dm::IDataTypeComponent                  *m_root_comp;

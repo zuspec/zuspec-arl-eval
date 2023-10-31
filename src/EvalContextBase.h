@@ -19,10 +19,11 @@
  *     Author: 
  */
 #pragma once
+#include <functional>
 #include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IFactory.h"
 #include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/eval/IEvalContext.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 
 namespace zsp {
 namespace arl {
@@ -31,7 +32,7 @@ namespace eval {
 
 
 class EvalContextBase : 
-    public virtual IEvalContext, 
+    public virtual IEvalContextInt, 
     public virtual IEvalThread {
 public:
     EvalContextBase(
@@ -87,6 +88,8 @@ public:
     virtual void addListener(IEvalListener *l) override {
         m_listeners.push_back(l);
     }
+
+    virtual dm::IDataTypeFunction *getFunction(EvalContextFunc func) override;
 
     virtual void callListener(const std::function<void (IEvalListener *)> &f) override;
 
@@ -146,6 +149,24 @@ public:
     }
 
     virtual IEvalStackFrame *mkStackFrame(int32_t n_vars) override;
+    
+    virtual void callFuncReq(
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<vsc::dm::ValRef>  &params
+    ) override;
+
+protected:
+    virtual void RegGroupSetHandle(
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<vsc::dm::ValRef>  &params);
+
+protected:
+    using FuncT=std::function<void(
+        IEvalThread *,
+        dm::IDataTypeFunction *,
+        const std::vector<vsc::dm::ValRef> &)>;
 
 protected:
     static dmgr::IDebug                     *m_dbg;
@@ -157,6 +178,8 @@ protected:
     std::vector<dm::IDataTypeFunction *>    m_solve_functions;
     std::vector<dm::IDataTypeFunction *>    m_target_functions;
     std::vector<IEvalListener *>            m_listeners;
+    dm::IDataTypeFunction                   *m_functions[(int)EvalContextFunc::NumFunctions];
+    FuncT                                   m_func_impl[(int)EvalContextFunc::NumFunctions];
 
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;

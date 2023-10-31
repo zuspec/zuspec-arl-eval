@@ -37,7 +37,22 @@ EvalContextBase::EvalContextBase(
         m_dmgr(dmgr), m_solvers_f(solvers_f), m_ctxt(ctxt),
         m_randstate(randstate), m_backend(backend),
         m_initial(true) {
+    const std::vector<std::string> functions = {
+        "write8", "write16", "write32", "write64",
+        "read8", "read16", "read32", "read64",
+        "pss::core::reg_write", "pss::core::reg_write_val", 
+        "pss::core::reg_read", "pss::core::reg_read_val",
+        "pss::core::reg_group::set_handle"
+    };
 
+    for (EvalContextFunc f=(EvalContextFunc)0; f!=EvalContextFunc::NumFunctions; 
+        f=(EvalContextFunc)((int)f+1)) {
+        m_functions[(int)f] = ctxt->findDataTypeFunction(functions[(int)f]);
+    }
+    m_func_impl[(int)EvalContextFunc::RegGroupSetHandle] = std::bind(
+        &EvalContextBase::RegGroupSetHandle, this, 
+        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+    );
 }
 
 EvalContextBase::~EvalContextBase() {
@@ -82,6 +97,10 @@ void EvalContextBase::callListener(
     }
 }
 
+dm::IDataTypeFunction *EvalContextBase::getFunction(EvalContextFunc func) {
+    return m_functions[(int)func];
+}
+
 void EvalContextBase::setResult(const vsc::dm::ValRef &r) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
@@ -120,6 +139,40 @@ int32_t EvalContextBase::evalMethodCallContext(
 
 IEvalStackFrame *EvalContextBase::mkStackFrame(int32_t n_vars) {
     return new(n_vars) EvalStackFrame(n_vars);
+}
+
+void EvalContextBase::callFuncReq(
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("callFuncReq");
+    if (func_t->hasFlags(dm::DataTypeFunctionFlags::Core)) {
+        for (uint32_t i=0; i<(int)EvalContextFunc::NumFunctions; i++) {
+            if (m_functions[i] == func_t) {
+                const FuncT &func = m_func_impl[i];
+                if (func) {
+                    DEBUG("Calling internal function %s", func_t->name().c_str());
+                    func(thread, func_t, params);
+                } else {
+                    DEBUG("No implementation for %s", func_t->name().c_str());
+                }
+            }
+        }
+        // Internally-implemented function
+    } else {
+        // Delegate to backend
+        getBackend()->callFuncReq(thread, func_t, params);
+    }
+
+    DEBUG_LEAVE("callFuncReq");
+}
+
+void EvalContextBase::RegGroupSetHandle(
+            IEvalThread                         *thread,
+            dm::IDataTypeFunction               *func_t,
+            const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("RegGroupSetHandle");
+    DEBUG_LEAVE("RegGroupSetHandle");
 }
 
 dmgr::IDebug *EvalContextBase::m_dbg = 0;

@@ -186,8 +186,6 @@ void EvalContextIncrElab::finalizeComponentTree() {
 
 }
 
-dmgr::IDebug *EvalContextIncrElab::m_dbg = 0;
-
 }
 }
 }
