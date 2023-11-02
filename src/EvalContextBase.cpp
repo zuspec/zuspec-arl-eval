@@ -39,9 +39,12 @@ EvalContextBase::EvalContextBase(
         m_randstate(randstate), m_backend(backend),
         m_initial(true) {
     const std::vector<std::string> functions = {
-        "write8", "write16", "write32", "write64",
-        "read8", "read16", "read32", "read64",
-        "pss::core::reg_write", "pss::core::reg_write_val", 
+        "reg_addr_pkg::write8", "reg_addr_pkg::write16", 
+        "reg_addr_pkg::write32", "reg_addr_pkg::write64",
+        "reg_addr_pkg::read8", "reg_addr_pkg::read16", 
+        "reg_addr_pkg::read32", "reg_addr_pkg::read64",
+        "pss::core::reg_write", "pss::core::reg_write_masked",
+        "pss::core::reg_write_val", "pss::core::reg_write_val_masked",
         "pss::core::reg_read", "pss::core::reg_read_val",
         "pss::core::reg_group::set_handle",
         "std_pkg::print"
@@ -172,6 +175,7 @@ void EvalContextBase::callFuncReq(
                     it->second(thread, func_t, params);
                 } else {
                     DEBUG("No implementation for %s", func_t->name().c_str());
+                    thread->setVoidResult();
                 }
             }
         }

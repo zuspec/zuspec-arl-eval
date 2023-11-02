@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/ValRefPtr.h"
+#include "vsc/dm/impl/ValRefWrapper.h"
 #include "TaskEvalCheckRegAccess.h"
 
 
@@ -29,9 +30,38 @@ namespace eval {
 
 static const EvalContextFunc RegAccessFuncs[] = {
         EvalContextFunc::RegWrite,
+        EvalContextFunc::RegWriteMasked,
         EvalContextFunc::RegWriteVal,
+        EvalContextFunc::RegWriteValMasked,
         EvalContextFunc::RegRead,
         EvalContextFunc::RegReadVal};
+
+bool TaskEvalCheckRegAccess::m_func_is_write[N_REG_FUNCS] = {
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+};
+
+bool TaskEvalCheckRegAccess::m_func_is_masked[N_REG_FUNCS] = {
+    false,
+    true,
+    false,
+    true,
+    false,
+    false
+};
+
+bool TaskEvalCheckRegAccess::m_func_is_struct[N_REG_FUNCS] = {
+    true, // write
+    true, // write_masked
+    false,
+    false,
+    true, // read
+    false
+};
 
 TaskEvalCheckRegAccess::TaskEvalCheckRegAccess(
     IEvalContext        *ctxt,
@@ -52,22 +82,19 @@ const TaskEvalCheckRegAccess::Result &TaskEvalCheckRegAccess::check(
         dm::IDataTypeFunction       *func) {
     DEBUG_ENTER("check %s", func->name().c_str());
 
-    m_res.is_write = false;
+    memset(&m_res, 0, sizeof(Result));
+    m_res.root = vsc::dm::ValRef();
+
     bool is_reg_access = false;
     for (uint32_t i=0; i<sizeof(m_functions)/sizeof(dm::IDataTypeFunction *); i++) {
         if (m_functions[i] == func) {
             is_reg_access = true;
-            m_res.is_write = (i == (int)EvalContextFunc::RegWrite ||
-                            i == (int)EvalContextFunc::RegWriteVal);
-            /*m_res.is_write = (i == (int)EvalContextFunc::RegReadVal ||
-                            i == (int)EvalContextFunc::RegWriteVal); */
+            m_res.is_write = m_func_is_write[i];
+            m_res.is_masked = m_func_is_masked[i];
+            m_res.is_struct = m_func_is_struct[i];
             break;
         }
     }
-
-    m_res.root = vsc::dm::ValRef();
-    m_res.offset = 0;
-    m_res.access_sz = 0;
 
     if (is_reg_access) {
         func_ctxt->accept(m_this);
@@ -75,6 +102,11 @@ const TaskEvalCheckRegAccess::Result &TaskEvalCheckRegAccess::check(
 
     DEBUG_LEAVE("check");
     return m_res;
+}
+
+void TaskEvalCheckRegAccess::visitDataTypeStruct(vsc::dm::IDataTypeStruct *t) {
+    // Confirm that we have a struct access
+    m_res.is_struct = true;
 }
 
 void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
@@ -96,8 +128,11 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
     vsc::dm::IDataTypeStruct *field_t = 0;
     if (m_is_reg_ref) {
         // Root is the ref
+        vsc::dm::ValRefWrapper val_w(m_val);
         vsc::dm::IDataTypeWrapper *dt_w = m_val.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>();
-        m_res.root = m_val;
+
+        m_res.root = val_w.get_val();
+
         field_t = dynamic_cast<vsc::dm::IDataTypeStruct *>(dt_w->getDataTypeVirt());
         i++;
     } else {
@@ -110,9 +145,10 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
                 val.field()->accept(m_this);
                 if (m_is_reg_ref) {
                     DEBUG("Found root @ %d", i);
+                    vsc::dm::ValRefWrapper val_w(val);
                     vsc::dm::IDataTypeWrapper *dt_w = val.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>();
                     field_t = dynamic_cast<vsc::dm::IDataTypeStruct *>(dt_w->getDataTypeVirt());
-                    m_res.root = val;
+                    m_res.root = val_w.get_val();
                     i++;
                     break;
                 }
@@ -152,8 +188,50 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
 
 void TaskEvalCheckRegAccess::visitTypeFieldReg(dm::ITypeFieldReg *f) {
     DEBUG_ENTER("visitTypeFieldReg offset=%d", f->getOffset());
-    m_res.access_sz = f->getDataType()->getByteSize();
+
+    int32_t width = f->getWidth(); 
+    DEBUG("Register width is %d", width);
+
+    // If the function supports packed structs, confirm that
+    // the field type is a packed struct
+    if (m_res.is_struct) {
+        // If the type is a struct, visiting the type
+        // will set the 'is_struct' flag. Otherwise,
+        // we don't need to bother with type conversion
+        m_res.is_struct = false;
+        f->getDataType()->accept(m_this);
+    }
+
+    // uint32_t sz = f->getDataType()->getByteSize();
+
+    if (width > 32) {
+        if (m_res.is_write) {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Write64);
+        } else {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Read64);
+        }
+    } else if (width > 16) {
+        if (m_res.is_write) {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Write32);
+        } else {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Read32);
+        }
+    } else if (width > 8) {
+        if (m_res.is_write) {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Write16);
+        } else {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Read16);
+        }
+    } else {
+        if (m_res.is_write) {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Write8);
+        } else {
+            m_res.func = m_ctxt->getFunction(EvalContextFunc::Read8);
+        }
+    }
+
     m_res.offset += f->getOffset();
+
     DEBUG("AccessSzBytes: %d", f->getDataType()->getByteSize());
     DEBUG_LEAVE("visitTypeFieldReg");
 }

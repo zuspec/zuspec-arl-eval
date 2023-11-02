@@ -23,6 +23,7 @@
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalValProvider.h"
 #include "EvalBase.h"
+#include "TaskEvalCheckRegAccess.h"
 
 namespace zsp {
 namespace arl {
@@ -70,6 +71,8 @@ protected:
     vsc::dm::ValRef                 m_val_lhs;
     vsc::dm::ValRef                 m_val_rhs;
     std::vector<vsc::dm::ValRef>    m_params;
+    dm::IDataTypeFunction           *m_func;
+    TaskEvalCheckRegAccess::Result  m_isreg_res;
     uint32_t                        m_idx;
     uint32_t                        m_subidx;
 

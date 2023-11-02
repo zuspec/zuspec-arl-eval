@@ -20,6 +20,8 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/ITypeExprVal.h"
+#include "zsp/arl/dm/impl/TaskPackStruct2Int.h"
+#include "zsp/arl/dm/impl/TaskUnpackInt2Struct.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
@@ -293,32 +295,109 @@ void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) {
 
 void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext *e) {
     DEBUG_ENTER("visitTypeExprMethodCallContext");
-    const TaskEvalCheckRegAccess::Result &res = TaskEvalCheckRegAccess(
-            m_ctxt,
-            m_vp).check(
-        e->getContext(),
-        e->getTarget());
-    
-    if (res.root.valid()) {
-        DEBUG("Is a register access");
-    } else {
-        DEBUG("Is NOT a register access");
+    switch (m_idx) {
+        case 0: {
+            // Determine if we need to rewrite a register access 
+            m_idx = 1;
+            m_isreg_res = TaskEvalCheckRegAccess(
+                m_ctxt,
+                m_vp).check(
+                    e->getContext(),
+                    e->getTarget());
+
+            if (m_isreg_res.func) {
+                DEBUG("Is a register access");
+                m_func = m_isreg_res.func;
+
+                // Set the base+offset as the result
+                vsc::dm::ValRefInt base(m_isreg_res.root);
+                setResult(m_ctxt->mkValRefInt(
+                    base.get_val_u()+m_isreg_res.offset,
+                    false,
+                    64));
+            } else {
+                DEBUG("Is NOT a register access");
+                m_func = e->getTarget();
+
+                // Push the context handle 
+                if (EvalTypeExpr(m_ctxt, m_thread, m_vp, e->getContext()).eval()) {
+                    break;
+                }
+            }
+        }
+
+        // Grab the context handle
+        case 1: {
+
+            if (m_subidx == 0) {
+                // Perform first-time checks
+                m_params.push_back(getResult());
+                clrResult();
+            } else if (haveResult()) {
+                m_params.push_back(vsc::dm::ValRef(moveResult()));
+            } else {
+                break;
+            }
+
+            while (m_subidx < e->getParameters().size()) {
+                EvalTypeExpr evaluator(
+                    m_ctxt, 
+                    m_thread, 
+                    m_vp,
+                    e->getParameters().at(m_subidx).get());
+
+                m_subidx += 1;
+                clrResult();
+                if (evaluator.eval()) {
+                    break;
+                } else {
+                    if (haveResult()) {
+                        fprintf(stdout, "Note: push expr result\n");
+                        m_params.push_back(vsc::dm::ValRef(moveResult()));
+                    }
+                }
+            }
+
+            // If we left the loop before achieving enough
+            // parameters, suspend...
+            if (m_subidx < e->getParameters().size()) {
+                break;
+            }
+
+            clrResult(); // Clear 'safety' result
+
+            m_idx = 2;
+
+            if (m_isreg_res.func
+                && m_isreg_res.is_write
+                && m_isreg_res.is_struct) {
+                // Must convert second parameter (data) from struct
+                // to integer
+                DEBUG("Convert struct-type parameter to integer");
+            }
+
+            ctxtT<IEvalContextInt>()->callFuncReq(
+                m_thread,
+                m_func,
+                m_params
+            );
+
+            if (!haveResult()) {
+                break;
+            }
+        }
+
+        case 2: {
+            // Wait for a response
+
+            if (m_isreg_res.func
+                && !m_isreg_res.is_write
+                && m_isreg_res.is_struct) {
+                // Must convert the response from integer to struct
+                DEBUG("Convert integer return to struct-type value");
+            }
+        }
     }
-
-    DEBUG_ENTER("Calling callFuncReq");
-    ctxtT<IEvalContextInt>()->callFuncReq(
-        m_thread,
-        e->getTarget(),
-        {});
-    DEBUG_LEAVE("Calling callFuncReq");
-
-    // Determine whether this is a call to a register
-    // If so: 
-    // - What is the base address?
-    // - What is the offset expression?
-    // Otherwise:
-    // - Know this is a model-internal call
-    // - TODO: need a Invoke PSS Function stage
 
     DEBUG_LEAVE("visitTypeExprMethodCallContext");
 }

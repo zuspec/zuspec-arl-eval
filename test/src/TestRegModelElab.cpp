@@ -168,6 +168,77 @@ TEST_F(TestRegModelElab, reg_smoke) {
 
 }
 
+TEST_F(TestRegModelElab, reg_smoke_struct) {
+    ZSP_DATACLASSES(TestRegModelElab_reg_smoke_struct, pss_top, pss_top.Entry, R"(
+        @zdc.struct
+        class reg_t(object):
+            f1 : zdc.uint16_t
+            f2 : zdc.uint16_t
+
+        @zdc.reg_group_c
+        class my_regs(object):
+            r1 : zdc.reg_c[reg_t] = dict(offset=0x0)
+            r2 : zdc.reg_c[reg_t] = dict(offset=0x4)
+            r3 : zdc.reg_c[reg_t] = dict(offset=0x8)
+            r4 : zdc.reg_c[reg_t] = dict(offset=0xC)
+
+        @zdc.component
+        class pss_top(object):
+            regs : my_regs
+
+            @zdc.exec.init_down
+            def init_down(self):
+                zdc.print("init_down")
+                self.regs.set_handle(0x20)
+
+            @zdc.action
+            class Entry(object):
+                @zdc.exec.body
+                def body(self):
+                    self.comp.regs.r1.read()
+                    self.comp.regs.r2.read()
+                    self.comp.regs.r3.read()
+                    self.comp.regs.r4.read()
+                pass
+
+    )");
+    #include "TestRegModelElab_reg_smoke_struct.h"
+    enableDebug(true);
+
+    IEvalContext *eval_ctxt = 0;
+    IEvalBackend *eval_backend = 0;
+    createBackend(
+        &eval_backend,
+        [&](
+            IEvalThread *thread, 
+            dm::IDataTypeFunction *func, 
+            const std::vector<vsc::dm::ValRef> &params) {
+            fprintf(stdout, "Function %s\n", func->name().c_str());
+            // TODO: Need a 'Valid but empty' value
+            thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
+        }
+    );
+    createEvalContext(
+        &eval_ctxt,
+        pss_top_t,
+        Entry_t,
+        eval_backend);
+    IEvalContextUP eval_ctxt_o(eval_ctxt);
+    ASSERT_TRUE(eval_ctxt_o.get());
+
+    ASSERT_FALSE(eval_ctxt_o->eval());
+
+/*
+    dm::ModelBuildContext build_ctxt(m_ctxt.get());
+    dm::IModelFieldComponentRootUP pss_top(pss_top_t->mkRootFieldT<dm::IModelFieldComponentRoot>(
+        &build_ctxt,
+        "pss_top",
+        false));
+    ASSERT_TRUE(pss_top.get());
+ */
+
+}
+
 }
 }
 }
