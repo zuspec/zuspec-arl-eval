@@ -36,7 +36,8 @@ public:
         dm::IDataTypeFunction       *func;
         vsc::dm::ValRef             root;
         int64_t                     offset;
-        int32_t                     width;
+        vsc::dm::IDataType          *type;
+
         // read vs write
         // masked vs unmasked
         // struct vs integral

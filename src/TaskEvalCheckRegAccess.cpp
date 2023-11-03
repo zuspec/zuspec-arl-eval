@@ -192,6 +192,8 @@ void TaskEvalCheckRegAccess::visitTypeFieldReg(dm::ITypeFieldReg *f) {
     int32_t width = f->getWidth(); 
     DEBUG("Register width is %d", width);
 
+    m_res.type = f->getDataType();
+
     // If the function supports packed structs, confirm that
     // the field type is a packed struct
     if (m_res.is_struct) {

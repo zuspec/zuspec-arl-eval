@@ -132,7 +132,7 @@ TEST_F(TestRegModelElab, reg_smoke) {
 
     )");
     #include "TestRegModelElab_reg_smoke.h"
-    enableDebug(true);
+    enableDebug(false);
 
     IEvalContext *eval_ctxt = 0;
     IEvalBackend *eval_backend = 0;
@@ -175,6 +175,10 @@ TEST_F(TestRegModelElab, reg_smoke_struct) {
             f1 : zdc.uint16_t
             f2 : zdc.uint16_t
 
+        @zdc.import_fn
+        def check(v : reg_t):
+            pass
+
         @zdc.reg_group_c
         class my_regs(object):
             r1 : zdc.reg_c[reg_t] = dict(offset=0x0)
@@ -193,13 +197,15 @@ TEST_F(TestRegModelElab, reg_smoke_struct) {
 
             @zdc.action
             class Entry(object):
+                v1 : reg_t
+
                 @zdc.exec.body
                 def body(self):
                     self.comp.regs.r1.read()
-                    self.comp.regs.r2.read()
-                    self.comp.regs.r3.read()
-                    self.comp.regs.r4.read()
-                pass
+                    #check(self.v1)
+                    #self.comp.regs.r2.read()
+                    #self.comp.regs.r3.read()
+                    #self.comp.regs.r4.read()
 
     )");
     #include "TestRegModelElab_reg_smoke_struct.h"
@@ -213,9 +219,19 @@ TEST_F(TestRegModelElab, reg_smoke_struct) {
             IEvalThread *thread, 
             dm::IDataTypeFunction *func, 
             const std::vector<vsc::dm::ValRef> &params) {
-            fprintf(stdout, "Function %s\n", func->name().c_str());
-            // TODO: Need a 'Valid but empty' value
-            thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
+            fprintf(stdout, "Function %s %d\n", func->name().c_str(), params.size());
+            if (func->name() == "check") {
+                vsc::dm::ValRefStruct val_s(params[0]);
+                fprintf(stdout, "val.type=%p\n", val_s.type());
+                vsc::dm::ValRefInt val(val_s.getFieldRef(0));
+                fprintf(stdout, "Field[0]: %02x", val.get_val_u());
+                val = val_s.getFieldRef(1);
+                fprintf(stdout, "Field[1]: %02x", val.get_val_u());
+                // TODO: Need a 'Valid but empty' value
+                thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
+            } else {
+                thread->setResult(m_ctxt->mkValRefInt(0x12345678, false, 32));
+            }
         }
     );
     createEvalContext(

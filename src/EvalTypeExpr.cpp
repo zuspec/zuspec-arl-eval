@@ -269,6 +269,15 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
             DEBUG("Top-down scope");
+            vsc::dm::ValRef root = m_vp->getMutVal(
+                e->getRootRefKind(), 
+                e->getRootRefOffset(), e->getPath().at(0));
+            DEBUG("  ref type=%p", root.type());
+            for (uint32_t i=1; i<e->getPath().size(); i++) {
+                vsc::dm::ValRefStruct val_s(root);
+                root = val_s.getFieldRef(e->getPath().at(i));
+            }
+            setResult(root);
         } break;
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::RootExpr: {
@@ -374,6 +383,9 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 // Must convert second parameter (data) from struct
                 // to integer
                 DEBUG("Convert struct-type parameter to integer");
+                vsc::dm::ValRef val_s = dm::TaskPackStruct2Int(
+                    m_ctxt->ctxt()).pack(m_params.at(1));
+                m_params.at(1) = val_s;
             }
 
             ctxtT<IEvalContextInt>()->callFuncReq(
@@ -395,6 +407,14 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 && m_isreg_res.is_struct) {
                 // Must convert the response from integer to struct
                 DEBUG("Convert integer return to struct-type value");
+                vsc::dm::ValRef val = getResult();
+                setResult(dm::TaskUnpackInt2Struct(
+                    m_ctxt->getDebugMgr(),
+                    m_ctxt->ctxt()).unpack(
+                        val, 
+                        dynamic_cast<vsc::dm::IDataTypeStruct *>(m_isreg_res.type)));
+                vsc::dm::ValRefStruct res(getResult());
+                DEBUG("res[0]=0x%08x", vsc::dm::ValRefInt(res.getFieldRef(0)).get_val_u());
             }
         }
     }
