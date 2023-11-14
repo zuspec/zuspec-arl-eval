@@ -100,6 +100,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend
@@ -208,6 +209,7 @@ TEST_F(TestEvalContextFullElab, two_action_seq_exec_func_b) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend
@@ -322,6 +324,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend
@@ -418,6 +421,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_nb_b) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend
@@ -527,6 +531,7 @@ TEST_F(TestEvalContextFullElab, two_action_par_exec_func_b_nb) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend
@@ -645,6 +650,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_val) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend
@@ -766,6 +772,7 @@ TEST_F(TestEvalContextFullElab, call_func_param_expr_val) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         &backend

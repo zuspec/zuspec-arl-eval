@@ -37,10 +37,11 @@ EvalContextIncrElab::EvalContextIncrElab(
     vsc::solvers::IFactory                          *solvers_f,
     dm::IContext                                    *ctxt,
     const vsc::solvers::IRandState                  *randstate,
+    pyapi::IPyEval                                  *pyeval,
     dm::IDataTypeComponent                          *root_comp,
     dm::IDataTypeAction                             *root_action,
     IEvalBackend                                    *backend) : 
-        EvalContextBase(dmgr, solvers_f, ctxt, randstate, backend),
+        EvalContextBase(dmgr, solvers_f, ctxt, randstate, pyeval, backend),
         m_pss_top(0), m_root_comp(root_comp), 
         m_pss_top_is_init(false), m_root_action(root_action) {
     DEBUG_INIT("zsp::arl::eval::EvalContextIncrElab", dmgr);
@@ -124,6 +125,8 @@ int32_t EvalContextIncrElab::eval() {
     if (m_initial) {
         dm::ModelBuildContext build_ctxt(m_ctxt);
 
+        initPython();
+
         if (!m_pss_top_is_init) {
             initCompTree();
         }
@@ -174,6 +177,7 @@ int32_t EvalContextIncrElab::eval() {
                 m_eval_s.pop_back();
             } else {
                 DEBUG_LEAVE("sub-eval %d -- more work", m_eval_s.back()->getIdx());
+                ret = (haveError())?-1:ret;
                 break;
             }
         }
@@ -181,6 +185,11 @@ int32_t EvalContextIncrElab::eval() {
         if (m_eval_s.size() == 0) {
             getBackend()->leaveThread(this);
         }
+    }
+
+    if (m_pyeval) {
+        DEBUG("Flush");
+        m_pyeval->flush();
     }
 
     DEBUG_LEAVE("eval (%d)", ret);

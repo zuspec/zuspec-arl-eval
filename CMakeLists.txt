@@ -27,6 +27,7 @@ message("IVPM_CMAKE_PATH: ${IVPM_CMAKE_PATH} ${CMAKE_MODULE_PATH}")
 include(ivpm)
 
 Ivpm_AddPythonExtProject(debug-mgr debug_mgr)
+Ivpm_AddPythonExtProject(pyapi-compat-if pyapi_compat_if)
 Ivpm_AddPythonExtProject(zuspec-arl-dm zsp_arl_dm)
 Ivpm_AddPythonExtProject(vsc-dm vsc_dm)
 Ivpm_AddPythonExtProject(vsc-solvers vsc_solvers)

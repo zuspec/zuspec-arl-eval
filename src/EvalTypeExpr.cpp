@@ -22,6 +22,7 @@
 #include "vsc/dm/ITypeExprVal.h"
 #include "zsp/arl/dm/impl/TaskPackStruct2Int.h"
 #include "zsp/arl/dm/impl/TaskUnpackInt2Struct.h"
+#include "zsp/arl/dm/impl/ValRefPyObj.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
@@ -476,6 +477,62 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
     }
 
     DEBUG_LEAVE("visitTypeExprMethodCallStatic idx=%d haveResult=%d", m_idx, haveResult());
+}
+
+void EvalTypeExpr::visitTypeExprPythonFieldRef(dm::ITypeExprPythonFieldRef *t) {
+    DEBUG_ENTER("visitTypeExprPythonFieldRef");
+    DEBUG("TODO: visitTypeExprPythonFieldRef");
+    DEBUG_LEAVE("visitTypeExprPythonFieldRef");
+}
+
+void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *t) {
+    DEBUG_ENTER("visitTypeExprPythonMethodCall");
+    switch (m_idx) {
+        case 0: {
+            m_idx = 1;
+
+            // Obtain the base handle
+            if (EvalTypeExpr(m_ctxt, m_thread, m_vp, t->getBase()).eval()) {
+                break;
+            }
+        }
+
+        case 1: {
+            dm::ValRefPyObj base(getResult());
+
+            if (!base.getObj()) {
+                DEBUG("Error: failed to get object");
+                clrResult();
+                setError("Attempting to invoke <> on null handle" /*, t->getName() */);
+                break;
+            } else if (!m_ctxt->getPyEval()->hasAttr(base.getObj(), t->getName())) {
+                DEBUG("Error: no attribute in object");
+                clrResult();
+                setError("Object does not contain name <>");
+                break;
+            } else {
+                pyapi::PyEvalObj *obj = m_ctxt->getPyEval()->getAttr(
+                    base.getObj(), t->getName());
+                pyapi::PyEvalObj *args = m_ctxt->getPyEval()->mkTuple(0);
+                m_ctxt->getPyEval()->call(obj, args, 0);
+            } 
+        }
+
+        case 2: {
+            setVoidResult();
+        }
+    }
+
+    DEBUG_LEAVE("visitTypeExprPythonMethodCall");
+}
+
+void EvalTypeExpr::visitTypeExprPythonModuleRef(dm::ITypeExprPythonModuleRef *t) {
+    DEBUG_ENTER("visitTypeExprPythonModuleRef");
+    pyapi::PyEvalObj *mod = m_ctxt->getPyModule(t->getImport());
+    DEBUG("mod: %p", mod);
+    dm::ValRefPyObj val(m_ctxt->ctxt()->mkValPyObj(mod));
+    setResult(val);
+    DEBUG_LEAVE("visitTypeExprPythonModuleRef");
 }
 
 dmgr::IDebug *EvalTypeExpr::m_dbg = 0;

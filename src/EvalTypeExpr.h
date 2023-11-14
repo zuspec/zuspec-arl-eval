@@ -64,6 +64,12 @@ public:
 
     virtual void visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *e) override;
 
+    virtual void visitTypeExprPythonFieldRef(dm::ITypeExprPythonFieldRef *t) override;
+
+    virtual void visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *t) override;
+
+    virtual void visitTypeExprPythonModuleRef(dm::ITypeExprPythonModuleRef *t) override;
+
 protected:
     static dmgr::IDebug             *m_dbg;
     IEvalValProvider                *m_vp;

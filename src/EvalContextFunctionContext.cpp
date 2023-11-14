@@ -38,7 +38,7 @@ EvalContextFunctionContext::EvalContextFunctionContext(
     dm::IDataTypeFunction                       *func,
     vsc::dm::IModelField                        *func_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-        EvalContextBase(dmgr, solvers_f, ctxt, randstate, backend),
+        EvalContextBase(dmgr, solvers_f, ctxt, randstate, 0, backend),
         m_func(func), m_func_ctxt(func_ctxt),
         m_params(params.begin(), params.end()) {
     DEBUG_INIT("zsp::arl::eval::EvalContextFunctionContext", dmgr);

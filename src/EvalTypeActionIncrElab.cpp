@@ -69,13 +69,21 @@ int32_t EvalTypeActionIncrElab::eval() {
             DEBUG("FieldVal: %p", m_action.getFieldRef(0).vp());
             fflush(stdout);
 
-            EvalTypeExecList(m_ctxt, m_thread, &m_vp,
-                action_t->getExecs(dm::ExecKindT::PreSolve)).eval();
+            if (EvalTypeExecList(m_ctxt, m_thread, &m_vp,
+                action_t->getExecs(dm::ExecKindT::PreSolve)).eval()) {
+                DEBUG("Exec pre-solve suspended");
+                clrResult();
+                break;
+            }
 
             // TODO: randomize action
 
-            EvalTypeExecList(m_ctxt, m_thread, &m_vp,
-                action_t->getExecs(dm::ExecKindT::PostSolve)).eval();
+            if (EvalTypeExecList(m_ctxt, m_thread, &m_vp,
+                action_t->getExecs(dm::ExecKindT::PostSolve)).eval()) {
+                DEBUG("Exec post-solve suspended");
+                clrResult();
+                break;
+            }
         }
         case 1: {
             dm::IDataTypeAction *action_t = m_action.typeT<dm::IDataTypeAction>();
@@ -89,6 +97,8 @@ int32_t EvalTypeActionIncrElab::eval() {
                     DEBUG("Suspend due to execs");
                     clrResult();
                     break;
+                } else {
+                    DEBUG("EvalTypeExecList completed");
                 }
             }
         }
@@ -102,7 +112,7 @@ int32_t EvalTypeActionIncrElab::eval() {
 
     if (m_initial) {
         m_initial = false;
-        if (haveResult()) {
+        if (!ret) {
             m_thread->popEval(this);
         } else {
             m_thread->suspendEval(this);

@@ -33,11 +33,12 @@ EvalContextBase::EvalContextBase(
     vsc::solvers::IFactory              *solvers_f,
     dm::IContext                        *ctxt,
     const vsc::solvers::IRandState      *randstate,
+    pyapi::IPyEval                      *pyeval,
     IEvalBackend                        *backend) :
         m_dmgr(dmgr), m_corelib(this),
          m_solvers_f(solvers_f), m_ctxt(ctxt),
-        m_randstate(randstate), m_backend(backend),
-        m_initial(true) {
+        m_randstate(randstate), m_pyeval(pyeval),
+        m_error(false), m_backend(backend), m_initial(true) {
     const std::vector<std::string> functions = {
         "reg_addr_pkg::write8", "reg_addr_pkg::write16", 
         "reg_addr_pkg::write32", "reg_addr_pkg::write64",
@@ -76,7 +77,7 @@ void EvalContextBase::pushEval(IEval *e, bool owned) {
 void EvalContextBase::suspendEval(IEval *e) {
     DEBUG_ENTER("suspendEval");
     m_eval_s.at(e->getIdx()) = IEvalUP(e->clone(), true);
-    m_eval_s.at(e->getIdx())->clrResult();
+    m_eval_s.at(e->getIdx())->clrResult(false);
     DEBUG("haveResult: %d", m_eval_s.at(e->getIdx())->haveResult());
     DEBUG_LEAVE("suspendEval");
 }
@@ -84,7 +85,9 @@ void EvalContextBase::suspendEval(IEval *e) {
 void EvalContextBase::popEval(IEval *e) {
     DEBUG_ENTER("popEval %p sz=%d", e, m_eval_s.size());
     m_eval_s.pop_back();
-    if (e->haveResult()) {
+    if (e->haveError()) {
+        setError(e->getError());
+    } else if (e->haveResult()) {
         setResult(e->moveResult());
     } else {
         DEBUG("NOT hasResult");
@@ -106,6 +109,20 @@ void EvalContextBase::callListener(
         it!=m_listeners.end(); it++) {
         f(*it);
     }
+}
+
+pyapi::PyEvalObj *EvalContextBase::getPyModule(dm::IPyImport *imp) {
+    std::unordered_map<dm::IPyImport *, pyapi::PyEvalObj *>::const_iterator it;
+
+    if ((it=m_module_m.find(imp)) != m_module_m.end()) {
+        return it->second;
+    } else {
+        return 0;
+    }
+}
+
+pyapi::IPyEval *EvalContextBase::getPyEval() {
+    return m_pyeval;
 }
 
 dm::IDataTypeFunction *EvalContextBase::getFunction(EvalContextFunc func) {
@@ -131,6 +148,38 @@ void EvalContextBase::setVoidResult() {
     vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
     setResult(v);
 }    
+
+void EvalContextBase::setError(const std::string &msg) {
+    DEBUG_ENTER("setError %s", msg.c_str());
+    if (m_eval_s.size()) {
+        m_eval_s.back()->setError(msg);
+    } else {
+        m_error = true;
+        m_errMsg = msg;
+    }
+    DEBUG_LEAVE("setError %s", msg.c_str());
+}
+
+bool EvalContextBase::haveError() const {
+    DEBUG_ENTER("haveError");
+    if (m_eval_s.size()) {
+        DEBUG("Get level %d", m_eval_s.size());
+        return m_eval_s.back()->haveError();
+    } else {
+        DEBUG("Get top-level");
+        return m_error;
+    }
+    DEBUG_LEAVE("haveError");
+}
+
+const std::string &EvalContextBase::getError() const {
+    DEBUG("getError: size=%d", m_eval_s.size());
+    if (m_eval_s.size()) {
+        return m_eval_s.back()->getError();
+    } else {
+        return m_errMsg;
+    }
+}
 
 IEvalStackFrame *EvalContextBase::stackFrame(int32_t idx) {
     DEBUG_ENTER("stackFrame: idx=%d m_callstack.size=%d", idx, m_callstack.size());
@@ -186,6 +235,24 @@ void EvalContextBase::callFuncReq(
     }
 
     DEBUG_LEAVE("callFuncReq");
+}
+
+bool EvalContextBase::initPython() {
+    DEBUG_ENTER("initPython");
+    for (std::vector<dm::IPyImportUP>::const_iterator
+        it=m_ctxt->getPyImports().begin();
+        it!=m_ctxt->getPyImports().end(); it++) {
+        DEBUG("Loading Python module: %s", (*it)->path().c_str());
+        pyapi::PyEvalObj *m = m_pyeval->importModule(
+            (*it)->path());
+        DEBUG("Result: %p", m);
+
+        if (m) {
+            m_module_m.insert({it->get(), m});
+        }
+    }
+    DEBUG_LEAVE("initPython");
+    return true;
 }
 
 

@@ -20,6 +20,7 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
+#include "pyapi-compat-if/IPyEval.h"
 #include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/eval/IModelEvaluator.h"
@@ -49,6 +50,7 @@ public:
         vsc::solvers::IFactory          *solvers_f,
         arl::dm::IContext               *ctxt,
         const vsc::solvers::IRandState  *randstate,
+        pyapi::IPyEval                  *pyeval,
         dm::IDataTypeComponent          *root_comp,
         dm::IDataTypeAction             *root_action,
         IEvalBackend                    *backend) = 0;

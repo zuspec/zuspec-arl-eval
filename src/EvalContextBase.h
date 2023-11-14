@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <functional>
+#include "pyapi-compat-if/IPyEval.h"
 #include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IFactory.h"
 #include "zsp/arl/eval/IEvalThread.h"
@@ -41,6 +42,7 @@ public:
         vsc::solvers::IFactory              *solvers_f,
         dm::IContext                        *ctxt,
         const vsc::solvers::IRandState      *randstate,
+        pyapi::IPyEval                      *pyeval,
         IEvalBackend                        *backend);
 
     virtual ~EvalContextBase();
@@ -94,6 +96,10 @@ public:
 
     virtual void callListener(const std::function<void (IEvalListener *)> &f) override;
 
+    virtual pyapi::PyEvalObj *getPyModule(dm::IPyImport *imp) override;
+
+    virtual pyapi::IPyEval *getPyEval() override;
+
     virtual dmgr::IDebugMgr *getDebugMgr() const override {
         return m_dmgr;
     }
@@ -106,11 +112,17 @@ public:
 
     virtual vsc::dm::ValRef &moveResult() override { return m_result; }
 
-    virtual void clrResult() override { m_result.reset(); }
+    virtual void clrResult(bool clr_err=false) override { m_result.reset(); }
 
     virtual void setResult(const vsc::dm::ValRef &r) override;
     
     void setVoidResult();
+
+    virtual void setError(const std::string &msg) override;
+
+    virtual bool haveError() const override;
+
+    virtual const std::string &getError() const override;
 
     virtual bool haveResult() const override { return false; }
 
@@ -164,6 +176,8 @@ public:
 
 protected:
 
+    virtual bool initPython();
+
 protected:
     using FuncT=std::function<void(
         IEvalThread *,
@@ -177,6 +191,7 @@ protected:
     vsc::solvers::IFactory                  *m_solvers_f;
     dm::IContext                            *m_ctxt;
     const vsc::solvers::IRandState          *m_randstate;
+    pyapi::IPyEval                          *m_pyeval;
     IEvalBackendUP                          m_backend;
     std::vector<dm::IDataTypeFunction *>    m_solve_functions;
     std::vector<dm::IDataTypeFunction *>    m_target_functions;
@@ -188,7 +203,10 @@ protected:
     std::vector<IEvalUP>                    m_eval_s;
     std::vector<IEvalStackFrameUP>          m_callstack;
     vsc::dm::ValRef                         m_result;
+    bool                                    m_error;
+    std::string                             m_errMsg;
     IEvalThreadIdUP                         m_thread_id;
+    std::unordered_map<dm::IPyImport *, pyapi::PyEvalObj *>     m_module_m;
 
 };
 

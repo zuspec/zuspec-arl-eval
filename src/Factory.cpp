@@ -67,6 +67,7 @@ IEvalContext *Factory::mkEvalContextFullElab(
         vsc::solvers::IFactory          *solvers_f,
         arl::dm::IContext               *ctxt,
         const vsc::solvers::IRandState  *randstate,
+        pyapi::IPyEval                  *pyeval,
         dm::IDataTypeComponent          *root_comp,
         dm::IDataTypeAction             *root_action,
         IEvalBackend                    *backend) {
@@ -88,6 +89,7 @@ IEvalContext *Factory::mkEvalContextFullElab(
         solvers_f,
         ctxt,
         randstate,
+        pyeval,
         root_comp,
         root_action,
         backend);

@@ -40,7 +40,7 @@ EvalContextFullElab::EvalContextFullElab(
     dm::IDataTypeComponent                          *root_comp,
     dm::IDataTypeAction                             *root_action,
     IEvalBackend                                    *backend) : 
-        EvalContextBase(dmgr, solvers_f, ctxt, randstate, backend),
+        EvalContextBase(dmgr, solvers_f, ctxt, randstate, 0, backend),
         m_pss_top(0), m_root_comp(root_comp), 
         m_pss_top_is_init(false), m_root_action(root_action) {
     DEBUG_INIT("EvalContextFullElab", dmgr);

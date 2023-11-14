@@ -107,6 +107,7 @@ TEST_F(TestEvalContextFuncCall, func_identified) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t.get(),
         entry_t.get(),
         0

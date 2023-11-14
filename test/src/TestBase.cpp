@@ -20,6 +20,7 @@
  */
 #include "dmgr/FactoryExt.h"
 #include "dmgr/impl/DebugMacros.h"
+#include "pyapi-compat-if/FactoryExt.h"
 #include "zsp/arl/dm/FactoryExt.h"
 #include "zsp/arl/eval/FactoryExt.h"
 #include "vsc/dm/FactoryExt.h"
@@ -42,6 +43,58 @@ TestBase::~TestBase() {
 }
 
 void TestBase::SetUp() {
+
+    std::vector<std::string> args = ::testing::internal::GetArgvs();
+
+    char tmp[1024];
+
+    fprintf(stdout, "argv[0]=%s\n", args.at(0).c_str());
+
+    realpath(args.at(0).c_str(), tmp);
+    fprintf(stdout, "realpath=%s\n", tmp);
+    ::testing::internal::FilePath project_dir = ::testing::internal::FilePath(tmp);
+    for (uint32_t i=0; i<3; i++) {
+        project_dir = project_dir.RemoveFileName();
+        project_dir = project_dir.RemoveTrailingPathSeparator();
+    }
+    fprintf(stdout, "project_dir=%s\n", project_dir.c_str());
+
+    const char *pythonpath = getenv("PYTHONPATH");
+
+    if (!pythonpath || !strstr(pythonpath, project_dir.c_str())) {
+        fprintf(stdout, "Need to prepend\n");
+        char *pythonpath_env = (char *)malloc(
+            ((pythonpath)?strlen(pythonpath)+1:0)
+            + project_dir.string().size()
+            + strlen("test/src/python")
+            + 1);
+        strcpy(pythonpath_env, project_dir.c_str());
+        strcat(pythonpath_env, "/test/src/python");
+        if (pythonpath && pythonpath[0]) {
+            strcat(pythonpath_env, ":");
+            strcat(pythonpath_env, pythonpath);
+        }
+        setenv("PYTHONPATH", pythonpath_env, 1);
+    }
+
+    const char *path = getenv("PATH");
+    if (!path || !strstr(path, project_dir.c_str())) {
+        // Add 
+        fprintf(stdout, "Need to prepend\n");
+        char *path_env = (char *)malloc(
+            ((path)?strlen(path)+1:0)
+            + project_dir.string().size()
+            + strlen("/packages/python/bin")
+            + 1);
+        strcpy(path_env, project_dir.c_str());
+        strcat(path_env, "/packages/python/bin");
+        if (path && path[0]) {
+            strcat(path_env, ":");
+            strcat(path_env, path);
+        }
+        setenv("PATH", path_env, 1);
+    }
+
     dmgr::IFactory *dmgr_factory = dmgr_getFactory();
     vsc::dm::IFactory *vsc_dm_factory = vsc_dm_getFactory();
     m_arl_dm_factory = zsp_arl_dm_getFactory();
@@ -50,6 +103,9 @@ void TestBase::SetUp() {
 
     m_eval_f = zsp_arl_eval_getFactory();
     m_eval_f->init(dmgr_factory->getDebugMgr());
+
+    pyapi::IFactory *pyapi_f = pyapi_compat_if_getFactory();
+    pyapi_f->init(dmgr_factory->getDebugMgr());
 
     m_ctxt = dm::IContextUP(m_arl_dm_factory->mkContext(
         vsc_dm_factory->mkContext()));
@@ -95,14 +151,21 @@ void TestBase::createEvalContext(
         dm::IDataTypeComponent      *root_comp,
         dm::IDataTypeAction         *root_action,
         IEvalBackend                *backend) {
+    pyapi::IFactory *pyapi_f = pyapi_compat_if_getFactory();
         
     ASSERT_TRUE(root_comp);
     ASSERT_TRUE(root_action);
+
+    std::string err;
+    pyapi::IPyEval *pyeval = pyapi_f->getPyEval(err);
+
+    ASSERT_TRUE(pyeval) << err;
     
     IEvalContext *eval_ctxt = m_eval_f->mkEvalContextFullElab(
         m_solvers_f,
         m_ctxt.get(),
         m_randstate.get(),
+        pyeval,
         root_comp,
         root_action,
         backend);

@@ -22,6 +22,7 @@
 #include <functional>
 #include <vector>
 #include "dmgr/IDebugMgr.h"
+#include "pyapi-compat-if/IPyEval.h"
 #include "vsc/dm/IModelValOp.h"
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalBackend.h"
@@ -71,6 +72,10 @@ public:
 
     virtual const vsc::dm::ValRef &getResult() const = 0;
 
+    virtual bool haveError() const = 0;
+
+    virtual const std::string &getError() const = 0;
+
     virtual vsc::dm::ValRef &moveResult() = 0;
 
     virtual IEvalBackend *getBackend() const = 0;
@@ -116,6 +121,10 @@ public:
     virtual vsc::dm::IModelValOp *getModelValOp() = 0;
 
     virtual IEvalStackFrame *mkStackFrame(int32_t n_vars) = 0;
+
+    virtual pyapi::PyEvalObj *getPyModule(dm::IPyImport *imp) = 0;
+
+    virtual pyapi::IPyEval *getPyEval() = 0;
 
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 

@@ -29,17 +29,20 @@ namespace eval {
 EvalBase::EvalBase(
     IEvalContext            *ctxt,
     IEvalThread             *thread) :
-        m_initial(true), m_entry_idx(-1), m_ctxt(ctxt), m_thread(thread) {
+        m_initial(true), m_entry_idx(-1), m_ctxt(ctxt), m_thread(thread),
+        m_error(false) {
 
 }
 
 EvalBase::EvalBase(IEvalThread *thread) :
-        m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread) {
+        m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread),
+        m_error(false) {
 }
 
 EvalBase::EvalBase(const EvalBase *o) :
     m_initial(false), m_entry_idx(o->m_entry_idx), m_ctxt(o->m_ctxt), 
-    m_thread(o->m_thread) {
+    m_thread(o->m_thread),
+    m_error(o->m_error), m_errMsg(o->m_errMsg) {
 
 }
 
@@ -64,6 +67,14 @@ int32_t EvalBase::eval(const std::function<void()> &body) {
     return !haveResult();
 }
 
+void EvalBase::clrResult(bool clr_err) {
+    m_result.reset();
+    if (clr_err) {
+//        m_error = false;
+//        m_errMsg.clear();
+    }
+}
+
 void EvalBase::setResult(const vsc::dm::ValRef &r) {
     m_result.set(r);
 }
@@ -76,6 +87,19 @@ void EvalBase::setVoidResult() {
     }
     vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
     setResult(v);
+}
+
+void EvalBase::setError(const std::string &msg) {
+    m_error = true;
+    m_errMsg = msg;
+}
+
+bool EvalBase::haveError() const {
+    return m_error;
+}
+
+const std::string &EvalBase::getError() const {
+    return m_errMsg;
 }
 
 }

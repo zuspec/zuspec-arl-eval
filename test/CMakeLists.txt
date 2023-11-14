@@ -57,6 +57,7 @@ include_directories(
     "${zsp_arl_dm_INCDIR}"
     "${vsc_dm_INCDIR}"
     "${vsc_solvers_INCDIR}"
+    "${pyapi_compat_if_INCDIR}"
     "${debug_mgr_INCDIR}"
     "${CMAKE_CURRENT_BINARY_DIR}/zspdefs"
 	)
@@ -73,6 +74,7 @@ target_include_directories(test-zsp-arl-eval PUBLIC
     "${zsp_arl_dm_INCDIR}"
     "${vsc_dm_INCDIR}"
     "${vsc_solvers_INCDIR}"
+    "${pyapi_compat_if_INCDIR}"
     "${debug_mgr_INCDIR}"
     )
    
@@ -84,6 +86,7 @@ target_link_directories(test-zsp-arl-eval PRIVATE
     "${zsp_arl_dm_LIBDIR}"
     "${vsc_dm_LIBDIR}"
     "${vsc_solvers_LIBDIR}"
+    "${pyapi_compat_if_LIBDIR}"
     "${debug_mgr_LIBDIR}"
     )
 
@@ -98,10 +101,12 @@ target_link_libraries(test-zsp-arl-eval
 	zsp-arl-dm
     vsc-solvers
     vsc-dm
+    pyapi-compat-if
     debug-mgr
 	libgtest 
 	libgmock
 	gtest_main 
+    dl
 	)
 add_dependencies(test-zsp-arl-eval GTEST GEN_CODE_SNIPPETS)
 #set_property(TARGET test_libvsc PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)

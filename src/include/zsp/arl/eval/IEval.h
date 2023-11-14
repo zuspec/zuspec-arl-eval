@@ -66,7 +66,13 @@ public:
 
     virtual void setVoidResult() = 0;
 
-    virtual void clrResult() = 0;
+    virtual void setError(const std::string &msg) = 0;
+
+    virtual bool haveError() const = 0;
+
+    virtual const std::string &getError() const = 0;
+
+    virtual void clrResult(bool clr_err=false) = 0;
 
     virtual bool haveResult() const = 0;
 

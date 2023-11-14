@@ -93,6 +93,7 @@ TEST_F(TestRegModelElab, smoke) {
         m_solvers_f,
         m_ctxt.get(),
         randstate.get(),
+        0,
         pss_top_t,
         entry_t,
         0
@@ -179,6 +180,10 @@ TEST_F(TestRegModelElab, reg_smoke_struct) {
         def check(v : reg_t):
             pass
 
+        @zdc.import_fn
+        def check_i(v : zdc.uint32_t):
+            pass
+
         @zdc.reg_group_c
         class my_regs(object):
             r1 : zdc.reg_c[reg_t] = dict(offset=0x0)
@@ -201,8 +206,9 @@ TEST_F(TestRegModelElab, reg_smoke_struct) {
 
                 @zdc.exec.body
                 def body(self):
-                    self.comp.regs.r1.read()
-                    #check(self.v1)
+                    #self.v1 == self.comp.regs.r1.read()
+                    check_i(self.comp.regs.r1.read_val())
+                    #check(check(1))
                     #self.comp.regs.r2.read()
                     #self.comp.regs.r3.read()
                     #self.comp.regs.r4.read()
@@ -224,9 +230,9 @@ TEST_F(TestRegModelElab, reg_smoke_struct) {
                 vsc::dm::ValRefStruct val_s(params[0]);
                 fprintf(stdout, "val.type=%p\n", val_s.type());
                 vsc::dm::ValRefInt val(val_s.getFieldRef(0));
-                fprintf(stdout, "Field[0]: %02x", val.get_val_u());
+                fprintf(stdout, "Field[0]: %04x\n", val.get_val_u());
                 val = val_s.getFieldRef(1);
-                fprintf(stdout, "Field[1]: %02x", val.get_val_u());
+                fprintf(stdout, "Field[1]: %04x\n", val.get_val_u());
                 // TODO: Need a 'Valid but empty' value
                 thread->setResult(m_ctxt->mkValRefInt(0, false, 1));
             } else {

@@ -10,6 +10,7 @@
                 "build/test/zspdefs",
                 "packages/debug-mgr/src/include",
                 "packages/gtest/googletest/include",
+                "packages/pyapi-compat-if/src/include",
                 "packages/vsc-dm/src",
                 "packages/vsc-dm/src/include",
                 "packages/vsc-solvers/src",

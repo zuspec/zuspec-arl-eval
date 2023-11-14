@@ -62,13 +62,17 @@ public:
         return m_result;
     }
 
-    virtual void clrResult() override {
-        m_result.reset();
-    }
+    virtual void clrResult(bool clr_err=false) override;
 
     virtual void setResult(const vsc::dm::ValRef &r) override;
 
     void setVoidResult();
+
+    virtual void setError(const std::string &msg) override;
+
+    virtual bool haveError() const override;
+
+    virtual const std::string &getError() const override;
 
     virtual bool haveResult() const override {
         return m_result.valid();
@@ -84,6 +88,9 @@ protected:
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
     vsc::dm::ValRef             m_result;
+    bool                        m_error;
+    std::string                 m_errMsg;
+
 
 };
 
