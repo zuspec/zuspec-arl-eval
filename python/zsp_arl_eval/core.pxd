@@ -12,9 +12,11 @@ from libc.stdint cimport int32_t
 from libcpp cimport bool
 cimport vsc_dm.core as vsc
 cimport vsc_dm.decl as vsc_decl
+cimport pyapi_compat_if.core as pyapi
 
 cdef class Factory(object):
     cdef decl.IFactory      *_hndl
+    cdef pyapi.PyEval       _pyeval
 
     cdef init(self, dm_core.Factory)
 

@@ -40,6 +40,7 @@ cdef Factory _inst = None
 cdef class Factory(object):
 
     def __init__(self):
+        self._pyeval = None
         pass
 
     cdef init(self, dm_core.Factory f):
@@ -53,10 +54,14 @@ cdef class Factory(object):
         arl_dm.DataTypeComponent      root_comp,
         arl_dm.DataTypeAction         root_action,
         EvalBackend                   backend):
+        if self.pyeval is None:
+            self.pyeval = pyapi.Factory.inst().getPyEval()
+
         return EvalContext.mk(self._hndl.mkEvalContextFullElab(
             solvers_f._hndl,
             ctxt.asContext(),
             randstate._hndl,
+            self._pyeval._hndl,
             root_comp.asComponent(),
             root_action.asAction(),
             backend._hndl

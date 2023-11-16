@@ -285,6 +285,8 @@ ext = Extension("zsp_arl_eval.core",
                 os.path.join(packages_dir, 'vsc-solvers', 'python'),
                 os.path.join(packages_dir, 'zuspec-arl-dm', 'src', 'include'),
                 os.path.join(packages_dir, 'zuspec-arl-dm', 'python'),
+                os.path.join(packages_dir, 'pyapi-compat-if', 'src', 'include'),
+                os.path.join(packages_dir, 'pyapi-compat-if', 'python'),
                 os.path.join(packages_dir, 'debug-mgr', 'src', 'include'),
                 os.path.join(packages_dir, 'debug-mgr', 'python'),
             ]

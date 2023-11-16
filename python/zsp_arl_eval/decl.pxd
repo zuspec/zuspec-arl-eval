@@ -6,6 +6,7 @@ cimport vsc_dm.decl as vsc
 cimport vsc_solvers.decl as vsc_solvers
 cimport zsp_arl_dm.decl as arl_dm
 cimport debug_mgr.decl as dm
+cimport pyapi_compat_if.decl as pyapi
 
 from libcpp.string cimport string as cpp_string
 from libcpp.vector cimport vector as cpp_vector
@@ -33,6 +34,7 @@ cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
             vsc_solvers.IFactory            *solvers_f,
             arl_dm.IContext                 *ctxt,
             const vsc_solvers.IRandState    *randstate,
+            pyapi.IPyEval                   *pyeval,
             arl_dm.IDataTypeComponent       *root_comp,
             arl_dm.IDataTypeAction          *root_action,
             IEvalBackend                    *backend)
