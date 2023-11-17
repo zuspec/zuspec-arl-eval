@@ -32,11 +32,11 @@ namespace eval {
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(
     IEvalContext                                *ctxt,
     IEvalThread                                 *thread,
-    IEvalValProvider                            *vp,
+    int32_t                                     vp_id,
     dm::IDataTypeFunction                       *method,
     vsc::dm::IModelField                        *method_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-    EvalBase(ctxt, thread), m_vp(vp),
+    EvalBase(ctxt, thread), m_vp_id(vp_id),
     m_method(method), m_method_ctxt(method_ctxt),
     m_method_ctxt_e(0), m_params(params.begin(), params.end()), 
     m_idx(0), m_param_idx(0) {
@@ -47,11 +47,11 @@ EvalTypeMethodCallContext::EvalTypeMethodCallContext(
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(
     IEvalContext                                *ctxt,
     IEvalThread                                 *thread,
-    IEvalValProvider                            *vp,
+    int32_t                                     vp_id,
     dm::IDataTypeFunction                       *method,
     vsc::dm::ITypeExpr                          *method_ctxt,
     const std::vector<vsc::dm::ITypeExpr *>     &params) :
-    EvalBase(ctxt, thread), m_vp(vp), m_method(method), m_method_ctxt(0),
+    EvalBase(ctxt, thread), m_vp_id(vp_id), m_method(method), m_method_ctxt(0),
     m_method_ctxt_e(method_ctxt), m_params(params.begin(), params.end()), 
     m_idx(0), m_param_idx(0) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeMethodCallContext", thread->getDebugMgr());
@@ -59,7 +59,8 @@ EvalTypeMethodCallContext::EvalTypeMethodCallContext(
 }
 
 EvalTypeMethodCallContext::EvalTypeMethodCallContext(EvalTypeMethodCallContext *o) :
-    EvalBase(o), m_method(o->m_method), m_method_ctxt(o->m_method_ctxt),
+    EvalBase(o), m_vp_id(o->m_vp_id), m_method(o->m_method), 
+    m_method_ctxt(o->m_method_ctxt),
     m_params(o->m_params.begin(), o->m_params.end()),
     m_idx(o->m_idx), m_param_idx(o->m_param_idx) {
 
@@ -125,7 +126,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 EvalTypeExpr evaluator(
                     m_ctxt, 
                     m_thread, 
-                    m_vp,
+                    m_vp_id,
                     m_params.at(m_param_idx));
 
                 m_param_idx += 1;
@@ -177,7 +178,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 EvalTypeProcStmtScope(
                     m_ctxt,
                     m_thread,
-                    m_vp,
+                    m_vp_id,
                     m_method->getBody()).eval();
             } else {
                 DEBUG("Calling import function");

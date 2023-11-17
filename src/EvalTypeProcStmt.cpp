@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/arl/eval/impl/TaskEvalGetLval.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 #include "EvalTypeExpr.h"
 #include "EvalTypeProcStmt.h"
 
@@ -32,15 +33,15 @@ namespace eval {
 EvalTypeProcStmt::EvalTypeProcStmt(
     IEvalContext            *ctxt,
     IEvalThread             *thread,
-    IEvalValProvider        *vp,
+    int32_t                 vp_id,
     dm::ITypeProcStmt       *stmt) : EvalBase(ctxt, thread),
-        m_vp(vp), m_stmt(stmt), m_idx(0) {
+        m_vp_id(vp_id), m_stmt(stmt), m_idx(0) {
     DEBUG_INIT("EvalTypeProcStmt", ctxt->getDebugMgr());
 
 }
 
 EvalTypeProcStmt::EvalTypeProcStmt(const EvalTypeProcStmt *o) :
-    EvalBase(o), m_stmt(o->m_stmt), m_idx(o->m_idx) {
+    EvalBase(o), m_vp_id(o->m_vp_id), m_stmt(o->m_stmt), m_idx(o->m_idx) {
 
 }
 
@@ -68,8 +69,10 @@ int32_t EvalTypeProcStmt::eval() {
     if (m_initial) {
         m_initial = false;
         if (ret) {
+            DEBUG("suspendEval");
             m_thread->suspendEval(this);
         } else {
+            DEBUG("popEval");
             m_thread->popEval(this);
         }
     }
@@ -88,7 +91,9 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         case 0: {
             m_idx = 1;
 
-            if (EvalTypeExpr(m_ctxt, m_thread, m_vp, s->getRhs()).eval()) {
+            clrResult();
+
+            if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, s->getRhs()).eval()) {
                 break;
             }
         }
@@ -96,13 +101,18 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
             vsc::dm::ValRef lval(TaskEvalGetLval(
-                m_thread->getDebugMgr(), m_vp).eval(s->getLhs()));
+                    m_thread->getDebugMgr(), 
+                    ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)
+                ).eval(s->getLhs()));
+
             if (!lval.valid()) {
-                FATAL("null lval");
+                setError("null lval");
+                break;
             }
 
             if (!haveResult()) {
-                FATAL("No result");
+                setError("No result");
+                break;
             }
 
             fprintf(stdout, "TODO: Check of result kind\n");
@@ -111,7 +121,9 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                 case dm::TypeProcStmtAssignOp::Eq: {
                     vsc::dm::ValRefInt val_i(lval);
                     vsc::dm::ValRefInt val_r(getResult());
+                    DEBUG("RHS(int): init=%lld", val_i.get_val_s());
                     val_i.set_val(val_r.get_val_u());
+                    DEBUG("RHS(int): %lld (lhs=%lld)", val_r.get_val_s(), val_i.get_val_s());
                     /*
                     DEBUG("lval.bits=%d rval.bits=%d", lval->bits(), getResult()->bits());
                     lval->set(getResult());
@@ -134,11 +146,15 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
     switch (m_idx) {
         case 0: {
             m_idx = 1; // Always move forward
-            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, s->getExpr());
-            if (evaluator.eval()) {
-                // expression evaluation blocked
-                clrResult();
-                break;
+            if (s->getExpr()) {
+                EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, s->getExpr());
+                if (evaluator.eval()) {
+                    // expression evaluation blocked
+                    clrResult();
+                    break;
+                }
+            } else {
+                ERROR("Null expression for statement");
             }
         }
         case 1: {
@@ -158,7 +174,7 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
             // Evaluate condition
             m_idx = 1;
 
-            if (EvalTypeExpr(m_ctxt, m_thread, m_vp, s->getCond()).eval()) {
+            if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, s->getCond()).eval()) {
                 clrResult();
                 break;
             }
@@ -197,7 +213,7 @@ void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
     switch (m_idx) {
         case 0: {
             m_idx = 1;
-            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, s->getExpr());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, s->getExpr());
 
             if (evaluator.eval()) {
                 clrResult();

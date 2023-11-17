@@ -36,7 +36,7 @@ public:
     EvalTypeMethodCallStatic(
         IEvalContext                                *ctxt,
         IEvalThread                                 *thread,
-        IEvalValProvider                            *vp,
+        int32_t                                     vp_id,
         dm::IDataTypeFunction                       *func,
         const std::vector<vsc::dm::ITypeExpr *>     &params);
 
@@ -50,7 +50,7 @@ public:
 
 private:
     static dmgr::IDebug                             *m_dbg;
-    IEvalValProvider                                *m_vp;
+    int32_t                                         m_vp_id;
     dm::IDataTypeFunction                           *m_func;
     std::vector<vsc::dm::ITypeExpr *>               m_params;
     int32_t                                         m_idx;

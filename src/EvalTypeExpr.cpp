@@ -36,15 +36,15 @@ namespace eval {
 EvalTypeExpr::EvalTypeExpr(
     IEvalContext        *ctxt,
     IEvalThread         *thread,
-    IEvalValProvider    *vp,
+    int32_t             vp_id,
     vsc::dm::ITypeExpr  *expr) :
-        EvalBase(ctxt, thread), m_vp(vp),
+        EvalBase(ctxt, thread), m_vp_id(vp_id),
         m_expr(expr), m_idx(0), m_subidx(0) {
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
 
 EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
-    EvalBase(o), m_vp(o->m_vp), m_expr(o->m_expr), 
+    EvalBase(o), m_vp_id(o->m_vp_id), m_expr(o->m_expr), 
     m_val_lhs(std::move(o->m_val_lhs)),
     m_val_rhs(std::move(o->m_val_rhs)), 
     m_idx(o->m_idx), m_subidx(o->m_subidx) {
@@ -69,7 +69,7 @@ int32_t EvalTypeExpr::eval() {
 
     if (m_initial) {
         m_initial = false;
-        if (haveResult()) {
+        if (!ret) {
             m_thread->popEval(this);
         } else {
             m_thread->suspendEval(this);
@@ -89,7 +89,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
     switch (m_idx) {
         case 0: { // Operand 1
             m_idx = 1;
-            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, e->lhs());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, e->lhs());
 
             if (evaluator.eval()) {
                 break;
@@ -99,7 +99,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
             m_idx = 2;
             setVoidResult();
 
-            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp, e->rhs());
+            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, e->rhs());
 
             if (evaluator.eval()) {
                 break;
@@ -270,9 +270,10 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
             DEBUG("Top-down scope");
-            vsc::dm::ValRef root = m_vp->getMutVal(
-                e->getRootRefKind(), 
-                e->getRootRefOffset(), e->getPath().at(0));
+            vsc::dm::ValRef root = ctxtT<IEvalContextInt>()->getValProvider(
+                m_vp_id)->getMutVal(
+                    e->getRootRefKind(), 
+                    e->getRootRefOffset(), e->getPath().at(0));
             DEBUG("  ref type=%p", root.type());
             for (uint32_t i=1; i<e->getPath().size(); i++) {
                 vsc::dm::ValRefStruct val_s(root);
@@ -311,7 +312,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
             m_idx = 1;
             m_isreg_res = TaskEvalCheckRegAccess(
                 m_ctxt,
-                m_vp).check(
+                m_vp_id).check(
                     e->getContext(),
                     e->getTarget());
 
@@ -330,7 +331,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 m_func = e->getTarget();
 
                 // Push the context handle 
-                if (EvalTypeExpr(m_ctxt, m_thread, m_vp, e->getContext()).eval()) {
+                if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, e->getContext()).eval()) {
                     break;
                 }
             }
@@ -353,7 +354,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 EvalTypeExpr evaluator(
                     m_ctxt, 
                     m_thread, 
-                    m_vp,
+                    m_vp_id,
                     e->getParameters().at(m_subidx).get());
 
                 m_subidx += 1;
@@ -389,6 +390,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 m_params.at(1) = val_s;
             }
 
+            DEBUG_ENTER("callFuncReq");
             ctxtT<IEvalContextInt>()->callFuncReq(
                 m_thread,
                 m_func,
@@ -402,6 +404,8 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
 
         case 2: {
             // Wait for a response
+            DEBUG_LEAVE("callFuncReq");
+            setResult(m_thread->getResult());
 
             if (m_isreg_res.func
                 && !m_isreg_res.is_write
@@ -435,7 +439,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 EvalTypeExpr evaluator(
                     m_ctxt, 
                     m_thread, 
-                    m_vp,
+                    m_vp_id,
                     e->getParameters().at(m_subidx).get());
 
                 m_subidx += 1;
@@ -459,6 +463,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             clrResult(); // Clear 'safety' result
 
             m_idx = 1;
+            DEBUG_ENTER("callFuncReq");
             ctxtT<IEvalContextInt>()->callFuncReq(
                 m_thread,
                 e->getTarget(),
@@ -466,12 +471,16 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             );
 
             if (!haveResult()) {
+                DEBUG("No result yet ... suspend");
                 break;
+            } else {
+                DEBUG("Have a result");
             }
         }
 
         case 1: {
             // Wait for a response
+            DEBUG_LEAVE("callFuncReq");
 
         }
     }
@@ -492,7 +501,7 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
             m_idx = 1;
 
             // Obtain the base handle
-            if (EvalTypeExpr(m_ctxt, m_thread, m_vp, t->getBase()).eval()) {
+            if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, t->getBase()).eval()) {
                 break;
             }
         }

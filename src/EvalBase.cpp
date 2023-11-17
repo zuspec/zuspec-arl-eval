@@ -50,6 +50,10 @@ EvalBase::~EvalBase() {
 
 }
 
+IEvalValProvider *EvalBase::getValProvider() {
+    return 0;
+}
+
 int32_t EvalBase::eval(const std::function<void()> &body) {
     if (m_initial) {
         m_thread->pushEval(this);

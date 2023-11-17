@@ -53,6 +53,8 @@ public:
     virtual void setIdx(int32_t idx) override {
         m_entry_idx = idx;
     }
+    
+    virtual IEvalValProvider *getValProvider() override;
 
     virtual const vsc::dm::ValRef &getResult() const override {
         return m_result;

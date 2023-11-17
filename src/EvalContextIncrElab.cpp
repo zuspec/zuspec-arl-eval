@@ -120,7 +120,7 @@ int32_t EvalContextIncrElab::initCompTree() {
 
 int32_t EvalContextIncrElab::eval() {
     bool ret = false;
-    DEBUG_ENTER("eval");
+    DEBUG_ENTER("[%d] eval", m_eval_s.size());
 
     if (m_initial) {
         dm::ModelBuildContext build_ctxt(m_ctxt);
@@ -171,6 +171,7 @@ int32_t EvalContextIncrElab::eval() {
         m_initial = false;
     } else {
         while (m_eval_s.size()) {
+            DEBUG("m_eval_s size=%d", m_eval_s.size());
             DEBUG_ENTER("sub-eval %d", m_eval_s.back()->getIdx());
             if (!(ret=m_eval_s.back()->eval())) {
                 DEBUG_LEAVE("sub-eval %d -- done", m_eval_s.back()->getIdx());
@@ -192,7 +193,7 @@ int32_t EvalContextIncrElab::eval() {
         m_pyeval->flush();
     }
 
-    DEBUG_LEAVE("eval (%d)", ret);
+    DEBUG_LEAVE("[%d] eval (%d)", m_eval_s.size(), ret);
     return ret;
 }
 

@@ -28,6 +28,7 @@
 #include "zsp/arl/eval/IEvalBackend.h"
 #include "zsp/arl/eval/IEvalListener.h"
 #include "zsp/arl/eval/IEvalFunctionData.h"
+#include "zsp/arl/eval/IEvalValProvider.h"
 #include "zsp/arl/dm/IContext.h"
 #include "zsp/arl/dm/IDataTypeFunction.h"
 #include "zsp/arl/dm/IDataTypeFunctionImport.h"

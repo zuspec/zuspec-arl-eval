@@ -23,6 +23,8 @@
 #include "dmgr/IDebugMgr.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEvalContext.h"
+#include "EvalBase.h"
+#include "EvalValProviderStructThread.h"
 
 namespace zsp {
 namespace arl {
@@ -30,17 +32,28 @@ namespace eval {
 
 
 
-class TaskEvalComponentExecInit : public virtual dm::VisitorBase {
+class TaskEvalComponentExecInit : 
+    public virtual IEval,
+    public virtual EvalBase,
+    public virtual dm::VisitorBase {
 public:
     TaskEvalComponentExecInit(
         IEvalContext    *ctxt,
         IEvalThread     *thread);
+
+    TaskEvalComponentExecInit(const TaskEvalComponentExecInit *o);
 
     virtual ~TaskEvalComponentExecInit();
 
     void eval(
         dm::IDataTypeComponent      *comp_t,
         const vsc::dm::ValRef       &val);
+        
+    virtual IEval *clone() override;
+
+    virtual int32_t eval() override;
+
+    virtual IEvalValProvider *getValProvider() override;
 
 	virtual void visitDataTypeComponent(dm::IDataTypeComponent *t) override;
 
@@ -49,9 +62,8 @@ public:
 
 private:
     static dmgr::IDebug                 *m_dbg;
-    IEvalContext                        *m_ctxt;
-    IEvalThread                         *m_thread;
     std::vector<vsc::dm::ValRef>        m_val_s;
+    EvalValProviderStructThread         m_vp;
 };
 
 }

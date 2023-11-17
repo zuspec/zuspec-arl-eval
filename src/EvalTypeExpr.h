@@ -39,7 +39,7 @@ public:
     EvalTypeExpr(
         IEvalContext        *ctxt,
         IEvalThread         *thread,
-        IEvalValProvider    *vp,
+        int32_t             vp_id,
         vsc::dm::ITypeExpr  *expr);
 
     EvalTypeExpr(EvalTypeExpr *o);
@@ -72,7 +72,8 @@ public:
 
 protected:
     static dmgr::IDebug             *m_dbg;
-    IEvalValProvider                *m_vp;
+    vsc::dm::ValRef                 m_val;
+    int32_t                         m_vp_id;
     vsc::dm::ITypeExpr              *m_expr;
     vsc::dm::ValRef                 m_val_lhs;
     vsc::dm::ValRef                 m_val_rhs;

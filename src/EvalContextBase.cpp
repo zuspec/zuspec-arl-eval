@@ -162,14 +162,16 @@ void EvalContextBase::setError(const std::string &msg) {
 
 bool EvalContextBase::haveError() const {
     DEBUG_ENTER("haveError");
+    bool ret = false;
     if (m_eval_s.size()) {
         DEBUG("Get level %d", m_eval_s.size());
-        return m_eval_s.back()->haveError();
+        ret = m_eval_s.back()->haveError();
     } else {
         DEBUG("Get top-level");
-        return m_error;
+        ret = m_error;
     }
-    DEBUG_LEAVE("haveError");
+    DEBUG_LEAVE("haveError %d", ret);
+    return ret;
 }
 
 const std::string &EvalContextBase::getError() const {
@@ -235,6 +237,22 @@ void EvalContextBase::callFuncReq(
     }
 
     DEBUG_LEAVE("callFuncReq");
+}
+
+IEvalValProvider *EvalContextBase::getValProvider(int32_t id) {
+    if (id >= 0 && id < m_eval_s.size()) {
+        return m_eval_s.at(id)->getValProvider();
+    } else if (id < 0) {
+        return getValProvider();
+    } else {
+        FATAL("Out-of-bounds value request %d", id);
+        return 0;
+    }
+}
+
+IEvalValProvider *EvalContextBase::getValProvider() {
+    FATAL("Root doesn't provide value");
+    return 0;
 }
 
 bool EvalContextBase::initPython() {

@@ -31,14 +31,14 @@ namespace eval {
 EvalTypeExecList::EvalTypeExecList(
     IEvalContext                        *ctxt,
     IEvalThread                         *thread,
-    IEvalValProvider                    *vp,
+    int32_t                             vp_id,
     const std::vector<dm::ITypeExecUP>  &execs) :
-        EvalBase(ctxt, thread), m_vp(vp), m_execs(execs), m_idx(0) {
+        EvalBase(ctxt, thread), m_vp_id(vp_id), m_execs(execs), m_idx(0) {
     DEBUG_INIT("EvalTypeExecList", ctxt->getDebugMgr());
 }
 
 EvalTypeExecList::EvalTypeExecList(const EvalTypeExecList *o) :
-    EvalBase(o), m_vp(o->m_vp), m_execs(o->m_execs), m_idx(o->m_idx) {
+    EvalBase(o), m_vp_id(o->m_vp_id), m_execs(o->m_execs), m_idx(o->m_idx) {
 
 }
 
@@ -94,7 +94,7 @@ void EvalTypeExecList::visitTypeExecProc(dm::ITypeExecProc *e) {
     EvalTypeProcStmtScope evaluator(
         m_ctxt, 
         m_thread, 
-        m_vp,
+        m_vp_id,
         e->getBody());
 
     if (evaluator.eval()) {

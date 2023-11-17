@@ -43,6 +43,8 @@ public:
             const std::vector<vsc::dm::ValRef>  &params
     ) = 0;
 
+    virtual IEvalValProvider *getValProvider(int32_t id) = 0;
+
 };
 
 } /* namespace eval */

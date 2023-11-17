@@ -54,8 +54,8 @@ cdef class Factory(object):
         arl_dm.DataTypeComponent      root_comp,
         arl_dm.DataTypeAction         root_action,
         EvalBackend                   backend):
-        if self.pyeval is None:
-            self.pyeval = pyapi.Factory.inst().getPyEval()
+        if self._pyeval is None:
+            self._pyeval = pyapi.Factory.inst().getPyEval()
 
         return EvalContext.mk(self._hndl.mkEvalContextFullElab(
             solvers_f._hndl,

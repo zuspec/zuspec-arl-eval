@@ -32,8 +32,14 @@ namespace eval {
 
 TaskEvalComponentExecInit::TaskEvalComponentExecInit(
     IEvalContext    *ctxt,
-    IEvalThread     *thread) : m_ctxt(ctxt), m_thread(thread) {
+    IEvalThread     *thread) : EvalBase(ctxt, thread), m_vp(thread) {
     DEBUG_INIT("zsp::arl::eval::TaskEvalComponentExecInit", ctxt->getDebugMgr());
+}
+
+TaskEvalComponentExecInit::TaskEvalComponentExecInit(
+    const TaskEvalComponentExecInit *o) :
+    EvalBase(o), m_val_s(o->m_val_s), m_vp(o->m_vp) {
+
 }
 
 TaskEvalComponentExecInit::~TaskEvalComponentExecInit() {
@@ -44,15 +50,30 @@ void TaskEvalComponentExecInit::eval(
         dm::IDataTypeComponent      *comp_t,
         const vsc::dm::ValRef       &val) {
     DEBUG_ENTER("eval");
+    m_thread->pushEval(this);
     m_val_s.push_back(val);
     comp_t->accept(m_this);
     m_val_s.pop_back();
+    m_thread->popEval(this);
     DEBUG_LEAVE("eval");
+}
+
+IEval *TaskEvalComponentExecInit::clone() {
+    return new TaskEvalComponentExecInit(*this);
+}
+
+IEvalValProvider *TaskEvalComponentExecInit::getValProvider() {
+    DEBUG("getValProvider");
+    return &m_vp;
+}
+
+int32_t TaskEvalComponentExecInit::eval() {
+    FATAL("TaskEvalComponentExecInit not intended to use eval interface");
 }
 
 void TaskEvalComponentExecInit::visitDataTypeComponent(
     dm::IDataTypeComponent *t) {
-    EvalValProviderStructThread vp(m_thread, m_val_s.back());
+    m_vp.setScope(m_val_s.back());
 
     vsc::dm::ValRefStruct val_s(m_val_s.back());
     DEBUG_ENTER("visitDataTypeComponent");
@@ -61,7 +82,7 @@ void TaskEvalComponentExecInit::visitDataTypeComponent(
     const std::vector<dm::ITypeExecUP> &execs = t->getExecs(dm::ExecKindT::InitDown);
     if (execs.size() > 0) {
         DEBUG("Evaluating %d init-down execs", execs.size());
-        EvalTypeExecList(m_ctxt, m_thread, &vp, execs).eval();
+        EvalTypeExecList(m_ctxt, m_thread, getIdx(), execs).eval();
     } else {
         DEBUG("No init-down execs to evaluate");
     }
@@ -77,7 +98,7 @@ void TaskEvalComponentExecInit::visitDataTypeComponent(
     const std::vector<dm::ITypeExecUP> &execs_u = t->getExecs(dm::ExecKindT::InitUp);
     if (execs_u.size() > 0) {
         DEBUG("Evaluating %d init-up execs", execs_u.size());
-        EvalTypeExecList(m_ctxt, m_thread, &vp, execs).eval();
+        EvalTypeExecList(m_ctxt, m_thread, getIdx(), execs).eval();
     } else {
         DEBUG("No init-up execs to evaluate");
     }

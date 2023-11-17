@@ -55,6 +55,16 @@ public:
         int32_t path_idx = 0;
         DEBUG_ENTER("visitTypeExprFieldRef");
 
+        if (e->getPath().size() == 0) {
+            ERROR("Path is empty");
+            return;
+        }
+
+        DEBUG("path.size=%d path_idx=%d index=%d",
+            e->getPath().size(),
+            path_idx,
+            e->getPath().at(path_idx));
+        DEBUG("vp=%p", m_vp);
         var = m_vp->getMutVal(
             e->getRootRefKind(),
             0, // TODO:

@@ -22,6 +22,7 @@
 #include "vsc/dm/IModelVal.h"
 #include "vsc/dm/impl/ValRef.h"
 #include "vsc/dm/impl/UP.h"
+#include "zsp/arl/eval/IEvalValProvider.h"
 
 namespace zsp {
 namespace arl {
@@ -47,6 +48,8 @@ public:
     virtual void setIdx(int32_t idx) = 0;
 
     virtual IEval *clone() = 0;
+
+    virtual IEvalValProvider *getValProvider() = 0;
 
     virtual const vsc::dm::ValRef &getResult() const = 0;
 

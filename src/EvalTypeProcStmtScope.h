@@ -36,7 +36,7 @@ public:
     EvalTypeProcStmtScope(
         IEvalContext                *ctxt,
         IEvalThread                 *thread,
-        IEvalValProvider            *vp,
+        int32_t                     vp_id,
         dm::ITypeProcStmtScope      *scope
     );
 
@@ -51,7 +51,7 @@ public:
 
 private:
     static dmgr::IDebug             *m_dbg;
-    IEvalValProvider                *m_vp;
+    int32_t                         m_vp_id;
     dm::ITypeProcStmtScope          *m_scope;
     uint32_t                        m_idx;
 

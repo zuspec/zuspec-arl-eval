@@ -64,12 +64,12 @@ int32_t EvalTypeActionIncrElab::eval() {
             vsc::dm::ValRefPtr comp_p(m_action.getFieldRef(0));
 //            DEBUG("Initial Comp: %p", comp_p.get_val());
             DEBUG("  %p", m_comp.vp());
-            DEBUG("Initial Comp: %p", comp_p.get_val());
+//            DEBUG("Initial Comp: %p", comp_p.get_val());
             comp_p.set_val(m_comp.vp());
             DEBUG("FieldVal: %p", m_action.getFieldRef(0).vp());
             fflush(stdout);
 
-            if (EvalTypeExecList(m_ctxt, m_thread, &m_vp,
+            if (EvalTypeExecList(m_ctxt, m_thread, getIdx(),
                 action_t->getExecs(dm::ExecKindT::PreSolve)).eval()) {
                 DEBUG("Exec pre-solve suspended");
                 clrResult();
@@ -78,7 +78,7 @@ int32_t EvalTypeActionIncrElab::eval() {
 
             // TODO: randomize action
 
-            if (EvalTypeExecList(m_ctxt, m_thread, &m_vp,
+            if (EvalTypeExecList(m_ctxt, m_thread, getIdx(),
                 action_t->getExecs(dm::ExecKindT::PostSolve)).eval()) {
                 DEBUG("Exec post-solve suspended");
                 clrResult();
@@ -92,7 +92,7 @@ int32_t EvalTypeActionIncrElab::eval() {
             if (action_t->activities().size()) {
                 // TODO: determine if we have an activity
             } else if (action_t->getExecs(dm::ExecKindT::Body).size()) {
-                if (EvalTypeExecList(m_ctxt, m_thread, &m_vp, 
+                if (EvalTypeExecList(m_ctxt, m_thread, getIdx(), 
                     action_t->getExecs(dm::ExecKindT::Body)).eval()) {
                     DEBUG("Suspend due to execs");
                     clrResult();
@@ -125,6 +125,11 @@ int32_t EvalTypeActionIncrElab::eval() {
 
 IEval *EvalTypeActionIncrElab::clone() {
     return new EvalTypeActionIncrElab(this);
+}
+
+IEvalValProvider *EvalTypeActionIncrElab::getValProvider() {
+    DEBUG("getValProvider");
+    return &m_vp;
 }
 
 dmgr::IDebug *EvalTypeActionIncrElab::m_dbg = 0;

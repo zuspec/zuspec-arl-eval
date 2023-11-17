@@ -142,7 +142,7 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                     EvalTypeExecList evaluator(
                         m_ctxt, 
                         m_thread,
-                        &m_vp,
+                        getIdx(),
                         action_t->getExecs(dm::ExecKindT::Body));
                     
                     if (evaluator.eval()) {

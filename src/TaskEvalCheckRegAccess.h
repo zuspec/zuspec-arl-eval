@@ -49,7 +49,7 @@ public:
 public:
     TaskEvalCheckRegAccess(
         IEvalContext            *ctxt,
-        IEvalValProvider        *vp);
+        int32_t                 vp_id);
 
     virtual ~TaskEvalCheckRegAccess();
 
@@ -72,7 +72,7 @@ private:
         ((int)EvalContextFunc::RegReadVal-(int)EvalContextFunc::RegWrite)+1;
     static dmgr::IDebug             *m_dbg;
     IEvalContext                    *m_ctxt;
-    IEvalValProvider                *m_vp;
+    int32_t                         m_vp_id;
     vsc::dm::ValRef                 m_val;
     bool                            m_is_reg_ref;
     dm::IDataTypeFunction           *m_functions[N_REG_FUNCS];

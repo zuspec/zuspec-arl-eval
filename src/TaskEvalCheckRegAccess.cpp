@@ -21,6 +21,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/ValRefPtr.h"
 #include "vsc/dm/impl/ValRefWrapper.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 #include "TaskEvalCheckRegAccess.h"
 
 
@@ -65,7 +66,7 @@ bool TaskEvalCheckRegAccess::m_func_is_struct[N_REG_FUNCS] = {
 
 TaskEvalCheckRegAccess::TaskEvalCheckRegAccess(
     IEvalContext        *ctxt,
-    IEvalValProvider    *vp) : m_ctxt(ctxt), m_vp(vp) {
+    int32_t             vp_id) : m_ctxt(ctxt), m_vp_id(vp_id) {
     DEBUG_INIT("zsp::arl::eval::TaskEvalCheckRegAccess", ctxt->getDebugMgr());
 
     for (uint32_t i=0; i<sizeof(RegAccessFuncs)/sizeof(EvalContextFunc); i++) {
@@ -112,7 +113,7 @@ void TaskEvalCheckRegAccess::visitDataTypeStruct(vsc::dm::IDataTypeStruct *t) {
 void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
     DEBUG_ENTER("visitTypeExprFieldRef");
 
-    m_val = m_vp->getImmVal(
+    m_val = dynamic_cast<IEvalContextInt *>(m_ctxt)->getValProvider(m_vp_id)->getImmVal(
         e->getRootRefKind(),
         e->getRootRefOffset(),
         e->getPath().at(0)

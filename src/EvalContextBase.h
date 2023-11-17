@@ -174,6 +174,10 @@ public:
             const std::vector<vsc::dm::ValRef>  &params
     ) override;
 
+    virtual IEvalValProvider *getValProvider(int32_t id) override;
+
+    virtual IEvalValProvider *getValProvider() override;
+
 protected:
 
     virtual bool initPython();

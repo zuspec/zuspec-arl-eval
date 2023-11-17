@@ -37,7 +37,7 @@ public:
     EvalTypeExecList(
         IEvalContext                        *ctxt,
         IEvalThread                         *thread,
-        IEvalValProvider                    *vp,
+        int32_t                             vp_id,
         const std::vector<dm::ITypeExecUP>  &execs);
 
     EvalTypeExecList(const EvalTypeExecList *o);
@@ -52,7 +52,7 @@ public:
 
 private:
     static dmgr::IDebug                     *m_dbg;
-    IEvalValProvider                        *m_vp;
+    int32_t                                 m_vp_id;
     const std::vector<dm::ITypeExecUP>      &m_execs;
     uint32_t                                m_idx;
 };
