@@ -175,6 +175,11 @@ int32_t EvalContextIncrElab::eval() {
             DEBUG_ENTER("sub-eval %d", m_eval_s.back()->getIdx());
             if (!(ret=m_eval_s.back()->eval())) {
                 DEBUG_LEAVE("sub-eval %d -- done", m_eval_s.back()->getIdx());
+                // Propagate result
+                if (m_eval_s.size() > 1) {
+                    m_eval_s.at(m_eval_s.size()-2)->setResult(
+                        m_eval_s.back()->getResult());
+                }
                 m_eval_s.pop_back();
             } else {
                 DEBUG_LEAVE("sub-eval %d -- more work", m_eval_s.back()->getIdx());
@@ -191,6 +196,10 @@ int32_t EvalContextIncrElab::eval() {
     if (m_pyeval) {
         DEBUG("Flush");
         m_pyeval->flush();
+    }
+
+    if (ret) {
+        DEBUG("Suspending...");
     }
 
     DEBUG_LEAVE("[%d] eval (%d)", m_eval_s.size(), ret);

@@ -166,6 +166,9 @@ bool EvalContextBase::haveError() const {
     if (m_eval_s.size()) {
         DEBUG("Get level %d", m_eval_s.size());
         ret = m_eval_s.back()->haveError();
+        if (ret) {
+            DEBUG("Error: %s", m_eval_s.back()->getError().c_str());
+        }
     } else {
         DEBUG("Get top-level");
         ret = m_error;

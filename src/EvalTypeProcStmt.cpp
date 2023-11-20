@@ -86,7 +86,7 @@ IEval *EvalTypeProcStmt::clone() {
 }
 
 void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
-    DEBUG_ENTER("visitTYpeProcStmtAssign");
+    DEBUG_ENTER("visitTypeProcStmtAssign idx=%d", m_idx);
     switch (m_idx) {
         case 0: {
             m_idx = 1;
@@ -94,16 +94,23 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
             clrResult();
 
             if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, s->getRhs()).eval()) {
+                DEBUG("Suspending due to EvalTypeExpr");
                 break;
             }
         }
         case 1: {
+            m_idx = 2;
+
+            DEBUG("pre-GetLval: haveResult: %d", haveResult());
+
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
             vsc::dm::ValRef lval(TaskEvalGetLval(
                     m_thread->getDebugMgr(), 
                     ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)
                 ).eval(s->getLhs()));
+
+            DEBUG("post-GetLval: haveResult: %d", haveResult());
 
             if (!lval.valid()) {
                 setError("null lval");
@@ -131,13 +138,17 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                 } break;
                 default: FATAL("unsupported assign op %d", s->op());
             }
+
+            DEBUG("Ready");
         }
         case 2: {
+            DEBUG("setVoidResult");
             setVoidResult();
+            DEBUG("haveResult: %d", haveResult());
         }
     }
 
-    DEBUG_LEAVE("visitTYpeProcStmtAssign");
+    DEBUG_LEAVE("visitTypeProcStmtAssign");
 }
 
 void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {

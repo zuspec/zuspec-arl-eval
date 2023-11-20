@@ -404,8 +404,8 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
 
         case 2: {
             // Wait for a response
-            DEBUG_LEAVE("callFuncReq");
-            setResult(m_thread->getResult());
+            DEBUG_LEAVE("callFuncReq haveResult=%d", haveResult());
+//            setResult(m_thread->getResult());
 
             if (m_isreg_res.func
                 && !m_isreg_res.is_write

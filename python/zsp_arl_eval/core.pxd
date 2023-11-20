@@ -63,6 +63,10 @@ cdef class EvalContext(object):
 
     cpdef getTargetFunctions(self)
 
+    cpdef bool haveError(self)
+
+    cpdef str getError(self)
+
     cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width)
 
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v)

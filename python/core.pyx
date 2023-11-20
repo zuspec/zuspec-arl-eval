@@ -188,6 +188,12 @@ cdef class EvalContext(object):
                 self._hndl.getTargetFunctions().at(i), False))
         return ret
 
+    cpdef bool haveError(self):
+        return self._hndl.haveError()
+
+    cpdef str getError(self):
+        return self._hndl.getError().decode()
+
     cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width):
         cdef vsc.ValRefInt ret = vsc.ValRefInt()
         ret.val = self._hndl.mkValRefInt(value, is_signed, width)
