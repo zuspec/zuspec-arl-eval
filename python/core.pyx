@@ -21,7 +21,7 @@ import ctypes
 import enum
 from libc.stdint cimport intptr_t
 from libcpp cimport bool
-from libcpp.cast cimport dynamic_cast, static_cast, const_cast
+from libcpp.cast cimport dynamic_cast, static_cast, const_cast, reinterpret_cast
 from libcpp.vector cimport vector as cpp_vector
 from enum import IntEnum
 cimport zsp_arl_dm.core as arl_dm
@@ -193,6 +193,13 @@ cdef class EvalContext(object):
 
     cpdef str getError(self):
         return self._hndl.getError().decode()
+
+    cpdef bool addPyModule(self, str name, object mod):
+        self._hndl.addPyModule(
+            name.encode(),
+            reinterpret_cast[pyapi_decl.PyEvalObjP](<cpy_ref.PyObject *>(mod))
+        )
+        pass
 
     cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width):
         cdef vsc.ValRefInt ret = vsc.ValRefInt()

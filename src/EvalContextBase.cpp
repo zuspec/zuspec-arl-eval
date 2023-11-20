@@ -125,6 +125,22 @@ pyapi::IPyEval *EvalContextBase::getPyEval() {
     return m_pyeval;
 }
 
+bool EvalContextBase::addPyModule(
+        const std::string       &name,
+        pyapi::PyEvalObj        *mod) {
+    std::unordered_map<dm::IPyImport *, pyapi::PyEvalObj *>::const_iterator it;
+
+    arl::dm::IPyImport *imp = m_ctxt->findPyImport(name);
+
+    if (m_module_m.find(imp) == m_module_m.end()) {
+        m_pyeval->INCREF(mod);
+        m_module_m.insert({imp, mod});
+        return true;
+    } else {
+        return false;
+    }
+}
+
 dm::IDataTypeFunction *EvalContextBase::getFunction(EvalContextFunc func) {
     return m_functions[(int)func];
 }
@@ -263,13 +279,22 @@ bool EvalContextBase::initPython() {
     for (std::vector<dm::IPyImportUP>::const_iterator
         it=m_ctxt->getPyImports().begin();
         it!=m_ctxt->getPyImports().end(); it++) {
-        DEBUG("Loading Python module: %s", (*it)->path().c_str());
-        pyapi::PyEvalObj *m = m_pyeval->importModule(
-            (*it)->path());
-        DEBUG("Result: %p", m);
+        if (m_module_m.find(it->get()) != m_module_m.end()) {
+            DEBUG("Module %s has already been loaded", (*it)->path().c_str());
+        } else {
+            DEBUG("Loading Python module: %s", (*it)->path().c_str());
+            pyapi::PyEvalObj *m = m_pyeval->importModule((*it)->path());
+            DEBUG("Result: %p", m);
 
-        if (m) {
-            m_module_m.insert({it->get(), m});
+            if (m) {
+                m_module_m.insert({it->get(), m});
+            } else {
+                char tmp[1024];
+                snprintf(tmp, sizeof(tmp), "Failed to load Python module %s",
+                    (*it)->path().c_str());
+                setError(tmp);
+                break;
+            }
         }
     }
     DEBUG_LEAVE("initPython");

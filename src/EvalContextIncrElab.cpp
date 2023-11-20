@@ -127,6 +127,11 @@ int32_t EvalContextIncrElab::eval() {
 
         initPython();
 
+        if (haveError()) {
+            ret = true;
+            goto leaving;
+        }
+
         if (!m_pss_top_is_init) {
             initCompTree();
         }
@@ -193,6 +198,7 @@ int32_t EvalContextIncrElab::eval() {
         }
     }
 
+leaving:
     if (m_pyeval) {
         DEBUG("Flush");
         m_pyeval->flush();

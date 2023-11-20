@@ -100,6 +100,10 @@ public:
 
     virtual pyapi::IPyEval *getPyEval() override;
 
+    virtual bool addPyModule(
+        const std::string       &name,
+        pyapi::PyEvalObj        *mod) override;
+
     virtual dmgr::IDebugMgr *getDebugMgr() const override {
         return m_dmgr;
     }

@@ -64,6 +64,8 @@ public:
 
     virtual void visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *e) override;
 
+    virtual void visitTypeExprPyImportRef(dm::ITypeExprPyImportRef *t) override;
+
     virtual void visitTypeExprPythonFieldRef(dm::ITypeExprPythonFieldRef *t) override;
 
     virtual void visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *t) override;

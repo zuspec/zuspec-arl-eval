@@ -127,6 +127,10 @@ public:
 
     virtual pyapi::IPyEval *getPyEval() = 0;
 
+    virtual bool addPyModule(
+        const std::string       &name,
+        pyapi::PyEvalObj        *mod) = 0;
+    
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 
 };

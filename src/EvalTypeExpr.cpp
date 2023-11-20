@@ -488,6 +488,13 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
     DEBUG_LEAVE("visitTypeExprMethodCallStatic idx=%d haveResult=%d", m_idx, haveResult());
 }
 
+void EvalTypeExpr::visitTypeExprPyImportRef(dm::ITypeExprPyImportRef *t) {
+    DEBUG_ENTER("visitTypeExprPyImportRef");
+    pyapi::PyEvalObj *obj = m_ctxt->getPyModule(t->getImport());
+    setResult(m_ctxt->ctxt()->mkValPyObj(obj));
+    DEBUG_LEAVE("visitTypeExprPyImportRef");
+}
+
 void EvalTypeExpr::visitTypeExprPythonFieldRef(dm::ITypeExprPythonFieldRef *t) {
     DEBUG_ENTER("visitTypeExprPythonFieldRef");
     DEBUG("TODO: visitTypeExprPythonFieldRef");
@@ -522,8 +529,14 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
             } else {
                 pyapi::PyEvalObj *obj = m_ctxt->getPyEval()->getAttr(
                     base.getObj(), t->getName());
+                DEBUG("obj=%p", obj);
                 pyapi::PyEvalObj *args = m_ctxt->getPyEval()->mkTuple(0);
-                m_ctxt->getPyEval()->call(obj, args, 0);
+                pyapi::PyEvalObj *ret = m_ctxt->getPyEval()->call(obj, args, 0);
+                DEBUG("ret=%p", ret);
+
+                if (!ret) {
+                    setError("Failed to evaluate Python method");
+                }
             } 
         }
 

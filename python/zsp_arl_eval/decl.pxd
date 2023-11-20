@@ -81,6 +81,7 @@ cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getTargetFunctions() const
         bool haveError() const
         const cpp_string &getError() const
+        bool addPyModule(const cpp_string &, pyapi.PyEvalObj *mod)
 
         vsc.ValRefInt mkValRefInt(int64_t value, bool is_signed, int32_t width)
         # IEvalResult *mkEvalResultVal(vsc.IModelVal *val)

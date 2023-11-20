@@ -13,6 +13,7 @@ from libcpp cimport bool
 cimport vsc_dm.core as vsc
 cimport vsc_dm.decl as vsc_decl
 cimport pyapi_compat_if.core as pyapi
+cimport pyapi_compat_if.decl as pyapi_decl
 
 cdef class Factory(object):
     cdef decl.IFactory      *_hndl
@@ -66,6 +67,8 @@ cdef class EvalContext(object):
     cpdef bool haveError(self)
 
     cpdef str getError(self)
+
+    cpdef bool addPyModule(self, str name, object mod)
 
     cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width)
 
