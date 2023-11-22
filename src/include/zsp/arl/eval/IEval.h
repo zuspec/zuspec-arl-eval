@@ -30,7 +30,8 @@ namespace eval {
 
 class IEval;
 using IEvalUP=vsc::dm::UP<IEval>;
-class IEval {
+class IEval :
+    public virtual IEvalValProvider {
 public:
 
     virtual ~IEval() { }
@@ -48,8 +49,6 @@ public:
     virtual void setIdx(int32_t idx) = 0;
 
     virtual IEval *clone() = 0;
-
-    virtual IEvalValProvider *getValProvider() = 0;
 
     virtual const vsc::dm::ValRef &getResult() const = 0;
 

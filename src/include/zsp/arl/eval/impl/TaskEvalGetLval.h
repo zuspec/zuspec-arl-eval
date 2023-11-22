@@ -60,6 +60,9 @@ public:
             return;
         }
 
+        DEBUG("root_ref_kind=%d offset=%d", 
+            e->getRootRefKind(),
+            e->getRootRefOffset());
         DEBUG("path.size=%d path_idx=%d index=%d",
             e->getPath().size(),
             path_idx,

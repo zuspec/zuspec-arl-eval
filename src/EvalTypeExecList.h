@@ -51,8 +51,6 @@ public:
 	virtual void visitTypeExecProc(dm::ITypeExecProc *e) override;
 
 private:
-    static dmgr::IDebug                     *m_dbg;
-    int32_t                                 m_vp_id;
     const std::vector<dm::ITypeExecUP>      &m_execs;
     uint32_t                                m_idx;
 };

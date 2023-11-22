@@ -1,5 +1,5 @@
 /**
- * EvalTypeActionIncrElab.h
+ * EvalBaseLocals.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,11 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/arl/dm/impl/ValRefAction.h"
-#include "zsp/arl/eval/IEval.h"
 #include "EvalBase.h"
-#include "EvalContextIncrElab.h"
-#include "EvalValProviderStructThread.h"
 
 namespace zsp {
 namespace arl {
@@ -31,24 +27,17 @@ namespace eval {
 
 
 
-class EvalTypeActionIncrElab :
-    public virtual IEval,
-    public virtual EvalBase {
+class EvalBaseLocals : public EvalBase {
 public:
-    EvalTypeActionIncrElab(
-        EvalContextIncrElab             *ctxt,
+    EvalBaseLocals(
+        IEvalContext                    *ctxt,
         IEvalThread                     *thread,
-        const vsc::dm::ValRef           &comp,
-        const vsc::dm::ValRef           &action
-    );
+        int32_t                         vp_id,
+        const vsc::dm::ValRefStruct     &locals);
 
-    EvalTypeActionIncrElab(const EvalTypeActionIncrElab *o);
+    EvalBaseLocals(const EvalBaseLocals *o);
 
-    virtual ~EvalTypeActionIncrElab();
-
-    virtual int32_t eval() override;
-
-    virtual IEval *clone() override;
+    virtual ~EvalBaseLocals();
 
     virtual vsc::dm::ValRef getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
@@ -60,12 +49,8 @@ public:
         int32_t                                 root_offset,
         int32_t                                 val_offset) override;
 
-private:
-    static dmgr::IDebug                 *m_dbg;
-    int32_t                             m_idx;
-    vsc::dm::ValRefStruct               m_comp;
-    dm::ValRefAction                    m_action;
-    EvalValProviderStructThread         m_vp;
+protected:
+    vsc::dm::ValRefStruct               m_locals;
 
 };
 

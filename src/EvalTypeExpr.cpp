@@ -26,6 +26,7 @@
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
+#include "EvalTypeFunction.h"
 
 
 namespace zsp {
@@ -38,16 +39,17 @@ EvalTypeExpr::EvalTypeExpr(
     IEvalThread         *thread,
     int32_t             vp_id,
     vsc::dm::ITypeExpr  *expr) :
-        EvalBase(ctxt, thread), m_vp_id(vp_id),
-        m_expr(expr), m_idx(0), m_subidx(0) {
+        EvalBase(ctxt, thread, vp_id),
+        m_expr(expr), m_params_f(vsc::dm::ValRef()),
+        m_idx(0), m_subidx(0) {
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
 
 EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
-    EvalBase(o), m_vp_id(o->m_vp_id), m_expr(o->m_expr), 
+    EvalBase(o), m_expr(o->m_expr), 
     m_val_lhs(std::move(o->m_val_lhs)),
     m_val_rhs(std::move(o->m_val_rhs)), 
-    m_idx(o->m_idx), m_subidx(o->m_subidx) {
+    m_params_f(o->m_params_f), m_idx(o->m_idx), m_subidx(o->m_subidx) {
 }
 
 EvalTypeExpr::~EvalTypeExpr() {
@@ -256,10 +258,12 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
     switch (e->getRootRefKind()) {
         case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
             DEBUG("Bottom-up scope");
-            IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(0));
-            vsc::dm::ValRef val(frame->getVariable(e->getPath().at(1)));
+            vsc::dm::ValRef val(getImmVal(
+                vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
+                e->getRootRefOffset(),
+                e->getPath().at(0)));
 
-            if (e->getPath().size() > 2) {
+            if (e->getPath().size() > 1) {
                 DEBUG("TODO: stack-local refernece deeper than 2");
             }
 
@@ -432,8 +436,21 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
 
     switch (m_idx) {
         case 0: {
+            if (m_subidx == 0) {
+                if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
+                    !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
+                    // Internally-executed function
+                    m_params_f = m_ctxt->ctxt()->mkValRefStruct(e->getTarget()->getParametersType());
+                }
+            }
+
             if (m_subidx > 0 && haveResult()) {
-                m_params.push_back(vsc::dm::ValRef(moveResult()));
+                // TODO: might 
+                if (m_params_f.valid()) {
+//                    m_params_f.getFieldRef()
+                } else {
+                    m_params.push_back(vsc::dm::ValRef(moveResult()));
+                }
             }
             while (m_subidx < e->getParameters().size()) {
                 EvalTypeExpr evaluator(
@@ -449,7 +466,11 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 } else {
                     if (haveResult()) {
                         fprintf(stdout, "Note: push expr result\n");
-                        m_params.push_back(vsc::dm::ValRef(moveResult()));
+                        if (m_params_f.valid()) {
+
+                        } else {
+                            m_params.push_back(vsc::dm::ValRef(moveResult()));
+                        }
                     }
                 }
             }
@@ -463,12 +484,18 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             clrResult(); // Clear 'safety' result
 
             m_idx = 1;
-            DEBUG_ENTER("callFuncReq");
-            ctxtT<IEvalContextInt>()->callFuncReq(
-                m_thread,
-                e->getTarget(),
-                m_params
-            );
+            if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
+                !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
+                DEBUG("TODO: Running function locally");
+                EvalTypeFunction(m_ctxt, m_thread, m_vp_id, e->getTarget(), m_params_f).eval();
+            } else {
+                DEBUG_ENTER("Context: callFuncReq");
+                ctxtT<IEvalContextInt>()->callFuncReq(
+                    m_thread,
+                    e->getTarget(),
+                    m_params
+                );
+            }
 
             if (!haveResult()) {
                 DEBUG("No result yet ... suspend");
@@ -557,7 +584,6 @@ void EvalTypeExpr::visitTypeExprPythonModuleRef(dm::ITypeExprPythonModuleRef *t)
     DEBUG_LEAVE("visitTypeExprPythonModuleRef");
 }
 
-dmgr::IDebug *EvalTypeExpr::m_dbg = 0;
 
 }
 }

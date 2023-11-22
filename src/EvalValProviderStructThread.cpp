@@ -52,7 +52,7 @@ void EvalValProviderStructThread::setScope(const vsc::dm::ValRefStruct &scope) {
 vsc::dm::ValRef EvalValProviderStructThread::getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
-        int32_t                                 val_offset) const {
+        int32_t                                 val_offset) {
     vsc::dm::ValRef var;
 
     switch (root_kind) {

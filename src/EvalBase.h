@@ -35,7 +35,8 @@ public:
 
     EvalBase(
         IEvalContext            *ctxt,
-        IEvalThread             *thread
+        IEvalThread             *thread,
+        int32_t                 vp_id=-1
     );
 
     EvalBase(IEvalThread        *thread);
@@ -54,7 +55,15 @@ public:
         m_entry_idx = idx;
     }
     
-    virtual IEvalValProvider *getValProvider() override;
+    virtual vsc::dm::ValRef getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) override;
+
+    virtual vsc::dm::ValRef getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) override;
 
     virtual const vsc::dm::ValRef &getResult() const override {
         return m_result;
@@ -85,10 +94,12 @@ public:
     }
 
 protected:
+    dmgr::IDebug                *m_dbg;
     bool                        m_initial;
     int32_t                     m_entry_idx;
     IEvalContext                *m_ctxt;
     IEvalThread                 *m_thread;
+    int32_t                     m_vp_id;
     vsc::dm::ValRef             m_result;
     bool                        m_error;
     std::string                 m_errMsg;

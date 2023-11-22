@@ -18,7 +18,9 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/ValRefInt.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 #include "EvalBase.h"
 
 
@@ -28,30 +30,29 @@ namespace eval {
 
 EvalBase::EvalBase(
     IEvalContext            *ctxt,
-    IEvalThread             *thread) :
+    IEvalThread             *thread,
+    int32_t                 vp_id) :
+        m_dbg(0),
         m_initial(true), m_entry_idx(-1), m_ctxt(ctxt), m_thread(thread),
-        m_error(false) {
+        m_vp_id(vp_id), m_error(false) {
 
 }
 
 EvalBase::EvalBase(IEvalThread *thread) :
-        m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread),
-        m_error(false) {
+        m_dbg(0), m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread),
+        m_vp_id(-1), m_error(false) {
 }
 
 EvalBase::EvalBase(const EvalBase *o) :
+    m_dbg(o->m_dbg),
     m_initial(false), m_entry_idx(o->m_entry_idx), m_ctxt(o->m_ctxt), 
-    m_thread(o->m_thread),
+    m_thread(o->m_thread), m_vp_id(o->m_vp_id),
     m_error(o->m_error), m_errMsg(o->m_errMsg) {
 
 }
 
 EvalBase::~EvalBase() {
 
-}
-
-IEvalValProvider *EvalBase::getValProvider() {
-    return 0;
 }
 
 int32_t EvalBase::eval(const std::function<void()> &body) {
@@ -69,6 +70,68 @@ int32_t EvalBase::eval(const std::function<void()> &body) {
     }
 
     return !haveResult();
+}
+
+vsc::dm::ValRef EvalBase::getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
+    if (m_vp_id != -1) {
+        return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getImmVal(
+            root_kind,
+            root_offset-1,
+            val_offset);
+    } else {
+        vsc::dm::ValRef ret;
+        switch (root_kind) {
+            case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
+                if (root_offset > 0) {
+                    // Go up a level and look for the value there
+                    ret = ctxtT<IEvalContextInt>()->getValProvider(getIdx()-1)->getImmVal(
+                        root_kind,
+                        root_offset-1,
+                        val_offset);
+                } else {
+                    ERROR("no value provider for bottom-up");
+                }
+            } break;
+            case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
+                ERROR("no value provider for top-down");
+            } break;
+        }
+        return ret;
+    }
+}
+
+vsc::dm::ValRef EvalBase::getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
+    if (m_vp_id != -1) {
+        return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(
+            root_kind,
+            root_offset-1,
+            val_offset);
+    } else {
+        vsc::dm::ValRef ret;
+        switch (root_kind) {
+            case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
+                if (root_offset > 0) {
+                    // Go up a level and look for the value there
+                    ret = ctxtT<IEvalContextInt>()->getValProvider(getIdx()-1)->getImmVal(
+                        root_kind,
+                        root_offset-1,
+                        val_offset);
+                } else {
+                    fprintf(stdout, "Error: no value provider for bottom-up\n");
+                }
+            } break;
+            case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
+                fprintf(stdout, "Error: no value provider for top-down\n");
+            } break;
+        }
+        return ret;
+    }
 }
 
 void EvalBase::clrResult(bool clr_err) {

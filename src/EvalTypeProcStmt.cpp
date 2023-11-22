@@ -124,6 +124,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
 
             fprintf(stdout, "TODO: Check of result kind\n");
 
+#ifdef UNDEFINED
             switch (s->op()) {
                 case dm::TypeProcStmtAssignOp::Eq: {
                     vsc::dm::ValRefInt val_i(lval);
@@ -138,6 +139,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                 } break;
                 default: FATAL("unsupported assign op %d", s->op());
             }
+#endif
 
             DEBUG("Ready");
         }

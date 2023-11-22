@@ -62,9 +62,18 @@ IEval *TaskEvalComponentExecInit::clone() {
     return new TaskEvalComponentExecInit(*this);
 }
 
-IEvalValProvider *TaskEvalComponentExecInit::getValProvider() {
-    DEBUG("getValProvider");
-    return &m_vp;
+vsc::dm::ValRef TaskEvalComponentExecInit::getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
+    return m_vp.getImmVal(root_kind, root_offset, val_offset);
+}
+
+vsc::dm::ValRef TaskEvalComponentExecInit::getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
+    return m_vp.getMutVal(root_kind, root_offset, val_offset);
 }
 
 int32_t TaskEvalComponentExecInit::eval() {

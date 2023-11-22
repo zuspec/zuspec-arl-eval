@@ -180,7 +180,15 @@ public:
 
     virtual IEvalValProvider *getValProvider(int32_t id) override;
 
-    virtual IEvalValProvider *getValProvider() override;
+    virtual vsc::dm::ValRef getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) override;
+
+    virtual vsc::dm::ValRef getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) override;
 
 protected:
 

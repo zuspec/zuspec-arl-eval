@@ -53,10 +53,6 @@ public:
 
     virtual IEval *clone() override;
 
-    virtual IEvalValProvider *getValProvider() override {
-        return &m_vp;
-    }
-
 	virtual void visitModelActivityScope(dm::IModelActivityScope *a) override;
 
 	virtual void visitModelActivityTraverse(dm::IModelActivityTraverse *a) override;

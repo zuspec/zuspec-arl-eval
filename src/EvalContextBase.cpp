@@ -250,9 +250,12 @@ void EvalContextBase::callFuncReq(
             }
         }
         // Internally-implemented function
-    } else {
+    } else if (func_t->hasFlags(dm::DataTypeFunctionFlags::Import)) {
         // Delegate to backend
         getBackend()->callFuncReq(thread, func_t, params);
+    } else {
+        // Internal implementation
+        ERROR("Implement internal function evaluation. Should not have made it here");
     }
 
     DEBUG_LEAVE("callFuncReq");
@@ -260,18 +263,27 @@ void EvalContextBase::callFuncReq(
 
 IEvalValProvider *EvalContextBase::getValProvider(int32_t id) {
     if (id >= 0 && id < m_eval_s.size()) {
-        return m_eval_s.at(id)->getValProvider();
+        return m_eval_s.at(id).get();
     } else if (id < 0) {
-        return getValProvider();
+        return this;
     } else {
         FATAL("Out-of-bounds value request %d", id);
         return 0;
     }
 }
 
-IEvalValProvider *EvalContextBase::getValProvider() {
+vsc::dm::ValRef EvalContextBase::getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
     FATAL("Root doesn't provide value");
-    return 0;
+}
+
+vsc::dm::ValRef EvalContextBase::getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) {
+    FATAL("Root doesn't provide value");
 }
 
 bool EvalContextBase::initPython() {
