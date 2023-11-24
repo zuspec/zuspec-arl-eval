@@ -143,6 +143,7 @@ void EvalBase::clrResult(bool clr_err) {
 }
 
 void EvalBase::setResult(const vsc::dm::ValRef &r) {
+    DEBUG("setResult (valid=%d)", r.valid());
     m_result.set(r);
 }
 
@@ -167,6 +168,11 @@ bool EvalBase::haveError() const {
 
 const std::string &EvalBase::getError() const {
     return m_errMsg;
+}
+
+bool EvalBase::haveResult() const {
+    DEBUG("haveResult: %d", m_result.valid());
+    return m_result.valid();
 }
 
 }

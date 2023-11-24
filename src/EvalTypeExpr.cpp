@@ -40,7 +40,9 @@ EvalTypeExpr::EvalTypeExpr(
     int32_t             vp_id,
     vsc::dm::ITypeExpr  *expr) :
         EvalBase(ctxt, thread, vp_id),
-        m_expr(expr), m_params_f(vsc::dm::ValRef()),
+        m_expr(expr), 
+        m_builtin_i(0),
+        m_params_f(vsc::dm::ValRef()),
         m_idx(0), m_subidx(0) {
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
@@ -49,6 +51,7 @@ EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
     EvalBase(o), m_expr(o->m_expr), 
     m_val_lhs(std::move(o->m_val_lhs)),
     m_val_rhs(std::move(o->m_val_rhs)), 
+    m_builtin_i(o->m_builtin_i),
     m_params_f(o->m_params_f), m_idx(o->m_idx), m_subidx(o->m_subidx) {
 }
 
@@ -65,7 +68,11 @@ int32_t EvalTypeExpr::eval() {
         setVoidResult();
     }
 
-    m_expr->accept(m_this);
+    if (m_expr) {
+        m_expr->accept(m_this);
+    } else {
+        ERROR("attempting to evaluate a null expression");
+    }
 
     int32_t ret = !haveResult();
 
@@ -437,6 +444,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
     switch (m_idx) {
         case 0: {
             if (m_subidx == 0) {
+                m_builtin_i = ctxtT<IEvalContextInt>()->getBuiltinFuncInfo(e->getTarget());
                 if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
                     !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
                     // Internally-executed function
@@ -484,7 +492,11 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             clrResult(); // Clear 'safety' result
 
             m_idx = 1;
-            if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
+            DEBUG("[%d] Function %s: m_builtin_i=%p", 
+                getIdx(), e->getTarget()->name().c_str(), m_builtin_i);
+            if (m_builtin_i) {
+                m_builtin_i->getImpl()(m_thread, m_func, m_params);
+            } else if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
                 !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
                 DEBUG("TODO: Running function locally");
                 EvalTypeFunction(m_ctxt, m_thread, m_vp_id, e->getTarget(), m_params_f).eval();
@@ -498,7 +510,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             }
 
             if (!haveResult()) {
-                DEBUG("No result yet ... suspend");
+                DEBUG("[%d] No result yet ... suspend", getIdx());
                 break;
             } else {
                 DEBUG("Have a result");

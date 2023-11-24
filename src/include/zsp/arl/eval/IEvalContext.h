@@ -24,6 +24,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "pyapi-compat-if/IPyEval.h"
 #include "vsc/dm/IModelValOp.h"
+#include "zsp/arl/eval/IBuiltinFuncInfo.h"
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalBackend.h"
 #include "zsp/arl/eval/IEvalListener.h"

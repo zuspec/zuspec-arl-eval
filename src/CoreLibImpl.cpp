@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/ValRefStr.h"
 #include "CoreLibImpl.h"
 
 
@@ -36,12 +37,76 @@ CoreLibImpl::~CoreLibImpl() {
 
 }
 
+IBuiltinFuncInfo::FuncT CoreLibImpl::findBuiltin(
+        const std::string           &name) {
+    IBuiltinFuncInfo::FuncT ret;
+
+    if (name.substr(0,9) == "std_pkg::") {
+        std::string leaf = name.substr(9);
+        if (leaf == "print") {
+            ret = std::bind(
+                &CoreLibImpl::Print, 
+                this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        }
+    } else if (name.substr(0,14) == "addr_reg_pkg::") {
+        std::string leaf = name.substr(14);
+        if (leaf == "addr_value") {
+            ret = std::bind(
+                &CoreLibImpl::AddrValue, 
+                this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        } else if (leaf == "make_handle_from_claim") {
+            ret = std::bind(
+                &CoreLibImpl::MakeHandleFromClaim, 
+                this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        } else if (leaf == "make_handle_from_handle") {
+            ret = std::bind(
+                &CoreLibImpl::MakeHandleFromHandle, 
+                this,
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        }
+    } else if (name.substr(0,14) == "executor_pkg::") {
+
+    }
+
+    return ret;
+}
+
 void CoreLibImpl::Print(
+        IEvalThread                         *thread,
+            dm::IDataTypeFunction           *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("Print");
+    vsc::dm::ValRefStr fmt(params.at(0));
+    DEBUG("params[0]=%s", fmt.val());
+    thread->setVoidResult();
+    DEBUG_LEAVE("Print");
+}
+
+void CoreLibImpl::AddrValue(
         IEvalThread                         *thread,
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
-    DEBUG_ENTER("Print");
-    DEBUG_LEAVE("Print");
+    DEBUG_ENTER("AddrValue");
+    DEBUG_LEAVE("AddrValue");
+}
+
+void CoreLibImpl::MakeHandleFromClaim(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("MakeHandleFromClaim");
+    DEBUG_LEAVE("MakeHandleFromClaim");
+}
+
+void CoreLibImpl::MakeHandleFromHandle(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("MakeHandleFromHandle");
+    DEBUG_LEAVE("MakeHandleFromHandle");
 }
 
 void CoreLibImpl::RegGroupSetHandle(

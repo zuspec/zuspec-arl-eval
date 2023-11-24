@@ -1,5 +1,5 @@
 /**
- * IEvalContextInt.h
+ * IBuiltinFuncInfo.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,35 +19,30 @@
  *     Author: 
  */
 #pragma once
+#include <functional>
 #include <vector>
-#include "zsp/arl/eval/IBuiltinFuncInfo.h"
+#include "vsc/dm/impl/UP.h"
+#include "vsc/dm/impl/ValRef.h"
 #include "zsp/arl/eval/IEvalThread.h"
-#include "zsp/arl/eval/IEvalThreadId.h"
-#include "zsp/arl/dm/IDataTypeFunction.h"
-#include "zsp/arl/dm/IModelFieldAction.h"
-#include "zsp/arl/eval/IEvalContext.h"
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
 
-
-class IEvalContextInt : public virtual IEvalContext {
+class IBuiltinFuncInfo;
+using IBuiltinFuncInfoUP=vsc::dm::UP<IBuiltinFuncInfo>;
+class IBuiltinFuncInfo {
 public:
 
-    virtual ~IEvalContextInt() { }
+    using FuncT=std::function<void(
+        IEvalThread *,
+        dm::IDataTypeFunction *,
+        const std::vector<vsc::dm::ValRef> &)>;
 
-    virtual void callFuncReq(
-            IEvalThread                         *thread,
-            dm::IDataTypeFunction               *func_t,
-            const std::vector<vsc::dm::ValRef>  &params
-    ) = 0;
+    virtual ~IBuiltinFuncInfo() { }
 
-    virtual IEvalValProvider *getValProvider(int32_t id) = 0;
-
-    virtual IBuiltinFuncInfo *getBuiltinFuncInfo(
-        dm::IDataTypeFunction *func) = 0;
+    virtual const FuncT &getImpl() const = 0;
 
 };
 

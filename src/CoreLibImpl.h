@@ -21,6 +21,7 @@
 #pragma once
 #include "dmgr/IDebugMgr.h"
 #include "zsp/arl/eval/IEvalContext.h"
+#include "zsp/arl/eval/IBuiltinFuncInfo.h"
 
 namespace zsp {
 namespace arl {
@@ -34,10 +35,30 @@ public:
 
     virtual ~CoreLibImpl();
 
+    IBuiltinFuncInfo::FuncT findBuiltin(const std::string &name);
+
     virtual void Print(
         IEvalThread                         *thread,
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params);
+
+    // addr_reg_pkg methods
+    
+    virtual void AddrValue(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
+    virtual void MakeHandleFromClaim(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
+    virtual void MakeHandleFromHandle(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
 
     virtual void RegGroupSetHandle(
         IEvalThread                         *thread,

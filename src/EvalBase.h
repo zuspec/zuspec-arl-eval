@@ -85,9 +85,7 @@ public:
 
     virtual const std::string &getError() const override;
 
-    virtual bool haveResult() const override {
-        return m_result.valid();
-    }
+    virtual bool haveResult() const override;
 
     template <class T> T *ctxtT() const {
         return dynamic_cast<T *>(m_ctxt);

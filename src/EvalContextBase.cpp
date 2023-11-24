@@ -18,7 +18,9 @@
  * Created on:
  *     Author:
  */
+#include <algorithm>
 #include "dmgr/impl/DebugMacros.h"
+#include "BuiltinFuncInfo.h"
 #include "EvalContextBase.h"
 #include "EvalStackFrame.h"
 
@@ -39,32 +41,60 @@ EvalContextBase::EvalContextBase(
          m_solvers_f(solvers_f), m_ctxt(ctxt),
         m_randstate(randstate), m_pyeval(pyeval),
         m_error(false), m_backend(backend), m_initial(true) {
-    const std::vector<std::string> functions = {
-        "reg_addr_pkg::write8", "reg_addr_pkg::write16", 
-        "reg_addr_pkg::write32", "reg_addr_pkg::write64",
-        "reg_addr_pkg::read8", "reg_addr_pkg::read16", 
-        "reg_addr_pkg::read32", "reg_addr_pkg::read64",
-        "pss::core::reg_write", "pss::core::reg_write_masked",
-        "pss::core::reg_write_val", "pss::core::reg_write_val_masked",
-        "pss::core::reg_read", "pss::core::reg_read_val",
-        "pss::core::reg_group::set_handle",
-        "std_pkg::print"
-    };
-
-    for (EvalContextFunc f=(EvalContextFunc)0; f!=EvalContextFunc::NumFunctions; 
-        f=(EvalContextFunc)((int)f+1)) {
-        m_functions[(int)f] = ctxt->findDataTypeFunction(functions[(int)f]);
-    }
-    m_func_impl.insert({m_functions[(int)EvalContextFunc::RegGroupSetHandle], std::bind(
-        &CoreLibImpl::RegGroupSetHandle, &m_corelib, 
-        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)});
-    m_func_impl.insert({m_functions[(int)EvalContextFunc::Print], std::bind(
-        &CoreLibImpl::Print, &m_corelib, 
-        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)});
+        
+    // m_func_impl.insert({m_functions[(int)EvalContextFunc::RegGroupSetHandle], std::bind(
+    //     &CoreLibImpl::RegGroupSetHandle, &m_corelib, 
+    //     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)});
 }
 
 EvalContextBase::~EvalContextBase() {
 
+}
+
+void EvalContextBase::init() {
+    /**
+     * Built-in method handling. Built-in methods are 'core' methods that
+     * are prototyped in PSS -- generally by the standard.
+     * 
+     * There are two categories/classes of built-in methods:
+     * - Methods that are called by user code, but not by the tool
+     * - Methods that need to be called by the tool
+     * 
+     */
+    const std::vector<std::string> tool_call_funcs = {
+        "addr_reg_pkg::write8", "addr_reg_pkg::write16", 
+        "addr_reg_pkg::write32", "addr_reg_pkg::write64",
+        "addr_reg_pkg::read8", "addr_reg_pkg::read16", 
+        "addr_reg_pkg::read32", "addr_reg_pkg::read64"
+    };
+    memset(m_functions, 0, sizeof(m_functions));
+
+    for (std::vector<dm::IDataTypeFunction *>::const_iterator
+        it=m_ctxt->getDataTypeFunctions().begin();
+        it!=m_ctxt->getDataTypeFunctions().end(); it++) {
+        IBuiltinFuncInfo::FuncT builtin;
+        std::vector<std::string>::const_iterator tool_it;
+
+        if ((builtin=m_corelib.findBuiltin((*it)->name()))) {
+            // Has a builtin implementation
+            DEBUG("Found built-in %s", (*it)->name().c_str());
+            IBuiltinFuncInfo *info = new BuiltinFuncInfo(builtin);
+            m_func_info_m.insert({*it, info});
+            m_func_info_l.push_back(IBuiltinFuncInfoUP(info));
+        } else if ((tool_it=std::find(
+            tool_call_funcs.begin(), 
+            tool_call_funcs.end(), (*it)->name())) != tool_call_funcs.end()) {
+            // Need to store this function for later retrieval
+            DEBUG("Found tool-called %s", (*it)->name().c_str());
+            m_functions[(tool_it-tool_call_funcs.begin())] = *it;
+        }
+    }
+
+    for (uint32_t i=0; i<tool_call_funcs.size(); i++) {
+        if (!m_functions[i]) {
+            ERROR("Failed to find tool-called function %s", tool_call_funcs.at(i).c_str());
+        }
+    }
 }
 
 void EvalContextBase::pushEval(IEval *e, bool owned) {
@@ -152,7 +182,7 @@ void EvalContextBase::setResult(const vsc::dm::ValRef &r) {
     } else {
         m_result.set(r);
     }
-    DEBUG_LEAVE("setResult");
+    DEBUG_LEAVE("setResult have=%d", haveResult());
 }
 
 void EvalContextBase::setVoidResult() {
@@ -202,6 +232,16 @@ const std::string &EvalContextBase::getError() const {
     }
 }
 
+bool EvalContextBase::haveResult() const {
+    bool ret = false;
+    DEBUG_ENTER("haveResult sz=%d", m_eval_s.size());
+    if (m_eval_s.size()) {
+        ret = m_eval_s.back()->haveResult();
+    }
+    DEBUG_LEAVE("haveResult %d", ret);
+    return ret;
+}
+
 IEvalStackFrame *EvalContextBase::stackFrame(int32_t idx) {
     DEBUG_ENTER("stackFrame: idx=%d m_callstack.size=%d", idx, m_callstack.size());
     if (idx < m_callstack.size()) {
@@ -234,28 +274,18 @@ void EvalContextBase::callFuncReq(
             dm::IDataTypeFunction               *func_t,
             const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("callFuncReq");
-    if (func_t->hasFlags(dm::DataTypeFunctionFlags::Core)) {
-        for (uint32_t i=0; i<(int)EvalContextFunc::NumFunctions; i++) {
-            if (m_functions[i] == func_t) {
-                std::unordered_map<dm::IDataTypeFunction *, FuncT>::const_iterator it;
-                it = m_func_impl.find(func_t);
+    BuiltinFuncInfoM::const_iterator it = m_func_info_m.find(func_t);
 
-                if (it != m_func_impl.end()) {
-                    DEBUG("Calling internal function %s", func_t->name().c_str());
-                    it->second(thread, func_t, params);
-                } else {
-                    DEBUG("No implementation for %s", func_t->name().c_str());
-                    thread->setVoidResult();
-                }
-            }
-        }
-        // Internally-implemented function
+    if (it != m_func_info_m.end()) {
+        // Invoke
+        it->second->getImpl()(thread, func_t, params);
     } else if (func_t->hasFlags(dm::DataTypeFunctionFlags::Import)) {
         // Delegate to backend
         getBackend()->callFuncReq(thread, func_t, params);
+        // 
     } else {
-        // Internal implementation
         ERROR("Implement internal function evaluation. Should not have made it here");
+        thread->setVoidResult();
     }
 
     DEBUG_LEAVE("callFuncReq");
@@ -268,6 +298,16 @@ IEvalValProvider *EvalContextBase::getValProvider(int32_t id) {
         return this;
     } else {
         FATAL("Out-of-bounds value request %d", id);
+        return 0;
+    }
+}
+
+IBuiltinFuncInfo *EvalContextBase::getBuiltinFuncInfo(
+        dm::IDataTypeFunction *func) {
+    BuiltinFuncInfoM::const_iterator it = m_func_info_m.find(func);
+    if (it != m_func_info_m.end()) {
+        return it->second;
+    } else {
         return 0;
     }
 }

@@ -47,6 +47,8 @@ public:
 
     virtual ~EvalContextBase();
 
+    virtual void init();
+
     virtual dm::IContext *ctxt() const { return m_ctxt; }
 
     virtual dm::IModelFieldComponentRoot *getRootComponent() override {
@@ -128,7 +130,7 @@ public:
 
     virtual const std::string &getError() const override;
 
-    virtual bool haveResult() const override { return false; }
+    virtual bool haveResult() const override;
 
     virtual IEvalThreadId *getThreadId() const override { 
         return m_thread_id.get();
@@ -180,6 +182,9 @@ public:
 
     virtual IEvalValProvider *getValProvider(int32_t id) override;
 
+    virtual IBuiltinFuncInfo *getBuiltinFuncInfo(
+        dm::IDataTypeFunction *func) override;
+
     virtual vsc::dm::ValRef getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
@@ -199,6 +204,8 @@ protected:
         IEvalThread *,
         dm::IDataTypeFunction *,
         const std::vector<vsc::dm::ValRef> &)>;
+
+    using BuiltinFuncInfoM=std::unordered_map<dm::IDataTypeFunction *, IBuiltinFuncInfo *>;
 
 protected:
     static dmgr::IDebug                     *m_dbg;
@@ -223,6 +230,8 @@ protected:
     std::string                             m_errMsg;
     IEvalThreadIdUP                         m_thread_id;
     std::unordered_map<dm::IPyImport *, pyapi::PyEvalObj *>     m_module_m;
+    BuiltinFuncInfoM                        m_func_info_m;
+    std::vector<IBuiltinFuncInfoUP>         m_func_info_l;
 
 };
 

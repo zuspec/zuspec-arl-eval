@@ -46,6 +46,8 @@ EvalContextIncrElab::EvalContextIncrElab(
         m_pss_top_is_init(false), m_root_action(root_action) {
     DEBUG_INIT("zsp::arl::eval::EvalContextIncrElab", dmgr);
 
+    init();
+
     if (!m_pss_top) {
         buildCompTree();
     }
@@ -62,11 +64,6 @@ EvalContextIncrElab::~EvalContextIncrElab() {
 
 int32_t EvalContextIncrElab::buildCompTree() {
     DEBUG_ENTER("buildCompTree");
-    std::set<std::string> ignore = {
-        "make_handle_from_claim",
-        "make_handle_from_handle",
-        "addr_value"
-    };
     dm::ModelBuildContext build_ctxt(m_ctxt);
 
     // Build component tree
@@ -80,7 +77,9 @@ int32_t EvalContextIncrElab::buildCompTree() {
     for (std::vector<dm::IDataTypeFunction *>::const_iterator
         it=m_ctxt->getDataTypeFunctions().begin();
         it!=m_ctxt->getDataTypeFunctions().end(); it++) {
-        if (ignore.find((*it)->name()) == ignore.end()) {
+        IBuiltinFuncInfo *info = getBuiltinFuncInfo(*it);
+        
+        if (!info) {
             bool is_solve = false;
             DEBUG("Process Function %s", (*it)->name().c_str());
             for (std::vector<dm::IDataTypeFunctionImportUP>::const_iterator
