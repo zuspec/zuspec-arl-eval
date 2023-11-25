@@ -79,6 +79,11 @@ void EvalBackendClosure::callFuncReq(
     EvalBackendClosure_callFuncReq(m_peer, thread, func_t, params);
 }
 
+void EvalBackendClosure::emitMessage(
+            const std::string                   &msg) {
+    EvalBackendClosure_emitMessage(m_peer, msg);
+}
+
 }
 }
 }

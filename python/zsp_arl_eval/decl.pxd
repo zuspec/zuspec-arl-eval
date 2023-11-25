@@ -73,6 +73,8 @@ cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":
             arl_dm.IDataTypeFunction        *func_t,
             const cpp_vector[vsc.ValRef]    &params)
 
+        void emitMessage(const cpp_string &msg)
+
 cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
     cdef cppclass IEvalContext(IEval):
         IEvalBackend *getBackend() const

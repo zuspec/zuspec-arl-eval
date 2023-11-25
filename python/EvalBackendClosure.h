@@ -59,6 +59,10 @@ public:
             const std::vector<vsc::dm::ValRef>  &params
     ) override;
 
+    virtual void emitMessage(
+            const std::string                   &msg
+    ) override;
+
 private:
     PyObject                            *m_peer;
 };

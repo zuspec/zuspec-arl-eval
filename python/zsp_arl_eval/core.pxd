@@ -10,6 +10,7 @@ from zsp_arl_eval cimport decl
 
 from libc.stdint cimport int32_t
 from libcpp cimport bool
+from libcpp.string cimport string as cpp_string
 cimport vsc_dm.core as vsc
 cimport vsc_dm.decl as vsc_decl
 cimport pyapi_compat_if.core as pyapi

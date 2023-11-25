@@ -130,6 +130,9 @@ cdef class EvalBackend(object):
     def callFuncReq(self, thread, func_t, params):
         pass
 
+    def emitMessage(self, str msg):
+        pass
+
 cdef class Eval(object):
 
     def __dealloc__(self):
@@ -306,6 +309,11 @@ cdef public void EvalBackendClosure_callFuncReq(
             params_l)
     except Exception as e:
         print("Exception: %s" % str(e))
+
+cdef public void EvalBackendClosure_emitMessage(
+    obj,
+    const cpp_string                    &msg) with gil:
+    obj.emitMessage(msg.decode())
 
 cdef class EvalThread(Eval):
 

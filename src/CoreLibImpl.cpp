@@ -21,6 +21,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/ValRefStr.h"
 #include "CoreLibImpl.h"
+#include "StringFormatter.h"
 
 
 namespace zsp {
@@ -78,9 +79,13 @@ void CoreLibImpl::Print(
         IEvalThread                         *thread,
             dm::IDataTypeFunction           *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
+    std::string fmt = vsc::dm::ValRefStr(params.at(0)).val_s();
     DEBUG_ENTER("Print");
-    vsc::dm::ValRefStr fmt(params.at(0));
-    DEBUG("params[0]=%s", fmt.val());
+    const std::string &msg = StringFormatter(m_ctxt->getDebugMgr()).format(
+        fmt,
+        params,
+        1);
+    m_ctxt->getBackend()->emitMessage(msg);
     thread->setVoidResult();
     DEBUG_LEAVE("Print");
 }
