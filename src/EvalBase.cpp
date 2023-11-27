@@ -76,62 +76,46 @@ vsc::dm::ValRef EvalBase::getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
         int32_t                                 val_offset) {
+    DEBUG_ENTER("getImmVal kind=%d root=%d val=%d", root_kind, root_offset, val_offset);
+    vsc::dm::ValRef ret;
     if (m_vp_id != -1) {
-        return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getImmVal(
+        DEBUG("Delegating to level %d", m_vp_id);
+        ret = ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(
             root_kind,
-            root_offset-1,
+            root_offset,
             val_offset);
     } else {
-        vsc::dm::ValRef ret;
-        switch (root_kind) {
-            case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
-                if (root_offset > 0) {
-                    // Go up a level and look for the value there
-                    ret = ctxtT<IEvalContextInt>()->getValProvider(getIdx()-1)->getImmVal(
-                        root_kind,
-                        root_offset-1,
-                        val_offset);
-                } else {
-                    ERROR("no value provider for bottom-up");
-                }
-            } break;
-            case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
-                ERROR("no value provider for top-down");
-            } break;
-        }
-        return ret;
+        ERROR("vp_id is invalid, and this level has no values to provide");
     }
+    DEBUG_LEAVE("getImmVal");
+    return ret;
 }
 
+/**
+ * Base implementation of value accessors assumes that this stage
+ * has no ability to provide values. In proper operation, it should
+ * simply delegate to the designated level without modifying the
+ * specified path.
+ */
 vsc::dm::ValRef EvalBase::getMutVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
         int32_t                                 val_offset) {
+    DEBUG_ENTER("getMutVal kind=%d root_offset=%d val_offset=%d",
+        root_kind, root_offset, val_offset);
+    vsc::dm::ValRef ret;
     if (m_vp_id != -1) {
-        return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(
+        DEBUG("Delegating to level %d", m_vp_id);
+        ret = ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(
             root_kind,
-            root_offset-1,
+            root_offset,
             val_offset);
     } else {
-        vsc::dm::ValRef ret;
-        switch (root_kind) {
-            case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
-                if (root_offset > 0) {
-                    // Go up a level and look for the value there
-                    ret = ctxtT<IEvalContextInt>()->getValProvider(getIdx()-1)->getImmVal(
-                        root_kind,
-                        root_offset-1,
-                        val_offset);
-                } else {
-                    fprintf(stdout, "Error: no value provider for bottom-up\n");
-                }
-            } break;
-            case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
-                fprintf(stdout, "Error: no value provider for top-down\n");
-            } break;
-        }
-        return ret;
+        ERROR("vp_id is invalid, and this level has no values to provide");
     }
+
+    DEBUG_LEAVE("getMutVal");
+    return ret;
 }
 
 void EvalBase::clrResult(bool clr_err) {

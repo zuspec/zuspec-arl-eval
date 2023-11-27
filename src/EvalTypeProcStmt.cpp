@@ -34,14 +34,14 @@ EvalTypeProcStmt::EvalTypeProcStmt(
     IEvalContext            *ctxt,
     IEvalThread             *thread,
     int32_t                 vp_id,
-    dm::ITypeProcStmt       *stmt) : EvalBase(ctxt, thread),
-        m_vp_id(vp_id), m_stmt(stmt), m_idx(0) {
+    dm::ITypeProcStmt       *stmt) : EvalBase(ctxt, thread, vp_id),
+        m_stmt(stmt), m_idx(0) {
     DEBUG_INIT("EvalTypeProcStmt", ctxt->getDebugMgr());
 
 }
 
 EvalTypeProcStmt::EvalTypeProcStmt(const EvalTypeProcStmt *o) :
-    EvalBase(o), m_vp_id(o->m_vp_id), m_stmt(o->m_stmt), m_idx(o->m_idx) {
+    EvalBase(o), m_stmt(o->m_stmt), m_idx(o->m_idx) {
 
 }
 
@@ -106,8 +106,8 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
             vsc::dm::ValRef lval(TaskEvalGetLval(
-                    m_thread->getDebugMgr(), 
-                    ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)
+                    m_thread->getDebugMgr(),
+                    this
                 ).eval(s->getLhs()));
 
             DEBUG("post-GetLval: haveResult: %d", haveResult());
@@ -124,7 +124,6 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
 
             fprintf(stdout, "TODO: Check of result kind\n");
 
-#ifdef UNDEFINED
             switch (s->op()) {
                 case dm::TypeProcStmtAssignOp::Eq: {
                     vsc::dm::ValRefInt val_i(lval);
@@ -132,6 +131,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                     DEBUG("RHS(int): init=%lld", val_i.get_val_s());
                     val_i.set_val(val_r.get_val_u());
                     DEBUG("RHS(int): %lld (lhs=%lld)", val_r.get_val_s(), val_i.get_val_s());
+                    DEBUG("LHS: flags=0x%08x", val_i.flags());
                     /*
                     DEBUG("lval.bits=%d rval.bits=%d", lval->bits(), getResult()->bits());
                     lval->set(getResult());
@@ -139,6 +139,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                 } break;
                 default: FATAL("unsupported assign op %d", s->op());
             }
+#ifdef UNDEFINED
 #endif
 
             DEBUG("Ready");
@@ -226,11 +227,16 @@ void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
     switch (m_idx) {
         case 0: {
             m_idx = 1;
-            EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, s->getExpr());
+            if (s->getExpr()) {
+                EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, s->getExpr());
 
-            if (evaluator.eval()) {
-                clrResult();
-                break;
+                if (evaluator.eval()) {
+                    clrResult();
+                    break;
+                }
+            } else {
+                // TODO: need to do something different here?
+                DEBUG("Void return statement");
             }
         }
 

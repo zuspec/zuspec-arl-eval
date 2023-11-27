@@ -58,7 +58,6 @@ public:
 
 private:
     static dmgr::IDebug             *m_dbg;
-    int32_t                         m_vp_id;
     dm::ITypeProcStmt               *m_stmt;
     uint32_t                        m_idx;
 

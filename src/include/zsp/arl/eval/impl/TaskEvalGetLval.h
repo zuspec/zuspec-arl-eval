@@ -70,9 +70,10 @@ public:
         DEBUG("vp=%p", m_vp);
         var = m_vp->getMutVal(
             e->getRootRefKind(),
-            0, // TODO:
+            e->getRootRefOffset(),
             e->getPath().at(path_idx++)
         );
+        fflush(stdout);
         // switch (e->getRootRefKind()) {
         //     case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
         //         IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(path_idx++));

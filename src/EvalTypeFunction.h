@@ -21,7 +21,7 @@
 #pragma once
 #include "zsp/arl/eval/IEval.h"
 #include "zsp/arl/eval/IEvalValProvider.h"
-#include "EvalBaseLocals.h"
+#include "EvalBase.h"
 
 namespace zsp {
 namespace arl {
@@ -29,14 +29,14 @@ namespace eval {
 
 
 
-class EvalTypeFunction : public virtual EvalBaseLocals {
+class EvalTypeFunction : public virtual EvalBase {
 public:
     EvalTypeFunction(
-        IEvalContext                    *ctxt,
-        IEvalThread                     *thread,
-        int32_t                         vp_id,
-        dm::IDataTypeFunction           *func,
-        const vsc::dm::ValRefStruct     &params);
+        IEvalContext                        *ctxt,
+        IEvalThread                         *thread,
+        int32_t                             vp_id,
+        dm::IDataTypeFunction               *func,
+        const std::vector<vsc::dm::ValRef>  &params);
 
     EvalTypeFunction(const EvalTypeFunction *o);
 
@@ -58,6 +58,7 @@ public:
 
 protected:
     dm::IDataTypeFunction               *m_func;
+    std::vector<vsc::dm::ValRef>        m_params;
 
 };
 

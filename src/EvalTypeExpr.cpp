@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/ITypeExprVal.h"
+#include "vsc/dm/impl/TaskIsDataTypeInt.h"
 #include "zsp/arl/dm/impl/TaskPackStruct2Int.h"
 #include "zsp/arl/dm/impl/TaskUnpackInt2Struct.h"
 #include "zsp/arl/dm/impl/ValRefPyObj.h"
@@ -42,7 +43,6 @@ EvalTypeExpr::EvalTypeExpr(
         EvalBase(ctxt, thread, vp_id),
         m_expr(expr), 
         m_builtin_i(0),
-        m_params_f(vsc::dm::ValRef()),
         m_idx(0), m_subidx(0) {
     DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
 }
@@ -52,7 +52,8 @@ EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
     m_val_lhs(std::move(o->m_val_lhs)),
     m_val_rhs(std::move(o->m_val_rhs)), 
     m_builtin_i(o->m_builtin_i),
-    m_params_f(o->m_params_f), m_idx(o->m_idx), m_subidx(o->m_subidx) {
+    m_params(o->m_params.begin(), o->m_params.end()),
+    m_idx(o->m_idx), m_subidx(o->m_subidx) {
 }
 
 EvalTypeExpr::~EvalTypeExpr() {
@@ -106,6 +107,8 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
         }
         case 1: { // Operand 2
             m_idx = 2;
+            m_val_lhs.set(moveResult()); // Preserve LHS
+
             setVoidResult();
 
             EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, e->rhs());
@@ -117,7 +120,24 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
         }
         case 2: { // Perform operation
             m_idx = 3;
+
             m_val_rhs.set(moveResult()); // Preserve RHS
+
+            vsc::dm::IDataTypeInt *lhs_int;
+            vsc::dm::IDataTypeInt *rhs_int;
+
+            if ((lhs_int=vsc::dm::TaskIsDataTypeInt().check(m_val_lhs.type()))
+                && (rhs_int=vsc::dm::TaskIsDataTypeInt().check(m_val_rhs.type()))) {
+                DEBUG("TODO: integer operation %d,%d %d,%d",
+                    lhs_int->isSigned(), lhs_int->getWidth(),
+                    rhs_int->isSigned(), rhs_int->getWidth());
+                setResult(m_ctxt->ctxt()->evalBinOpInt(
+                    vsc::dm::ValRefInt(m_val_lhs),
+                    e->op(),
+                    vsc::dm::ValRefInt(m_val_rhs)));
+            }
+            DEBUG("lhs_int=%p rhs_int=%p", lhs_int, rhs_int);
+
 
             vsc::dm::IModelValOp *op = m_ctxt->getModelValOp();
             // Copy size of the RHS for now
@@ -265,6 +285,7 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
     switch (e->getRootRefKind()) {
         case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
             DEBUG("Bottom-up scope");
+            // TODO: Should we get a mutable reference instead?
             vsc::dm::ValRef val(getImmVal(
                 vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
                 e->getRootRefOffset(),
@@ -273,6 +294,9 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
             if (e->getPath().size() > 1) {
                 DEBUG("TODO: stack-local refernece deeper than 2");
             }
+
+            // Are there any cases in which we need to clone?
+            setResult(val);
 
             // TODO:
             fprintf(stdout, "TODO: Set cloned result\n");
@@ -445,20 +469,11 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
         case 0: {
             if (m_subidx == 0) {
                 m_builtin_i = ctxtT<IEvalContextInt>()->getBuiltinFuncInfo(e->getTarget());
-                if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
-                    !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
-                    // Internally-executed function
-                    m_params_f = m_ctxt->ctxt()->mkValRefStruct(e->getTarget()->getParametersType());
-                }
             }
 
             if (m_subidx > 0 && haveResult()) {
                 // TODO: might 
-                if (m_params_f.valid()) {
-//                    m_params_f.getFieldRef()
-                } else {
-                    m_params.push_back(vsc::dm::ValRef(moveResult()));
-                }
+                m_params.push_back(vsc::dm::ValRef(moveResult()));
             }
             while (m_subidx < e->getParameters().size()) {
                 EvalTypeExpr evaluator(
@@ -474,11 +489,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 } else {
                     if (haveResult()) {
                         fprintf(stdout, "Note: push expr result\n");
-                        if (m_params_f.valid()) {
-
-                        } else {
-                            m_params.push_back(vsc::dm::ValRef(moveResult()));
-                        }
+                        m_params.push_back(vsc::dm::ValRef(moveResult()));
                     }
                 }
             }
@@ -499,7 +510,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             } else if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
                 !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
                 DEBUG("TODO: Running function locally");
-                EvalTypeFunction(m_ctxt, m_thread, m_vp_id, e->getTarget(), m_params_f).eval();
+                EvalTypeFunction(m_ctxt, m_thread, m_vp_id, e->getTarget(), m_params).eval();
             } else {
                 DEBUG_ENTER("Context: callFuncReq");
                 ctxtT<IEvalContextInt>()->callFuncReq(

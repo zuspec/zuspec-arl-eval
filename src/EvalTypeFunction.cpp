@@ -30,18 +30,20 @@ namespace eval {
 
 
 EvalTypeFunction::EvalTypeFunction(
-    IEvalContext                    *ctxt,
-    IEvalThread                     *thread,
-    int32_t                         vp_id,
-    dm::IDataTypeFunction           *func,
-    const vsc::dm::ValRefStruct     &params) :
-        EvalBaseLocals(ctxt, thread, vp_id, params), m_func(func) {
+    IEvalContext                        *ctxt,
+    IEvalThread                         *thread,
+    int32_t                             vp_id,
+    dm::IDataTypeFunction               *func,
+    const std::vector<vsc::dm::ValRef>  &params) :
+        EvalBase(ctxt, thread, vp_id), m_func(func),
+        m_params(params.begin(), params.end()) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeFunction", ctxt->getDebugMgr());
 
 }
 
 EvalTypeFunction::EvalTypeFunction(const EvalTypeFunction *o) :
-    EvalBaseLocals(o), m_func(o->m_func) {
+    EvalBase(o), m_func(o->m_func),
+    m_params(o->m_params.begin(), o->m_params.end()) {
 
 }
 
@@ -88,6 +90,12 @@ vsc::dm::ValRef EvalTypeFunction::getImmVal(
     if (root_kind == vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope) {
         if (root_offset == 0) {
             // This scope
+            if (val_offset < m_params.size()) {
+                DEBUG("Get parameter %d (%lld)", val_offset, m_params.at(val_offset).vp());
+                return m_params.at(val_offset);
+            } else {
+                ERROR("out-of-bounds parameter value request");
+            }
         } else {
             // Delegate up
             return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getImmVal(
@@ -114,9 +122,15 @@ vsc::dm::ValRef EvalTypeFunction::getMutVal(
     if (root_kind == vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope) {
         if (root_offset == 0) {
             // This scope
+            DEBUG("Get parameter %d (sz=%d)", val_offset, m_params.size());
+            if (val_offset < m_params.size()) {
+                return m_params.at(val_offset);
+            } else {
+                ERROR("out-of-bounds parameter value request");
+            }
         } else {
             // Delegate up
-            return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(
+            return ctxtT<IEvalContextInt>()->getValProvider(getIdx()-1)->getMutVal(
                 root_kind,
                 root_offset-1,
                 val_offset);

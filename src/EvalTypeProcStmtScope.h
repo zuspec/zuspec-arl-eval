@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "zsp/arl/dm/impl/ModelBuildContext.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEval.h"
 #include "EvalBase.h"
@@ -40,20 +41,33 @@ public:
         dm::ITypeProcStmtScope      *scope
     );
 
-    EvalTypeProcStmtScope(const EvalTypeProcStmtScope *other);
+    EvalTypeProcStmtScope(EvalTypeProcStmtScope *other);
 
     virtual ~EvalTypeProcStmtScope();
 
     virtual int32_t eval() override;
 
+    virtual vsc::dm::ValRef getImmVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) override;
+
+    virtual vsc::dm::ValRef getMutVal(
+        vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
+        int32_t                                 root_offset,
+        int32_t                                 val_offset) override;
+
     virtual IEval *clone() override;
 
 
 private:
-    static dmgr::IDebug             *m_dbg;
-    int32_t                         m_vp_id;
-    dm::ITypeProcStmtScope          *m_scope;
-    uint32_t                        m_idx;
+    static dmgr::IDebug                     *m_dbg;
+    int32_t                                 m_vp_id;
+    dm::ITypeProcStmtScope                  *m_scope;
+    std::vector<vsc::dm::IModelFieldUP>     m_locals;
+    uint32_t                                m_idx;
+    uint32_t                                m_subidx;
+    dm::IModelBuildContextUP                m_build_ctxt;
 
 };
 
