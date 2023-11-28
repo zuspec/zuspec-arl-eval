@@ -100,6 +100,7 @@ int32_t EvalTypeProcStmtScope::eval() {
         }
 
         case 1: {
+            DEBUG("%d statements", m_scope->getStatements().size());
             while (m_subidx < m_scope->getStatements().size()) {
                 EvalTypeProcStmt evaluator(
                     m_ctxt, 

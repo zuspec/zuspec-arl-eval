@@ -21,6 +21,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/ITypeExprVal.h"
 #include "vsc/dm/impl/TaskIsDataTypeInt.h"
+#include "vsc/dm/impl/TaskIsDataTypeStr.h"
 #include "zsp/arl/dm/impl/TaskPackStruct2Int.h"
 #include "zsp/arl/dm/impl/TaskUnpackInt2Struct.h"
 #include "zsp/arl/dm/impl/ValRefPyObj.h"
@@ -125,6 +126,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
 
             vsc::dm::IDataTypeInt *lhs_int;
             vsc::dm::IDataTypeInt *rhs_int;
+            vsc::dm::IDataTypeString *lhs_str, *rhs_str;
 
             if ((lhs_int=vsc::dm::TaskIsDataTypeInt().check(m_val_lhs.type()))
                 && (rhs_int=vsc::dm::TaskIsDataTypeInt().check(m_val_rhs.type()))) {
@@ -135,9 +137,14 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
                     vsc::dm::ValRefInt(m_val_lhs),
                     e->op(),
                     vsc::dm::ValRefInt(m_val_rhs)));
+            } else if (vsc::dm::TaskIsDataTypeStr().check(m_val_lhs.type())
+                && vsc::dm::TaskIsDataTypeStr().check(m_val_rhs.type())) {
+                DEBUG("String evaluation");
+                setResult(m_ctxt->ctxt()->evalBinOpStr(
+                    vsc::dm::ValRefStr(m_val_lhs),
+                    e->op(),
+                    vsc::dm::ValRefStr(m_val_rhs)));
             }
-            DEBUG("lhs_int=%p rhs_int=%p", lhs_int, rhs_int);
-
 
             vsc::dm::IModelValOp *op = m_ctxt->getModelValOp();
             // Copy size of the RHS for now

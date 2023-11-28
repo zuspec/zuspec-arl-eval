@@ -19,10 +19,12 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/ValRefBool.h"
 #include "zsp/arl/eval/impl/TaskEvalGetLval.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "EvalTypeExpr.h"
 #include "EvalTypeProcStmt.h"
+#include "EvalTypeProcStmtScope.h"
 
 
 namespace zsp {
@@ -181,7 +183,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
 }
 
 void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
-    DEBUG_ENTER("visitTYpeProcStmtIfElse");
+    DEBUG_ENTER("visitTypeProcStmtIfElse");
     
     switch (m_idx) {
         case 0: {
@@ -193,32 +195,35 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
                 break;
             }
         }
+
         case 1: {
             m_idx = 2;
             // Have the condition result
-            fprintf(stdout, "TODO: process condition result\n");
-            /*
-            DEBUG("Result: kind=%d val_u=%lld", getResult()->getKind(), getResult()->val_u());
-            if (getResult()->val_u() != 0) {
+            vsc::dm::ValRefBool cond(getResult());
+
+            if (!cond.valid()) {
+                ERROR("if-condition value is not valid");
+            }
+
+            if (cond.valid() && cond.get_val()) {
                 DEBUG("True branch");
-                if (EvalTypeProcStmt(m_ctxt, m_thread, s->getTrue()).eval()) {
+                if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, s->getTrue()).eval()) {
                     clrResult();
                     break;
                 }
             } else if (s->getFalse()) {
                 DEBUG("False branch");
-                if (EvalTypeProcStmt(m_ctxt, m_thread, s->getFalse()).eval()) {
+                if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, s->getFalse()).eval()) {
                     clrResult();
                     break;
                 }
             }
-             */
         }
         case 2: {
             // 
         }
     }
-    DEBUG_LEAVE("visitTYpeProcStmtIfElse");
+    DEBUG_LEAVE("visitTypeProcStmtIfElse");
 }
 
 void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
@@ -246,6 +251,12 @@ void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
     }
 
     DEBUG_LEAVE("visitTypeProcStmtReturn");
+}
+
+void EvalTypeProcStmt::visitTypeProcStmtScope(dm::ITypeProcStmtScope *s) {
+    DEBUG_ENTER("visitTypeProcStmtScope");
+    EvalTypeProcStmtScope(m_ctxt, m_thread, m_vp_id, s).eval();
+    DEBUG_LEAVE("visitTypeProcStmtScope");
 }
 
 dmgr::IDebug *EvalTypeProcStmt::m_dbg = 0;

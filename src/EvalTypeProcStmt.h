@@ -56,6 +56,8 @@ public:
 
 	virtual void visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) override;
 
+	virtual void visitTypeProcStmtScope(dm::ITypeProcStmtScope *s) override;
+
 private:
     static dmgr::IDebug             *m_dbg;
     dm::ITypeProcStmt               *m_stmt;
