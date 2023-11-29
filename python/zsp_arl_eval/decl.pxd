@@ -51,11 +51,19 @@ cdef extern from "zsp/arl/eval/IFactory.h" namespace "zsp::arl::eval":
 #         pass
 
 cdef extern from "zsp/arl/eval/IEval.h" namespace "zsp::arl::eval":
+    cdef enum EvalFlags "zsp::arl::eval::EvalFlags":
+        EvalFlags_NoFlags "zsp::arl::eval::EvalFlags::NoFlags"
+        EvalFlags_Complete "zsp::arl::eval::EvalFlags::Complete"
+        EvalFlags_Error "zsp::arl::eval::EvalFlags::Error"
+        EvalFlags_Break "zsp::arl::eval::EvalFlags::Break"
+        EvalFlags_Continue "zsp::arl::eval::EvalFlags::Continue"
+        EvalFlags_Return "zsp::arl::eval::EvalFlags::Return"
+
     cdef cppclass IEval:
         bool eval()
+        bool hasFlags(EvalFlags flags) const
         vsc.ValRef getResult()
-        void setResult(const vsc.ValRef &)
-        vsc.ValRef moveResult()
+        void setResult(const vsc.ValRef &, EvalFlags flags)
 
 
 cdef extern from "zsp/arl/eval/IEvalBackend.h" namespace "zsp::arl::eval":
@@ -81,8 +89,6 @@ cdef extern from "zsp/arl/eval/IEvalContext.h" namespace "zsp::arl::eval":
         void setBackend(IEvalBackend *b)
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getSolveFunctions() const
         const cpp_vector[arl_dm.IDataTypeFunctionP] &getTargetFunctions() const
-        bool haveError() const
-        const cpp_string &getError() const
         bool addPyModule(const cpp_string &, pyapi.PyEvalObj *mod)
 
         vsc.ValRefInt mkValRefInt(int64_t value, bool is_signed, int32_t width)

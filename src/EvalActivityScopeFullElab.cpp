@@ -97,7 +97,7 @@ bool EvalActivityScopeFullElab::eval_parallel() {
 
     for (uint32_t i=0; i<m_threads.size(); i++) {
         // Skip threads that are already complete
-        if (!m_threads.at(i)->haveResult()) {
+        if (!m_threads.at(i)->hasFlags(EvalFlags::Complete)) {
             if (m_initial) {
                 DEBUG("Creating thread %d", i);
                 EvalActivityFullElab evaluator(

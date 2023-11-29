@@ -40,7 +40,7 @@ EvalContextBase::EvalContextBase(
         m_dmgr(dmgr), m_corelib(this),
          m_solvers_f(solvers_f), m_ctxt(ctxt),
         m_randstate(randstate), m_pyeval(pyeval),
-        m_error(false), m_backend(backend), m_initial(true) {
+        m_flags(EvalFlags::NoFlags), m_backend(backend), m_initial(true) {
         
     // m_func_impl.insert({m_functions[(int)EvalContextFunc::RegGroupSetHandle], std::bind(
     //     &CoreLibImpl::RegGroupSetHandle, &m_corelib, 
@@ -72,13 +72,12 @@ void EvalContextBase::init() {
     for (std::vector<dm::IDataTypeFunction *>::const_iterator
         it=m_ctxt->getDataTypeFunctions().begin();
         it!=m_ctxt->getDataTypeFunctions().end(); it++) {
-        IBuiltinFuncInfo::FuncT builtin;
+        IBuiltinFuncInfo *info;
         std::vector<std::string>::const_iterator tool_it;
 
-        if ((builtin=m_corelib.findBuiltin((*it)->name()))) {
+        if ((info=m_corelib.findBuiltin((*it)->name()))) {
             // Has a builtin implementation
             DEBUG("Found built-in %s", (*it)->name().c_str());
-            IBuiltinFuncInfo *info = new BuiltinFuncInfo(builtin);
             m_func_info_m.insert({*it, info});
             m_func_info_l.push_back(IBuiltinFuncInfoUP(info));
         } else if ((tool_it=std::find(
@@ -107,18 +106,20 @@ void EvalContextBase::pushEval(IEval *e, bool owned) {
 void EvalContextBase::suspendEval(IEval *e) {
     DEBUG_ENTER("suspendEval");
     m_eval_s.at(e->getIdx()) = IEvalUP(e->clone(), true);
-    m_eval_s.at(e->getIdx())->clrResult(false);
-    DEBUG("haveResult: %d", m_eval_s.at(e->getIdx())->haveResult());
+    m_eval_s.at(e->getIdx())->clrFlags(EvalFlags::Complete);
+    DEBUG("haveResult: %d", m_eval_s.at(e->getIdx())->hasFlags(EvalFlags::Complete));
     DEBUG_LEAVE("suspendEval");
 }
 
 void EvalContextBase::popEval(IEval *e) {
     DEBUG_ENTER("popEval %p sz=%d", e, m_eval_s.size());
     m_eval_s.pop_back();
-    if (e->haveError()) {
-        setError(e->getError());
-    } else if (e->haveResult()) {
-        setResult(e->moveResult());
+    if (e->hasFlags(EvalFlags::Error)) {
+        setResult(e->getResult(), e->getFlags());
+    } else if (e->hasFlags(EvalFlags::Complete)) {
+        setResult(
+            e->getResult(),
+            e->getFlags());
     } else {
         DEBUG("NOT hasResult");
     }
@@ -175,80 +176,55 @@ dm::IDataTypeFunction *EvalContextBase::getFunction(EvalContextFunc func) {
     return m_functions[(int)func];
 }
 
-void EvalContextBase::setResult(const vsc::dm::ValRef &r) {
+EvalFlags EvalContextBase::getFlags() const {
+    if (m_eval_s.size()) {
+        return m_eval_s.back()->getFlags();
+    } else {
+        return m_flags;
+    }
+}
+
+bool EvalContextBase::hasFlags(EvalFlags flags) const {
+    return ((getFlags() & flags) != EvalFlags::NoFlags);
+}
+
+void EvalContextBase::setFlags(EvalFlags flags) {
+    if (m_eval_s.size()) {
+        m_eval_s.back()->setFlags(flags);
+    } else {
+        m_flags = flags;
+    }
+}
+
+void EvalContextBase::clrFlags(EvalFlags flags) {
+    if (m_eval_s.size()) {
+        m_eval_s.back()->clrFlags(flags);
+    } else {
+        m_flags = (m_flags & ~flags);
+    }
+}
+
+void EvalContextBase::setResult(const vsc::dm::ValRef &r, EvalFlags flags) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
-        m_eval_s.back()->setResult(r);
+        m_eval_s.back()->setResult(r, flags);
     } else {
         m_result.set(r);
+        m_flags = flags;
     }
-    DEBUG_LEAVE("setResult have=%d", haveResult());
+    DEBUG_LEAVE("setResult have=%d", hasFlags(EvalFlags::Complete));
 }
 
-void EvalContextBase::setVoidResult() {
-    vsc::dm::IDataTypeInt *i32 = m_ctxt->findDataTypeInt(true, 32);
-    if (!i32) {
-        i32 = m_ctxt->mkDataTypeInt(true, 32);
-        m_ctxt->addDataTypeInt(i32);
-    }
-    vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
-    setResult(v);
-}    
+void EvalContextBase::setError(const char *fmt, ...) {
+    char tmp[1024];
+    va_list ap;
 
-void EvalContextBase::setError(const std::string &msg) {
-    DEBUG_ENTER("setError %s", msg.c_str());
-    if (m_eval_s.size()) {
-        m_eval_s.back()->setError(msg);
-    } else {
-        m_error = true;
-        m_errMsg = msg;
-    }
-    DEBUG_LEAVE("setError %s", msg.c_str());
-}
-
-bool EvalContextBase::haveError() const {
-    DEBUG_ENTER("haveError");
-    bool ret = false;
-    if (m_eval_s.size()) {
-        DEBUG("Get level %d", m_eval_s.size());
-        ret = m_eval_s.back()->haveError();
-        if (ret) {
-            DEBUG("Error: %s", m_eval_s.back()->getError().c_str());
-        }
-    } else {
-        DEBUG("Get top-level");
-        ret = m_error;
-    }
-    DEBUG_LEAVE("haveError %d", ret);
-    return ret;
-}
-
-const std::string &EvalContextBase::getError() const {
-    DEBUG("getError: size=%d", m_eval_s.size());
-    if (m_eval_s.size()) {
-        return m_eval_s.back()->getError();
-    } else {
-        return m_errMsg;
-    }
-}
-
-bool EvalContextBase::haveResult() const {
-    bool ret = false;
-    DEBUG_ENTER("haveResult sz=%d", m_eval_s.size());
-    if (m_eval_s.size()) {
-        ret = m_eval_s.back()->haveResult();
-    }
-    DEBUG_LEAVE("haveResult %d", ret);
-    return ret;
-}
-
-IEvalStackFrame *EvalContextBase::stackFrame(int32_t idx) {
-    DEBUG_ENTER("stackFrame: idx=%d m_callstack.size=%d", idx, m_callstack.size());
-    if (idx < m_callstack.size()) {
-        return m_callstack.at(m_callstack.size()-idx-1).get();
-    } else {
-        return 0;
-    }
+    va_start(ap, fmt);
+    vsnprintf(tmp, sizeof(tmp), fmt, ap);
+    setResult(
+        m_ctxt->mkValRefStr(tmp),
+        EvalFlags::Error);
+    va_end(ap);
 }
 
 int32_t EvalContextBase::evalMethodCallContext(
@@ -285,7 +261,7 @@ void EvalContextBase::callFuncReq(
         // 
     } else {
         ERROR("Implement internal function evaluation. Should not have made it here");
-        thread->setVoidResult();
+        thread->setFlags(EvalFlags::Complete);
     }
 
     DEBUG_LEAVE("callFuncReq");

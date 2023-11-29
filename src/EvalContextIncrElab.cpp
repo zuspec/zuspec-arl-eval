@@ -126,7 +126,7 @@ int32_t EvalContextIncrElab::eval() {
 
         initPython();
 
-        if (haveError()) {
+        if (hasFlags(EvalFlags::Error)) {
             ret = true;
             goto leaving;
         }
@@ -187,7 +187,7 @@ int32_t EvalContextIncrElab::eval() {
                 m_eval_s.pop_back();
             } else {
                 DEBUG_LEAVE("sub-eval %d -- more work", m_eval_s.back()->getIdx());
-                ret = (haveError())?-1:ret;
+                ret = (hasFlags(EvalFlags::Error))?-1:ret;
                 break;
             }
         }

@@ -23,7 +23,7 @@ from libc.stdint cimport intptr_t
 from libcpp cimport bool
 from libcpp.cast cimport dynamic_cast, static_cast, const_cast, reinterpret_cast
 from libcpp.vector cimport vector as cpp_vector
-from enum import IntEnum
+from enum import IntEnum, IntFlag
 cimport zsp_arl_dm.core as arl_dm
 cimport zsp_arl_dm.decl as arl_dm_decl
 from zsp_arl_eval cimport decl
@@ -133,6 +133,14 @@ cdef class EvalBackend(object):
     def emitMessage(self, str msg):
         pass
 
+class EvalFlags(IntFlag):
+    NoFlags = decl.EvalFlags.EvalFlags_NoFlags
+    Complete = decl.EvalFlags.EvalFlags_Complete
+    Error = decl.EvalFlags.EvalFlags_Error
+    Break = decl.EvalFlags.EvalFlags_Break
+    Continue = decl.EvalFlags.EvalFlags_Continue
+    Return = decl.EvalFlags.EvalFlags_Return
+
 cdef class Eval(object):
 
     def __dealloc__(self):
@@ -142,25 +150,18 @@ cdef class Eval(object):
     cpdef bool eval(self):
         return self._hndl.eval()
 
+    cpdef bool hasFlags(self, flags):
+        cdef int flags_i = int(flags)
+        return self._hndl.hasFlags(<decl.EvalFlags>(flags_i))
+
     cpdef vsc.ValRef getResult(self):
         cdef vsc.ValRef ret = vsc.ValRef()
         ret.val = self._hndl.getResult()
         return ret
-        # ret = EvalResult()
-        # ret._hndl = const_cast[decl.IEvalResultP](self._hndl.getResult())
-        # ret._owned = False
-        # return ret
-        return None
 
-    cpdef void setResult(self, vsc.ValRef r):
-        self._hndl.setResult(r.val)
-
-    cpdef vsc.ValRef moveResult(self):
-        return None
-        # self._owned = False
-        # ret = EvalResult.mk(self._hndl.moveResult(), True)
-        # self._hndl = NULL
-        # return ret
+    cpdef void setResult(self, vsc.ValRef r, flags=EvalFlags.Complete):
+        cdef int flags_i = int(flags)
+        self._hndl.setResult(r.val, <decl.EvalFlags>(flags_i))
 
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=True):
@@ -173,6 +174,15 @@ cdef class EvalContext(object):
 
     cpdef bool eval(self):
         return self._hndl.eval()
+        
+    cpdef bool hasFlags(self, flags):
+        cdef int flags_i = int(flags)
+        return self._hndl.hasFlags(<decl.EvalFlags>(flags_i))
+
+    cpdef vsc.ValRef getResult(self):
+        cdef vsc.ValRef ret = vsc.ValRef()
+        ret.val = self._hndl.getResult()
+        return ret
 
     cdef decl.IEvalContext *asContext(self):
         return dynamic_cast[decl.IEvalContextP](self._hndl)
@@ -190,12 +200,6 @@ cdef class EvalContext(object):
             ret.append(arl_dm.DataTypeFunction.mk(
                 self._hndl.getTargetFunctions().at(i), False))
         return ret
-
-    cpdef bool haveError(self):
-        return self._hndl.haveError()
-
-    cpdef str getError(self):
-        return self._hndl.getError().decode()
 
     cpdef bool addPyModule(self, str name, object mod):
         self._hndl.addPyModule(

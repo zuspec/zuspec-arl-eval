@@ -35,7 +35,7 @@ public:
 
     virtual ~CoreLibImpl();
 
-    IBuiltinFuncInfo::FuncT findBuiltin(const std::string &name);
+    IBuiltinFuncInfo *findBuiltin(const std::string &name);
 
     virtual void Print(
         IEvalThread                         *thread,
@@ -59,6 +59,25 @@ public:
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params);
 
+    virtual void RegRead(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
+    virtual void RegWrite(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
+    virtual void RegReadVal(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
+    virtual void RegWriteVal(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
 
     virtual void RegGroupSetHandle(
         IEvalThread                         *thread,

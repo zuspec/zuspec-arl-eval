@@ -67,7 +67,7 @@ int32_t EvalTypeExpr::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setVoidResult();
+        setFlags(EvalFlags::Complete);
     }
 
     if (m_expr) {
@@ -76,7 +76,7 @@ int32_t EvalTypeExpr::eval() {
         ERROR("attempting to evaluate a null expression");
     }
 
-    int32_t ret = !haveResult();
+    int32_t ret = !hasFlags(EvalFlags::Complete);
 
     if (m_initial) {
         m_initial = false;
@@ -108,9 +108,9 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
         }
         case 1: { // Operand 2
             m_idx = 2;
-            m_val_lhs.set(moveResult()); // Preserve LHS
+            m_val_lhs.set(getResult()); // Preserve LHS
 
-            setVoidResult();
+            setFlags(EvalFlags::Complete);
 
             EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, e->rhs());
 
@@ -122,7 +122,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
         case 2: { // Perform operation
             m_idx = 3;
 
-            m_val_rhs.set(moveResult()); // Preserve RHS
+            m_val_rhs.set(getResult()); // Preserve RHS
 
             vsc::dm::IDataTypeInt *lhs_int;
             vsc::dm::IDataTypeInt *rhs_int;
@@ -385,9 +385,9 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
             if (m_subidx == 0) {
                 // Perform first-time checks
                 m_params.push_back(getResult());
-                clrResult();
-            } else if (haveResult()) {
-                m_params.push_back(vsc::dm::ValRef(moveResult()));
+                clrFlags(EvalFlags::Complete);
+            } else if (hasFlags(EvalFlags::Complete)) {
+                m_params.push_back(getResult());
             } else {
                 break;
             }
@@ -400,13 +400,13 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                     e->getParameters().at(m_subidx).get());
 
                 m_subidx += 1;
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 if (evaluator.eval()) {
                     break;
                 } else {
-                    if (haveResult()) {
+                    if (hasFlags(EvalFlags::Complete)) {
                         fprintf(stdout, "Note: push expr result\n");
-                        m_params.push_back(vsc::dm::ValRef(moveResult()));
+                        m_params.push_back(getResult());
                     }
                 }
             }
@@ -417,7 +417,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 break;
             }
 
-            clrResult(); // Clear 'safety' result
+            clrFlags(EvalFlags::Complete); // Clear 'safety' result
 
             m_idx = 2;
 
@@ -439,14 +439,14 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 m_params
             );
 
-            if (!haveResult()) {
+            if (!hasFlags(EvalFlags::Complete)) {
                 break;
             }
         }
 
         case 2: {
             // Wait for a response
-            DEBUG_LEAVE("callFuncReq haveResult=%d", haveResult());
+            DEBUG_LEAVE("callFuncReq haveResult=%d", hasFlags(EvalFlags::Complete));
 //            setResult(m_thread->getResult());
 
             if (m_isreg_res.func
@@ -478,9 +478,9 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 m_builtin_i = ctxtT<IEvalContextInt>()->getBuiltinFuncInfo(e->getTarget());
             }
 
-            if (m_subidx > 0 && haveResult()) {
+            if (m_subidx > 0 && hasFlags(EvalFlags::Complete)) {
                 // TODO: might 
-                m_params.push_back(vsc::dm::ValRef(moveResult()));
+                m_params.push_back(getResult());
             }
             while (m_subidx < e->getParameters().size()) {
                 EvalTypeExpr evaluator(
@@ -490,13 +490,13 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                     e->getParameters().at(m_subidx).get());
 
                 m_subidx += 1;
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 if (evaluator.eval()) {
                     break;
                 } else {
-                    if (haveResult()) {
+                    if (hasFlags(EvalFlags::Complete)) {
                         fprintf(stdout, "Note: push expr result\n");
-                        m_params.push_back(vsc::dm::ValRef(moveResult()));
+                        m_params.push_back(getResult());
                     }
                 }
             }
@@ -507,7 +507,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 break;
             }
 
-            clrResult(); // Clear 'safety' result
+            clrFlags(EvalFlags::Complete); // Clear 'safety' result
 
             m_idx = 1;
             DEBUG("[%d] Function %s: m_builtin_i=%p", 
@@ -527,7 +527,7 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 );
             }
 
-            if (!haveResult()) {
+            if (!hasFlags(EvalFlags::Complete)) {
                 DEBUG("[%d] No result yet ... suspend", getIdx());
                 break;
             } else {
@@ -537,12 +537,12 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
 
         case 1: {
             // Wait for a response
-            DEBUG_LEAVE("callFuncReq");
+            DEBUG_LEAVE("callFuncReq hasFlags(Return): %d", hasFlags(EvalFlags::Return));
 
         }
     }
 
-    DEBUG_LEAVE("visitTypeExprMethodCallStatic idx=%d haveResult=%d", m_idx, haveResult());
+    DEBUG_LEAVE("visitTypeExprMethodCallStatic idx=%d haveResult=%d", m_idx, hasFlags(EvalFlags::Complete));
 }
 
 void EvalTypeExpr::visitTypeExprPyImportRef(dm::ITypeExprPyImportRef *t) {
@@ -575,12 +575,12 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
 
             if (!base.getObj()) {
                 DEBUG("Error: failed to get object");
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 setError("Attempting to invoke <> on null handle" /*, t->getName() */);
                 break;
             } else if (!m_ctxt->getPyEval()->hasAttr(base.getObj(), t->getName())) {
                 DEBUG("Error: no attribute in object");
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 setError("Object does not contain name <>");
                 break;
             } else {
@@ -598,7 +598,7 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
         }
 
         case 2: {
-            setVoidResult();
+            setFlags(EvalFlags::Complete);
         }
     }
 

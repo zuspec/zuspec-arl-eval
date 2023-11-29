@@ -78,7 +78,7 @@ int32_t EvalTypeMethodCallContext::eval() {
     if (m_initial) {
         m_thread->pushEval(this);
         // Safety
-        setVoidResult();
+        setFlags(EvalFlags::Complete);
 
         if (intf) {
             m_stack_frame = IEvalStackFrameUP(m_ctxt->mkStackFrame(m_params.size()+1));
@@ -114,13 +114,15 @@ int32_t EvalTypeMethodCallContext::eval() {
          */
         case 1: {
             // Compute parameter values to pass to the call
-            if (m_param_idx > 0 && haveResult()) {
+            if (m_param_idx > 0 && hasFlags(EvalFlags::Complete)) {
+                /*
                 if (intf) {
                     m_stack_frame->setVariable(m_param_idx, moveResult());
                 } else {
                     vsc::dm::ValRef pval(moveResult());
                     m_pvals.push_back(pval);
                 }
+                 */
             }
             while (m_param_idx < m_params.size()) {
                 EvalTypeExpr evaluator(
@@ -130,18 +132,20 @@ int32_t EvalTypeMethodCallContext::eval() {
                     m_params.at(m_param_idx));
 
                 m_param_idx += 1;
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 if (evaluator.eval()) {
                     break;
                 } else {
-                    if (haveResult()) {
+                    if (hasFlags(EvalFlags::Complete)) {
                         fprintf(stdout, "Note: push expr result\n");
+                        /*
                         if (intf) {
                             m_stack_frame->setVariable(m_param_idx, moveResult());
                         } else {
                             vsc::dm::ValRef pval(moveResult());
                             m_pvals.push_back(pval);
                         }
+                         */
                     }
                 }
             }
@@ -152,7 +156,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 break;
             }
 
-            clrResult(); // Clear 'safety' result
+            clrFlags(EvalFlags::Complete); // Clear 'safety' result
 
             m_idx = 2;
 
@@ -170,6 +174,7 @@ int32_t EvalTypeMethodCallContext::eval() {
             if (m_method->getBody()) {
                 DEBUG("Launching proc-body interpreter");
 
+                /*
                 // Push parameters
                 m_thread->pushStackFrame(m_stack_frame.release());
 
@@ -180,6 +185,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                     m_thread,
                     m_vp_id,
                     m_method->getBody()).eval();
+                 */
             } else {
                 DEBUG("Calling import function");
                 m_ctxt->getBackend()->callFuncReq(
@@ -189,7 +195,7 @@ int32_t EvalTypeMethodCallContext::eval() {
                 );
             }
 
-            if (!haveResult()) {
+            if (!hasFlags(EvalFlags::Complete)) {
                 break;
             }
         }
@@ -197,7 +203,7 @@ int32_t EvalTypeMethodCallContext::eval() {
         /*
         case 1: {
             // Wait for a response
-            if (haveResult()) {
+            if (hasFlags(EvalFlags::Complete)) {
                 if (m_method->getBody()) {
                     m_thread->popStackFrame();
                     m_thread->popStackFrame();
@@ -207,11 +213,11 @@ int32_t EvalTypeMethodCallContext::eval() {
          */
     }
 
-    ret = !haveResult();
+    ret = !hasFlags(EvalFlags::Complete);
 
     if (m_initial) {
         m_initial = false;
-        if (haveResult()) {
+        if (hasFlags(EvalFlags::Complete)) {
             DEBUG("popEval");
             m_thread->popEval(this);
         } else {

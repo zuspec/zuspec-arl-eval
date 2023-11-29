@@ -55,12 +55,12 @@ int32_t EvalActivityFullElab::eval() {
 
     m_activity->accept(m_this);
 
-    int32_t ret = !haveResult();
+    int32_t ret = !hasFlags(EvalFlags::Complete);
 
     if (m_initial) {
         m_initial = false;
 
-        if (!haveResult()) {
+        if (!hasFlags(EvalFlags::Complete)) {
             m_thread->suspendEval(this);
         } else {
             m_thread->popEval(this);
@@ -84,18 +84,18 @@ void EvalActivityFullElab::visitModelActivityScope(dm::IModelActivityScope *a) {
 
             m_idx++;
             if (evaluator.eval()) {
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 break;
             }
         }
 
         case 1: {
-            setVoidResult();
+            setFlags(EvalFlags::Complete);
         }
     }
 
 
-    DEBUG_LEAVE("visitModelActivityScope (%d)", haveResult());
+    DEBUG_LEAVE("visitModelActivityScope (%d)", hasFlags(EvalFlags::Complete));
 }
 
 void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse *a) {
@@ -161,18 +161,18 @@ void EvalActivityFullElab::visitModelActivityTraverse(dm::IModelActivityTraverse
                 m_thread, 
                 a->getTarget());
 
-            setVoidResult();
+            setFlags(EvalFlags::Complete);
         } break;
     }
 
-    if (haveResult()) {
+    if (hasFlags(EvalFlags::Complete)) {
         m_ctxt->callListener([&](IEvalListener *l) { 
             l->leaveAction(m_thread, a->getTarget());});
     }
 
     DEBUG_LEAVE("visitModelActivityTraverse %s (%d)",
         a->getTarget()->getDataTypeT<vsc::dm::IDataTypeStruct>()->name().c_str(),
-        haveResult());
+        hasFlags(EvalFlags::Complete));
 }
 
 dmgr::IDebug *EvalActivityFullElab::m_dbg = 0;

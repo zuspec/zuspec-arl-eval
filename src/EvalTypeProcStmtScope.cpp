@@ -63,7 +63,7 @@ int32_t EvalTypeProcStmtScope::eval() {
         m_thread->pushEval(this);
         // Safety
     }
-    setVoidResult();
+    setFlags(EvalFlags::Complete);
 
     switch (m_idx) {
         case 0: {
@@ -100,8 +100,11 @@ int32_t EvalTypeProcStmtScope::eval() {
         }
 
         case 1: {
-            DEBUG("%d statements", m_scope->getStatements().size());
-            while (m_subidx < m_scope->getStatements().size()) {
+            DEBUG("%d statements hasFlags(Return): %d", 
+                m_scope->getStatements().size(),
+                hasFlags(EvalFlags::Return));
+            while (m_subidx < m_scope->getStatements().size()
+                    && !hasFlags(EvalFlags::Return)) {
                 EvalTypeProcStmt evaluator(
                     m_ctxt, 
                     m_thread, 
@@ -111,9 +114,11 @@ int32_t EvalTypeProcStmtScope::eval() {
                 m_subidx++;
 
                 if (evaluator.eval()) {
-                    clrResult();
+                    clrFlags(EvalFlags::Complete);
                     break;
                 }
+
+                DEBUG("hasFlags(Return): %d", hasFlags(EvalFlags::Return));
             }
         }
     }
@@ -122,7 +127,7 @@ int32_t EvalTypeProcStmtScope::eval() {
     // TODO: during first phase, must initialize any local variables 
     // with initial values
 
-    int32_t ret = !haveResult();
+    int32_t ret = !hasFlags(EvalFlags::Complete);
 
     if (m_initial) {
         m_initial = false;

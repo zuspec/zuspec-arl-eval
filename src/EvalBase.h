@@ -65,27 +65,21 @@ public:
         int32_t                                 root_offset,
         int32_t                                 val_offset) override;
 
-    virtual const vsc::dm::ValRef &getResult() const override {
-        return m_result;
-    }
+    virtual EvalFlags getFlags() const override;
 
-    virtual vsc::dm::ValRef &moveResult() override {
-        return m_result;
-    }
+    virtual bool hasFlags(EvalFlags flags) const override;
 
-    virtual void clrResult(bool clr_err=false) override;
+    virtual void setFlags(EvalFlags flags) override;
 
-    virtual void setResult(const vsc::dm::ValRef &r) override;
+    virtual void clrFlags(EvalFlags flags=EvalFlags::AllFlags) override;
 
-    void setVoidResult();
+    virtual const vsc::dm::ValRef &getResult() const override;
 
-    virtual void setError(const std::string &msg) override;
+    virtual void setResult(
+        const vsc::dm::ValRef   &r,
+        EvalFlags               flags=EvalFlags::Complete) override;
 
-    virtual bool haveError() const override;
-
-    virtual const std::string &getError() const override;
-
-    virtual bool haveResult() const override;
+    virtual void setError(const char *fmt, ...) override;
 
     template <class T> T *ctxtT() const {
         return dynamic_cast<T *>(m_ctxt);
@@ -99,8 +93,7 @@ protected:
     IEvalThread                 *m_thread;
     int32_t                     m_vp_id;
     vsc::dm::ValRef             m_result;
-    bool                        m_error;
-    std::string                 m_errMsg;
+    EvalFlags                   m_flags;
 
 
 };

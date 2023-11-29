@@ -72,13 +72,21 @@ public:
 
     virtual dm::IContext *ctxt() const = 0;
 
+    virtual EvalFlags getFlags() const = 0;
+
+    virtual bool hasFlags(EvalFlags flags) const = 0;
+
+    virtual void setFlags(EvalFlags flags) = 0;
+
+    virtual void clrFlags(EvalFlags flags=EvalFlags::AllFlags) = 0;
+
     virtual const vsc::dm::ValRef &getResult() const = 0;
 
-    virtual bool haveError() const = 0;
+    virtual void setResult(
+        const vsc::dm::ValRef   &r,
+        EvalFlags               flags=EvalFlags::Complete) = 0;
 
-    virtual const std::string &getError() const = 0;
-
-    virtual vsc::dm::ValRef &moveResult() = 0;
+    virtual void setError(const char *fmt, ...) = 0;
 
     virtual IEvalBackend *getBackend() const = 0;
 

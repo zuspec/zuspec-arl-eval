@@ -62,9 +62,12 @@ int32_t EvalThread::eval() {
         // Propagate the result up the stack
         if (m_eval_s.size() > 1) {
             m_eval_s.at(m_eval_s.size()-2)->setResult(
-                m_eval_s.back()->moveResult());
+                m_eval_s.back()->getResult(),
+                m_eval_s.back()->getFlags());
         } else {
-            EvalBase::setResult(m_eval_s.back()->moveResult());
+            EvalBase::setResult(
+                m_eval_s.back()->getResult(),
+                m_eval_s.back()->getFlags());
         }
         m_eval_s.pop_back();
     }
@@ -93,12 +96,16 @@ void EvalThread::suspendEval(IEval *e) {
 
 void EvalThread::popEval(IEval *e) {
     DEBUG_ENTER("popEval");
-    if (e->haveResult()) {
+    if (e->hasFlags(EvalFlags::Complete)) {
         DEBUG("hasResult");
         if (m_eval_s.size() > 1) {
-            m_eval_s.at(m_eval_s.size()-2)->setResult(e->moveResult());
+            m_eval_s.at(m_eval_s.size()-2)->setResult(
+                e->getResult(),
+                e->getFlags());
         } else {
-            setResult(e->moveResult());
+            setResult(
+                e->getResult(),
+                e->getFlags());
         }
     } else {
         DEBUG("NOT hasResult");
@@ -107,12 +114,14 @@ void EvalThread::popEval(IEval *e) {
     DEBUG_LEAVE("popEval");
 }
 
-void EvalThread::setResult(const vsc::dm::ValRef &r) {
+void EvalThread::setResult(
+    const vsc::dm::ValRef   &r,
+    EvalFlags               flags) {
     DEBUG_ENTER("setResult sz=%d", m_eval_s.size());
     if (m_eval_s.size()) {
-        m_eval_s.back()->setResult(r);
+        m_eval_s.back()->setResult(r, flags);
     } else {
-        EvalBase::setResult(r);
+        EvalBase::setResult(r, flags);
     }
     DEBUG_LEAVE("setResult sz=%d", m_eval_s.size());
 }

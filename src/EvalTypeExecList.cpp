@@ -53,18 +53,18 @@ int32_t EvalTypeExecList::eval() {
         m_thread->pushEval(this);
 
         // Safety...
-        setVoidResult();
+        setFlags(EvalFlags::Complete);
     }
 
     int32_t ret = 0;
 
     if (m_idx < m_execs.size()) {
         while (m_idx < m_execs.size()) {
-            clrResult();
+            clrFlags(EvalFlags::Complete);
             m_execs.at(m_idx)->accept(m_this);
             m_idx++;
 
-            if (!haveResult()) {
+            if (!hasFlags(EvalFlags::Complete)) {
                 ret = true;
                 break;
             }
@@ -73,7 +73,7 @@ int32_t EvalTypeExecList::eval() {
 
     if (m_initial) {
         m_initial = false;
-        if (!haveResult()) {
+        if (!hasFlags(EvalFlags::Complete)) {
             m_thread->suspendEval(this);
         } else {
             m_thread->popEval(this);
@@ -98,7 +98,7 @@ void EvalTypeExecList::visitTypeExecProc(dm::ITypeExecProc *e) {
         e->getBody());
 
     if (evaluator.eval()) {
-        clrResult();
+        clrFlags(EvalFlags::Complete);
     }
 
     DEBUG_LEAVE("visitTypeExecProc");

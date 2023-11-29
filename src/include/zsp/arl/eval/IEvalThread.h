@@ -60,12 +60,6 @@ public:
 
     virtual void setThreadId(IEvalThreadId *tid) = 0;
 
-    virtual void pushStackFrame(IEvalStackFrame *frame) = 0;
-
-    virtual IEvalStackFrame *stackFrame(int32_t idx=0) = 0;
-
-    virtual void popStackFrame() = 0;
-
     /**
      * @brief Initiates a method call using this thread as context.
      *        If the return is '0', then the result is immediately

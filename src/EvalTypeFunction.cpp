@@ -62,7 +62,15 @@ int32_t EvalTypeFunction::eval() {
             m_ctxt, m_thread, getIdx(), m_func->getBody()).eval();
     }
 
-    ret = !haveResult();
+    ret = !hasFlags(EvalFlags::Complete);
+    
+    if (!ret) {
+        // The return flag doesn't propagate past the function boundary.
+        // Update the flags before the result is moved (via popEval)
+        DEBUG("Clear 'return' flag");
+        clrFlags(EvalFlags::Return);
+        DEBUG("hasFlags(Return): %d", hasFlags(EvalFlags::Return));
+    }
 
     if (m_initial) {
         m_initial = false;
@@ -72,6 +80,7 @@ int32_t EvalTypeFunction::eval() {
             m_thread->popEval(this);
         }
     }
+
 
     DEBUG_LEAVE("eval %d", ret);
     return ret;

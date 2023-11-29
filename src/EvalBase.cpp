@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include <stdarg.h>
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/ValRefInt.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
@@ -34,20 +35,19 @@ EvalBase::EvalBase(
     int32_t                 vp_id) :
         m_dbg(0),
         m_initial(true), m_entry_idx(-1), m_ctxt(ctxt), m_thread(thread),
-        m_vp_id(vp_id), m_error(false) {
+        m_vp_id(vp_id), m_flags(EvalFlags::NoFlags) {
 
 }
 
 EvalBase::EvalBase(IEvalThread *thread) :
         m_dbg(0), m_initial(true), m_entry_idx(-1), m_ctxt(0), m_thread(thread),
-        m_vp_id(-1), m_error(false) {
+        m_vp_id(-1), m_flags(EvalFlags::NoFlags) {
 }
 
 EvalBase::EvalBase(const EvalBase *o) :
     m_dbg(o->m_dbg),
     m_initial(false), m_entry_idx(o->m_entry_idx), m_ctxt(o->m_ctxt), 
-    m_thread(o->m_thread), m_vp_id(o->m_vp_id),
-    m_error(o->m_error), m_errMsg(o->m_errMsg) {
+    m_thread(o->m_thread), m_vp_id(o->m_vp_id), m_flags(o->m_flags) {
 
 }
 
@@ -63,13 +63,13 @@ int32_t EvalBase::eval(const std::function<void()> &body) {
     body();
 
     if (m_initial) {
-        if (!haveResult()) {
+        if (!hasFlags(EvalFlags::Complete)) {
             m_thread->suspendEval(this);
         }
         m_initial = false;
     }
 
-    return !haveResult();
+    return !hasFlags(EvalFlags::Complete);
 }
 
 vsc::dm::ValRef EvalBase::getImmVal(
@@ -118,45 +118,43 @@ vsc::dm::ValRef EvalBase::getMutVal(
     return ret;
 }
 
-void EvalBase::clrResult(bool clr_err) {
-    m_result.reset();
-    if (clr_err) {
-//        m_error = false;
-//        m_errMsg.clear();
-    }
+EvalFlags EvalBase::getFlags() const {
+    return m_flags;
 }
 
-void EvalBase::setResult(const vsc::dm::ValRef &r) {
-    DEBUG("setResult (valid=%d)", r.valid());
+bool EvalBase::hasFlags(EvalFlags flags) const {
+    return (m_flags & flags) != EvalFlags::NoFlags;
+}
+
+void EvalBase::setFlags(EvalFlags flags) {
+    m_flags = (m_flags | flags);
+}
+
+void EvalBase::clrFlags(EvalFlags flags) {
+    m_flags = (m_flags & ~flags);
+}
+
+const vsc::dm::ValRef &EvalBase::getResult() const {
+    return m_result;
+}
+
+void EvalBase::setResult(
+    const vsc::dm::ValRef   &r,
+    EvalFlags               flags) {
     m_result.set(r);
+    m_flags = flags;
 }
 
-void EvalBase::setVoidResult() {
-    vsc::dm::IDataTypeInt *i32 = m_ctxt->ctxt()->findDataTypeInt(true, 32);
-    if (!i32) {
-        i32 = m_ctxt->ctxt()->mkDataTypeInt(true, 32);
-        m_ctxt->ctxt()->addDataTypeInt(i32);
-    }
-    vsc::dm::ValRefInt v(0, i32, vsc::dm::ValRef::Flags::None);
-    setResult(v);
-}
+void EvalBase::setError(const char *fmt, ...) {
+    char tmp[1024];
+    va_list ap;
 
-void EvalBase::setError(const std::string &msg) {
-    m_error = true;
-    m_errMsg = msg;
-}
-
-bool EvalBase::haveError() const {
-    return m_error;
-}
-
-const std::string &EvalBase::getError() const {
-    return m_errMsg;
-}
-
-bool EvalBase::haveResult() const {
-    DEBUG("haveResult: %d", m_result.valid());
-    return m_result.valid();
+    va_start(ap, fmt);
+    vsnprintf(tmp, sizeof(tmp), fmt, ap);
+    va_end(ap);
+    setResult(
+        m_ctxt->ctxt()->mkValRefStr(tmp),
+        EvalFlags::Error);
 }
 
 }

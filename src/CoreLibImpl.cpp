@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/impl/ValRefStr.h"
+#include "BuiltinFuncInfo.h"
 #include "CoreLibImpl.h"
 #include "StringFormatter.h"
 
@@ -38,35 +39,62 @@ CoreLibImpl::~CoreLibImpl() {
 
 }
 
-IBuiltinFuncInfo::FuncT CoreLibImpl::findBuiltin(
+IBuiltinFuncInfo *CoreLibImpl::findBuiltin(
         const std::string           &name) {
-    IBuiltinFuncInfo::FuncT ret;
+    IBuiltinFuncInfo *ret = 0;
 
     if (name.substr(0,9) == "std_pkg::") {
         std::string leaf = name.substr(9);
         if (leaf == "print") {
-            ret = std::bind(
+            ret = new BuiltinFuncInfo(std::bind(
                 &CoreLibImpl::Print, 
                 this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         }
     } else if (name.substr(0,14) == "addr_reg_pkg::") {
         std::string leaf = name.substr(14);
         if (leaf == "addr_value") {
-            ret = std::bind(
+            ret = new BuiltinFuncInfo(std::bind(
                 &CoreLibImpl::AddrValue, 
                 this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         } else if (leaf == "make_handle_from_claim") {
-            ret = std::bind(
+            ret = new BuiltinFuncInfo(std::bind(
                 &CoreLibImpl::MakeHandleFromClaim, 
                 this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         } else if (leaf == "make_handle_from_handle") {
-            ret = std::bind(
+            ret = new BuiltinFuncInfo(std::bind(
                 &CoreLibImpl::MakeHandleFromHandle, 
                 this,
-                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        } else if (leaf.substr(0,5) == "reg_c") {
+            int32_t leaf_idx = leaf.rfind("::");
+            std::string fname = leaf.substr(leaf_idx+2);
+            DEBUG("TODO: handle reg_c functions %s", fname.c_str());
+            if (fname == "read") {
+               ret = new BuiltinFuncInfo(std::bind(
+                    &CoreLibImpl::RegRead,
+                    this,
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            } else if (fname == "write") {
+               ret = new BuiltinFuncInfo(std::bind(
+                    &CoreLibImpl::RegWrite,
+                    this,
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            } else if (fname == "read_val") {
+               ret = new BuiltinFuncInfo(std::bind(
+                    &CoreLibImpl::RegReadVal,
+                    this,
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            } else if (fname == "write_val") {
+               ret = new BuiltinFuncInfo(std::bind(
+                    &CoreLibImpl::RegWriteVal,
+                    this,
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            }
+        } else if (leaf.substr(0, 11) == "reg_group_c") {
+            DEBUG("TODO: handle reg_group_c functions");
         }
     } else if (name.substr(0,14) == "executor_pkg::") {
 
@@ -86,7 +114,7 @@ void CoreLibImpl::Print(
         params,
         1);
     m_ctxt->getBackend()->emitMessage(msg);
-    thread->setVoidResult();
+    thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("Print");
 }
 
@@ -112,6 +140,42 @@ void CoreLibImpl::MakeHandleFromHandle(
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("MakeHandleFromHandle");
     DEBUG_LEAVE("MakeHandleFromHandle");
+}
+
+void CoreLibImpl::RegRead(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("RegRead");
+
+    DEBUG_LEAVE("RegRead");
+}
+
+void CoreLibImpl::RegWrite(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("RegWrite");
+
+    DEBUG_LEAVE("RegWrite");
+}
+
+void CoreLibImpl::RegReadVal(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("RegReadVal");
+
+    DEBUG_LEAVE("RegReadVal");
+}
+
+void CoreLibImpl::RegWriteVal(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("RegWriteVal");
+    
+    DEBUG_LEAVE("RegWriteVal");
 }
 
 void CoreLibImpl::RegGroupSetHandle(

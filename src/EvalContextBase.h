@@ -114,23 +114,22 @@ public:
 
     virtual void setIdx(int32_t idx) { }
 
+
+    virtual EvalFlags getFlags() const override;
+
+    virtual bool hasFlags(EvalFlags flags) const override;
+
+    virtual void setFlags(EvalFlags flags) override;
+
+    virtual void clrFlags(EvalFlags flags=EvalFlags::AllFlags) override;
+
     virtual const vsc::dm::ValRef &getResult() const override { return m_result; }
 
-    virtual vsc::dm::ValRef &moveResult() override { return m_result; }
+    virtual void setResult(
+        const vsc::dm::ValRef   &r,
+        EvalFlags               flags=EvalFlags::Complete) override;
 
-    virtual void clrResult(bool clr_err=false) override { m_result.reset(); }
-
-    virtual void setResult(const vsc::dm::ValRef &r) override;
-    
-    void setVoidResult();
-
-    virtual void setError(const std::string &msg) override;
-
-    virtual bool haveError() const override;
-
-    virtual const std::string &getError() const override;
-
-    virtual bool haveResult() const override;
+    virtual void setError(const char *fmt, ...) override;
 
     virtual IEvalThreadId *getThreadId() const override { 
         return m_thread_id.get();
@@ -138,16 +137,6 @@ public:
 
     virtual void setThreadId(IEvalThreadId *tid) override { 
         m_thread_id = IEvalThreadIdUP(tid);
-    }
-
-    virtual void pushStackFrame(IEvalStackFrame *frame) override {
-        m_callstack.push_back(IEvalStackFrameUP(frame));
-    }
-
-    virtual IEvalStackFrame *stackFrame(int32_t idx=0) override;
-
-    virtual void popStackFrame() override {
-        m_callstack.pop_back();
     }
 
     virtual int32_t evalMethodCallContext(
@@ -224,10 +213,8 @@ protected:
 
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;
-    std::vector<IEvalStackFrameUP>          m_callstack;
     vsc::dm::ValRef                         m_result;
-    bool                                    m_error;
-    std::string                             m_errMsg;
+    EvalFlags                               m_flags;
     IEvalThreadIdUP                         m_thread_id;
     std::unordered_map<dm::IPyImport *, pyapi::PyEvalObj *>     m_module_m;
     BuiltinFuncInfoM                        m_func_info_m;

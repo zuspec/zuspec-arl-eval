@@ -46,11 +46,11 @@ cdef class Eval(object):
 
     cpdef bool eval(self)
 
+    cpdef bool hasFlags(self, flags)
+
     cpdef vsc.ValRef getResult(self)
 
-    cpdef void setResult(self, vsc.ValRef r)
-
-    cpdef vsc.ValRef moveResult(self)
+    cpdef void setResult(self, vsc.ValRef r, flags=*)
 
     @staticmethod
     cdef Eval mk(decl.IEval *hndl, bool owned=*)
@@ -61,13 +61,13 @@ cdef class EvalContext(object):
 
     cpdef bool eval(self)
 
+    cpdef bool hasFlags(self, flags)
+
+    cpdef vsc.ValRef getResult(self)
+
     cpdef getSolveFunctions(self)
 
     cpdef getTargetFunctions(self)
-
-    cpdef bool haveError(self)
-
-    cpdef str getError(self)
 
     cpdef bool addPyModule(self, str name, object mod)
 

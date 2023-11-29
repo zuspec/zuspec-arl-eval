@@ -28,6 +28,30 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
+enum class EvalFlags {
+    NoFlags     = 0,
+    AllFlags    = 0xFF,
+    Complete    = (1 << 0),
+    Error       = (1 << 1),
+    Break       = (1 << 2),
+    Continue    = (1 << 3),
+    Return      = (1 << 4)
+};
+
+static inline EvalFlags operator | (const EvalFlags lhs, const EvalFlags rhs) {
+        return static_cast<EvalFlags>(
+                        static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+}
+
+static inline EvalFlags operator & (const EvalFlags lhs, const EvalFlags rhs) {
+        return static_cast<EvalFlags>(
+                        static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+}
+
+static inline EvalFlags operator ~ (const EvalFlags lhs) {
+        return static_cast<EvalFlags>(~static_cast<uint32_t>(lhs));
+}
+
 class IEval;
 using IEvalUP=vsc::dm::UP<IEval>;
 class IEval :
@@ -50,8 +74,23 @@ public:
 
     virtual IEval *clone() = 0;
 
+    virtual EvalFlags getFlags() const = 0;
+
+    virtual bool hasFlags(EvalFlags flags) const = 0;
+
+    virtual void setFlags(EvalFlags flags) = 0;
+
+    virtual void clrFlags(EvalFlags flags=EvalFlags::AllFlags) = 0;
+
     virtual const vsc::dm::ValRef &getResult() const = 0;
 
+    virtual void setResult(
+        const vsc::dm::ValRef   &r,
+        EvalFlags               flags=EvalFlags::Complete) = 0;
+
+    virtual void setError(const char *fmt, ...) = 0;
+
+#ifdef UNDEFINED
     /**
      * @brief Moves the result, clearing the result here
      * 
@@ -64,7 +103,6 @@ public:
      * 
      * @param r 
      */
-    virtual void setResult(const vsc::dm::ValRef &r) = 0;
 
     virtual void setVoidResult() = 0;
 
@@ -77,6 +115,7 @@ public:
     virtual void clrResult(bool clr_err=false) = 0;
 
     virtual bool haveResult() const = 0;
+#endif
 
 };
 

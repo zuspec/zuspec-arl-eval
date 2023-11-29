@@ -59,14 +59,14 @@ int32_t EvalTypeProcStmt::eval() {
         m_thread->pushEval(this);
 
         // Safety
-        setVoidResult();
+        setFlags(EvalFlags::Complete);
     }
 
 
     // In this case, we delegate to the individual visit methods
     m_stmt->accept(m_this);
 
-    int32_t ret = !haveResult();
+    int32_t ret = !hasFlags(EvalFlags::Complete);
 
     if (m_initial) {
         m_initial = false;
@@ -93,7 +93,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         case 0: {
             m_idx = 1;
 
-            clrResult();
+            clrFlags(EvalFlags::Complete);
 
             if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, s->getRhs()).eval()) {
                 DEBUG("Suspending due to EvalTypeExpr");
@@ -103,7 +103,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         case 1: {
             m_idx = 2;
 
-            DEBUG("pre-GetLval: haveResult: %d", haveResult());
+            DEBUG("pre-GetLval: haveResult: %d", hasFlags(EvalFlags::Complete));
 
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
@@ -112,14 +112,14 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                     this
                 ).eval(s->getLhs()));
 
-            DEBUG("post-GetLval: haveResult: %d", haveResult());
+            DEBUG("post-GetLval: haveResult: %d", hasFlags(EvalFlags::Complete));
 
             if (!lval.valid()) {
                 setError("null lval");
                 break;
             }
 
-            if (!haveResult()) {
+            if (!hasFlags(EvalFlags::Complete)) {
                 setError("No result");
                 break;
             }
@@ -148,8 +148,8 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
         }
         case 2: {
             DEBUG("setVoidResult");
-            setVoidResult();
-            DEBUG("haveResult: %d", haveResult());
+            setFlags(EvalFlags::Complete);
+            DEBUG("haveResult: %d", hasFlags(EvalFlags::Complete));
         }
     }
 
@@ -166,7 +166,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
                 EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, s->getExpr());
                 if (evaluator.eval()) {
                     // expression evaluation blocked
-                    clrResult();
+                    clrFlags(EvalFlags::Complete);
                     break;
                 }
             } else {
@@ -175,7 +175,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
         }
         case 1: {
             // Result from the previous has been reflected up. 
-            setVoidResult();
+            setFlags(EvalFlags::Complete);
         }
     }
 
@@ -191,7 +191,7 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
             m_idx = 1;
 
             if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, s->getCond()).eval()) {
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 break;
             }
         }
@@ -208,13 +208,13 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
             if (cond.valid() && cond.get_val()) {
                 DEBUG("True branch");
                 if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, s->getTrue()).eval()) {
-                    clrResult();
+                    clrFlags(EvalFlags::Complete);
                     break;
                 }
             } else if (s->getFalse()) {
                 DEBUG("False branch");
                 if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, s->getFalse()).eval()) {
-                    clrResult();
+                    clrFlags(EvalFlags::Complete);
                     break;
                 }
             }
@@ -236,7 +236,7 @@ void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
                 EvalTypeExpr evaluator(m_ctxt, m_thread, m_vp_id, s->getExpr());
 
                 if (evaluator.eval()) {
-                    clrResult();
+                    clrFlags(EvalFlags::Complete);
                     break;
                 }
             } else {
@@ -247,6 +247,7 @@ void EvalTypeProcStmt::visitTypeProcStmtReturn(dm::ITypeProcStmtReturn *s) {
 
         case 1: 
             DEBUG("case 1 (result: %p)", getResult()); 
+            setFlags(EvalFlags::Return);
             break;
     }
 

@@ -63,7 +63,7 @@ int32_t EvalContextFunctionContext::eval() {
             setBackend(new EvalBackendBase());
         }
 
-        setVoidResult();
+        setFlags(EvalFlags::Complete);
 
         ret = EvalTypeMethodCallContext(
                 this, 
@@ -74,13 +74,13 @@ int32_t EvalContextFunctionContext::eval() {
                 m_params).eval();
     }
 
-    DEBUG("haveResult: %d", haveResult());
+    DEBUG("haveResult: %d", hasFlags(EvalFlags::Complete));
 
     if (m_initial) {
         m_initial = false;
 
 /*
-        if (!haveResult()) {
+        if (!hasFlags(EvalFlags::Complete)) {
             suspendEval(this);
         } else {
             popEval(this);

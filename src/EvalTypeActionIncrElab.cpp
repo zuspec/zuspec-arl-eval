@@ -52,7 +52,7 @@ int32_t EvalTypeActionIncrElab::eval() {
     DEBUG_ENTER("eval");
     if (m_initial) {
         m_thread->pushEval(this);
-        setVoidResult();
+        setFlags(EvalFlags::Complete);
     }
 
     switch (m_idx) {
@@ -72,7 +72,7 @@ int32_t EvalTypeActionIncrElab::eval() {
             if (EvalTypeExecList(m_ctxt, m_thread, getIdx(),
                 action_t->getExecs(dm::ExecKindT::PreSolve)).eval()) {
                 DEBUG("Exec pre-solve suspended");
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 break;
             }
 
@@ -81,7 +81,7 @@ int32_t EvalTypeActionIncrElab::eval() {
             if (EvalTypeExecList(m_ctxt, m_thread, getIdx(),
                 action_t->getExecs(dm::ExecKindT::PostSolve)).eval()) {
                 DEBUG("Exec post-solve suspended");
-                clrResult();
+                clrFlags(EvalFlags::Complete);
                 break;
             }
         }
@@ -95,7 +95,7 @@ int32_t EvalTypeActionIncrElab::eval() {
                 if (EvalTypeExecList(m_ctxt, m_thread, getIdx(), 
                     action_t->getExecs(dm::ExecKindT::Body)).eval()) {
                     DEBUG("Suspend due to execs");
-                    clrResult();
+                    clrFlags(EvalFlags::Complete);
                     break;
                 } else {
                     DEBUG("EvalTypeExecList completed");
@@ -104,11 +104,11 @@ int32_t EvalTypeActionIncrElab::eval() {
         }
         case 2: {
             // End
-            setVoidResult();
+            setFlags(EvalFlags::Complete);
         }
     }
 
-    int32_t ret = !haveResult();
+    int32_t ret = !hasFlags(EvalFlags::Complete);
 
     if (m_initial) {
         m_initial = false;

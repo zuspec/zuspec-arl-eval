@@ -77,23 +77,9 @@ public:
         m_thread_id = IEvalThreadIdUP(tid);
     }
 
-    virtual void setResult(const vsc::dm::ValRef &r) override;
-
-    virtual void pushStackFrame(IEvalStackFrame *frame) override {
-        m_callstack.push_back(IEvalStackFrameUP(frame));
-    }
-
-    virtual IEvalStackFrame *stackFrame(int32_t idx=0) override {
-        if (idx < m_callstack.size()) {
-            return m_callstack.at(m_callstack.size()-idx-1).get();
-        } else {
-            return 0;
-        }
-    }
-
-    virtual void popStackFrame() override {
-        m_callstack.pop_back();
-    }
+    virtual void setResult(
+        const vsc::dm::ValRef   &r,
+        EvalFlags               flags=EvalFlags::Complete) override;
 
     virtual int32_t evalMethodCallContext(
         dm::IDataTypeFunction                   *method,
@@ -117,7 +103,6 @@ protected:
     dmgr::IDebugMgr                     *m_dmgr;
     std::vector<IEvalUP>                m_eval_s;
     IEvalThreadIdUP                     m_thread_id;
-    std::vector<IEvalStackFrameUP>      m_callstack;
 
 };
 
