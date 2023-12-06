@@ -1,5 +1,5 @@
 /**
- * BuiltinFuncInfo.h
+ * TaskInitComponentTree.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,7 +19,8 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/arl/eval/IBuiltinFuncInfo.h"
+#include "dmgr/IDebugMgr.h"
+#include "zsp/arl/eval/IEvalContext.h"
 
 namespace zsp {
 namespace arl {
@@ -27,30 +28,22 @@ namespace eval {
 
 
 
-class BuiltinFuncInfo : public virtual IBuiltinFuncInfo {
+class TaskInitComponentTree {
 public:
-    BuiltinFuncInfo(
-        const FuncT             &impl,
-        BuiltinFuncFlags        flags=BuiltinFuncFlags::NoFlags);
+    TaskInitComponentTree(
+        IEvalContext        *ctxt,
+        IEvalThread         *thread);
 
-    virtual ~BuiltinFuncInfo();
+    virtual ~TaskInitComponentTree();
 
-    virtual const FuncT &getImpl() const override {
-        return m_impl;
-    }
-
-    virtual BuiltinFuncFlags getFlags() const override {
-        return m_flags;
-    }
-
-    virtual bool hasFlags(BuiltinFuncFlags flags) const override {
-        return ((m_flags & flags) != BuiltinFuncFlags::NoFlags);
-    }
-
+    void init(
+        dm::IDataTypeComponent      *root_comp_t,
+        const vsc::dm::ValRef       &root_comp_v);
 
 private:
-    FuncT                       m_impl;
-    BuiltinFuncFlags            m_flags;
+    static dmgr::IDebug                 *m_dbg;
+    IEvalContext                        *m_ctxt;
+    IEvalThread                         *m_thread;
 
 };
 

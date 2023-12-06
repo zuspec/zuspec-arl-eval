@@ -27,7 +27,8 @@ namespace eval {
 
 
 BuiltinFuncInfo::BuiltinFuncInfo(
-    const IBuiltinFuncInfo::FuncT &impl) : m_impl(impl) {
+    const IBuiltinFuncInfo::FuncT   &impl,
+    BuiltinFuncFlags                flags) : m_impl(impl), m_flags(flags) {
 
 }
 

@@ -1,5 +1,5 @@
 /**
- * BuiltinFuncInfo.h
+ * TaskGetSubField.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,7 +19,8 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/arl/eval/IBuiltinFuncInfo.h"
+#include "dmgr/IDebugMgr.h"
+#include "zsp/arl/dm/impl/VisitorBase.h"
 
 namespace zsp {
 namespace arl {
@@ -27,30 +28,28 @@ namespace eval {
 
 
 
-class BuiltinFuncInfo : public virtual IBuiltinFuncInfo {
+class TaskGetSubField : public virtual dm::VisitorBase {
 public:
-    BuiltinFuncInfo(
-        const FuncT             &impl,
-        BuiltinFuncFlags        flags=BuiltinFuncFlags::NoFlags);
+    TaskGetSubField(dmgr::IDebugMgr *dmgr);
 
-    virtual ~BuiltinFuncInfo();
+    virtual ~TaskGetSubField();
 
-    virtual const FuncT &getImpl() const override {
-        return m_impl;
-    }
+    vsc::dm::ValRef getMutVal(
+        vsc::dm::ValRef     &root,
+        int32_t             offset);
 
-    virtual BuiltinFuncFlags getFlags() const override {
-        return m_flags;
-    }
+	virtual void visitDataTypeArlStruct(dm::IDataTypeArlStruct *t) override;
 
-    virtual bool hasFlags(BuiltinFuncFlags flags) const override {
-        return ((m_flags & flags) != BuiltinFuncFlags::NoFlags);
-    }
+    virtual void visitDataTypeStruct(vsc::dm::IDataTypeStruct *i);
 
+	virtual void visitTypeFieldPhy(vsc::dm::ITypeFieldPhy *f) override;
+
+	virtual void visitTypeFieldRef(vsc::dm::ITypeFieldRef *f) override;
 
 private:
-    FuncT                       m_impl;
-    BuiltinFuncFlags            m_flags;
+    static dmgr::IDebug         *m_dbg;
+    vsc::dm::ValRef             m_root;
+    int32_t                     m_offset;
 
 };
 

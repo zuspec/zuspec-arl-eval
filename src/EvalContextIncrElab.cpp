@@ -25,6 +25,7 @@
 #include "EvalTypeActionIncrElab.h"
 #include "TaskElaborateRegGroupTypes.h"
 #include "TaskEvalComponentExecInit.h"
+#include "TaskInitComponentTree.h"
 
 
 namespace zsp {
@@ -105,11 +106,10 @@ int32_t EvalContextIncrElab::initCompTree() {
 
     m_pss_top->initCompTree();
 
-    // Process InitUp/InitDown exec blocks
-    TaskEvalComponentExecInit(this, this).eval(
+    TaskInitComponentTree(this, this).init(
         m_pss_top->getDataTypeT<dm::IDataTypeComponent>(),
         m_pss_top->getMutVal());
-    
+
     TaskElaborateRegGroupTypes(this).elaborate(m_pss_top.get());
 
     m_pss_top_is_init = true;

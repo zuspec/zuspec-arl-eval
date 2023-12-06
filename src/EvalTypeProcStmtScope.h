@@ -62,7 +62,6 @@ public:
 
 private:
     static dmgr::IDebug                     *m_dbg;
-    int32_t                                 m_vp_id;
     dm::ITypeProcStmtScope                  *m_scope;
     std::vector<vsc::dm::IModelFieldUP>     m_locals;
     uint32_t                                m_idx;

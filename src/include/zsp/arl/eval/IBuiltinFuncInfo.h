@@ -29,6 +29,26 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
+enum class BuiltinFuncFlags {
+    NoFlags         = 0,
+    RegFunc         = (1 << 0),
+    RegFuncStruct   = (1 << 1),
+    RegFuncWrite    = (1 << 2)
+};
+
+static inline BuiltinFuncFlags operator | (const BuiltinFuncFlags lhs, const BuiltinFuncFlags rhs) {
+        return static_cast<BuiltinFuncFlags>(
+                        static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+}
+
+static inline BuiltinFuncFlags operator & (const BuiltinFuncFlags lhs, const BuiltinFuncFlags rhs) {
+        return static_cast<BuiltinFuncFlags>(
+                        static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+}
+
+static inline BuiltinFuncFlags operator ~ (const BuiltinFuncFlags lhs) {
+        return static_cast<BuiltinFuncFlags>(~static_cast<uint32_t>(lhs));
+}
 
 class IBuiltinFuncInfo;
 using IBuiltinFuncInfoUP=vsc::dm::UP<IBuiltinFuncInfo>;
@@ -43,6 +63,10 @@ public:
     virtual ~IBuiltinFuncInfo() { }
 
     virtual const FuncT &getImpl() const = 0;
+
+    virtual BuiltinFuncFlags getFlags() const = 0;
+
+    virtual bool hasFlags(BuiltinFuncFlags flags) const = 0;
 
 };
 

@@ -34,9 +34,10 @@ EvalTypeFunction::EvalTypeFunction(
     IEvalThread                         *thread,
     int32_t                             vp_id,
     dm::IDataTypeFunction               *func,
-    const std::vector<vsc::dm::ValRef>  &params) :
+    const std::vector<vsc::dm::ValRef>  &params,
+    bool                                is_ctxt) :
         EvalBase(ctxt, thread, vp_id), m_func(func),
-        m_params(params.begin(), params.end()) {
+        m_params(params.begin(), params.end()), m_is_ctxt(is_ctxt) {
     DEBUG_INIT("zsp::arl::eval::EvalTypeFunction", ctxt->getDebugMgr());
 
 }
@@ -99,11 +100,15 @@ vsc::dm::ValRef EvalTypeFunction::getImmVal(
     if (root_kind == vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope) {
         if (root_offset == 0) {
             // This scope
+            if (m_is_ctxt) {
+                val_offset += 1;
+            }
             if (val_offset < m_params.size()) {
                 DEBUG("Get parameter %d (%lld)", val_offset, m_params.at(val_offset).vp());
                 return m_params.at(val_offset);
             } else {
-                ERROR("out-of-bounds parameter value request");
+                ERROR("out-of-bounds parameter value request (idx=%d sz=%d)",
+                val_offset, m_params.size());
             }
         } else {
             // Delegate up
@@ -131,11 +136,15 @@ vsc::dm::ValRef EvalTypeFunction::getMutVal(
     if (root_kind == vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope) {
         if (root_offset == 0) {
             // This scope
+            if (m_is_ctxt) {
+                val_offset += 1;
+            }
             DEBUG("Get parameter %d (sz=%d)", val_offset, m_params.size());
             if (val_offset < m_params.size()) {
                 return m_params.at(val_offset);
             } else {
-                ERROR("out-of-bounds parameter value request");
+                ERROR("out-of-bounds parameter value request (idx=%d sz=%d)",
+                    val_offset, m_params.size());
             }
         } else {
             // Delegate up

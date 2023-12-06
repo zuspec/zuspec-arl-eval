@@ -35,13 +35,13 @@ EvalTypeProcStmtScope::EvalTypeProcStmtScope(
     IEvalThread                 *thread,
     int32_t                     vp_id,
     dm::ITypeProcStmtScope      *scope) : 
-        EvalBase(ctxt, thread), m_vp_id(vp_id), m_scope(scope), 
+        EvalBase(ctxt, thread, vp_id), m_scope(scope), 
         m_idx(0), m_subidx(0) {
     DEBUG_INIT("EvalTypeProcStmtScope", ctxt->getDebugMgr());
 }
 
 EvalTypeProcStmtScope::EvalTypeProcStmtScope(EvalTypeProcStmtScope *o) : 
-    EvalBase(o), m_vp_id(o->m_vp_id), m_scope(o->m_scope), 
+    EvalBase(o), m_scope(o->m_scope), 
     m_idx(o->m_idx), m_subidx(o->m_subidx), 
     m_build_ctxt(std::move(o->m_build_ctxt)) {
     for (std::vector<vsc::dm::IModelFieldUP>::iterator

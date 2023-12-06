@@ -19,10 +19,13 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/TaskComputeTypePackedSize.h"
 #include "vsc/dm/impl/ValRefStr.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 #include "BuiltinFuncInfo.h"
 #include "CoreLibImpl.h"
 #include "StringFormatter.h"
+#include "EvalTypeFunction.h"
 
 
 namespace zsp {
@@ -76,22 +79,26 @@ IBuiltinFuncInfo *CoreLibImpl::findBuiltin(
                ret = new BuiltinFuncInfo(std::bind(
                     &CoreLibImpl::RegRead,
                     this,
-                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                    BuiltinFuncFlags::RegFunc);
             } else if (fname == "write") {
                ret = new BuiltinFuncInfo(std::bind(
                     &CoreLibImpl::RegWrite,
                     this,
-                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                    BuiltinFuncFlags::RegFunc);
             } else if (fname == "read_val") {
                ret = new BuiltinFuncInfo(std::bind(
                     &CoreLibImpl::RegReadVal,
                     this,
-                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                    BuiltinFuncFlags::RegFunc);
             } else if (fname == "write_val") {
                ret = new BuiltinFuncInfo(std::bind(
                     &CoreLibImpl::RegWriteVal,
                     this,
-                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                    BuiltinFuncFlags::RegFunc);
             }
         } else if (leaf.substr(0, 11) == "reg_group_c") {
             DEBUG("TODO: handle reg_group_c functions");
@@ -147,7 +154,7 @@ void CoreLibImpl::RegRead(
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegRead");
-
+    thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("RegRead");
 }
 
@@ -156,7 +163,8 @@ void CoreLibImpl::RegWrite(
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegWrite");
-
+    // TODO: identify proper-size mem function
+    thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("RegWrite");
 }
 
@@ -165,7 +173,7 @@ void CoreLibImpl::RegReadVal(
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegReadVal");
-
+    thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("RegReadVal");
 }
 
@@ -174,7 +182,28 @@ void CoreLibImpl::RegWriteVal(
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegWriteVal");
+    IEvalContextInt *ctxt_i = dynamic_cast<IEvalContextInt *>(m_ctxt);
+    uint32_t sz = vsc::dm::TaskComputeTypePackedSize().compute(
+        func_t->getParameters().at(0)->getDataType());
+    dm::IDataTypeFunction *func = 0;
+
+    for (uint32_t i=0; i<params.size(); i++) {
+        DEBUG("Param[%d] valid=%d", i, params.at(i).valid());
+    }
+    fflush(stdout);
+
+    if (sz > 32) {
+        func = ctxt_i->getFunction(EvalContextFunc::Write64);
+    } else if (sz > 16) {
+        func = ctxt_i->getFunction(EvalContextFunc::Write32);
+    } else if (sz > 8) {
+        func = ctxt_i->getFunction(EvalContextFunc::Write16);
+    } else {
+        func = ctxt_i->getFunction(EvalContextFunc::Write8);
+    }
     
+    DEBUG("width=%d", sz);
+    ctxt_i->callFuncReq(thread, func, params);
     DEBUG_LEAVE("RegWriteVal");
 }
 

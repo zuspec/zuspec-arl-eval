@@ -33,7 +33,7 @@ namespace eval {
 
 class EvalTypeExpr :
     public virtual IEval,
-    public virtual EvalBase,
+    public EvalBase,
     public virtual dm::VisitorBase {
 public:
     EvalTypeExpr(
@@ -79,8 +79,6 @@ protected:
     vsc::dm::ValRef                 m_val_rhs;
     IBuiltinFuncInfo                *m_builtin_i;
     std::vector<vsc::dm::ValRef>    m_params;
-    dm::IDataTypeFunction           *m_func;
-    TaskEvalCheckRegAccess::Result  m_isreg_res;
     uint32_t                        m_idx;
     uint32_t                        m_subidx;
 

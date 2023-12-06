@@ -33,7 +33,7 @@ EvalTypeExecList::EvalTypeExecList(
     IEvalThread                         *thread,
     int32_t                             vp_id,
     const std::vector<dm::ITypeExecUP>  &execs) :
-        EvalBase(ctxt, thread, m_vp_id), m_execs(execs), m_idx(0) {
+        EvalBase(ctxt, thread, vp_id), m_execs(execs), m_idx(0) {
     DEBUG_INIT("EvalTypeExecList", ctxt->getDebugMgr());
 }
 
@@ -89,7 +89,7 @@ IEval *EvalTypeExecList::clone() {
 }
 
 void EvalTypeExecList::visitTypeExecProc(dm::ITypeExecProc *e) {
-    DEBUG_ENTER("visitTypeExecProc");
+    DEBUG_ENTER("visitTypeExecProc vp_id=%d", m_vp_id);
 
     EvalTypeProcStmtScope evaluator(
         m_ctxt, 

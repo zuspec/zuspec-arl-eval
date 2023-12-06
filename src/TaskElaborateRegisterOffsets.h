@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include <unordered_set>
 #include <vector>
 #include "zsp/arl/dm/impl/VisitorBase.h"
 #include "zsp/arl/eval/IEvalContext.h"
@@ -35,21 +36,38 @@ namespace eval {
 
 class TaskElaborateRegisterOffsets : public virtual dm::VisitorBase {
 public:
-    TaskElaborateRegisterOffsets(IEvalContext *ctxt);
+    TaskElaborateRegisterOffsets(
+        IEvalContext    *ctxt,
+        IEvalThread     *thread);
 
     virtual ~TaskElaborateRegisterOffsets();
 
-    void elaborate(dm::IDataTypeComponent *reg_group);
+    void elaborate(dm::IDataTypeComponent *root_comp);
+
+	virtual void visitDataTypeComponent(dm::IDataTypeComponent *i) override;
+
+	virtual void visitTypeField(vsc::dm::ITypeField *f) override;
 
 	virtual void visitTypeFieldReg(dm::ITypeFieldReg *f) override;
 
 	virtual void visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *f) override;
 
 private:
-    static dmgr::IDebug                     *m_dbg;
-    IEvalContext                            *m_ctxt;
-    std::vector<dm::ITypeFieldRegGroup *>   m_field_s;
-    uint32_t                                m_depth;
+    struct OffsetFuncInfo {
+        dm::IDataTypeFunction   *instance_off_f;
+        dm::IDataTypeFunction   *instance_array_off_f;
+    };
+
+
+private:
+    static dmgr::IDebug                             *m_dbg;
+    IEvalContext                                    *m_ctxt;
+    IEvalThread                                     *m_thread;
+    std::unordered_set<dm::IDataTypeComponent *>    m_processed_comp_s;
+    std::vector<uint32_t>                           m_offset_s;
+    std::vector<dm::ITypeFieldRegGroup *>           m_field_s;
+    std::vector<OffsetFuncInfo>                     m_offset_func_s;
+    uint32_t                                        m_depth;
 };
 
 }

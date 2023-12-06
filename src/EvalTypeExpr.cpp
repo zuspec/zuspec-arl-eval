@@ -28,6 +28,7 @@
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
+#include "EvalTypeExprRegOffset.h"
 #include "EvalTypeFunction.h"
 
 
@@ -352,14 +353,32 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
         case 0: {
             // Determine if we need to rewrite a register access 
             m_idx = 1;
+            m_builtin_i = ctxtT<IEvalContextInt>()->getBuiltinFuncInfo(e->getTarget());
+
+#ifdef UNDEFINED
             m_isreg_res = TaskEvalCheckRegAccess(
                 m_ctxt,
                 m_vp_id).check(
                     e->getContext(),
                     e->getTarget());
+#endif
 
-            if (m_isreg_res.func) {
+            if (m_builtin_i && m_builtin_i->hasFlags(BuiltinFuncFlags::RegFunc)) {
                 DEBUG("Is a register access");
+
+                DEBUG_ENTER("GetRegOffset");
+                if (EvalTypeExprRegOffset(m_ctxt, m_thread, m_vp_id, e->getContext()).eval()) {
+                    DEBUG_LEAVE("GetRegOffset -- blocked");
+                    break;
+                }
+                DEBUG_LEAVE("GetRegOffset");
+
+                /**
+                 * Calculate the address using the address associated with
+                 * the base handle and offets along the path
+                 */
+
+                /*
                 m_func = m_isreg_res.func;
 
                 // Set the base+offset as the result
@@ -368,9 +387,10 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                     base.get_val_u()+m_isreg_res.offset,
                     false,
                     64));
+                 */
+                setResult(m_ctxt->ctxt()->mkValRefInt(10, false, 32));
             } else {
                 DEBUG("Is NOT a register access");
-                m_func = e->getTarget();
 
                 // Push the context handle 
                 if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, e->getContext()).eval()) {
@@ -405,7 +425,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                     break;
                 } else {
                     if (hasFlags(EvalFlags::Complete)) {
-                        fprintf(stdout, "Note: push expr result\n");
+                        DEBUG("push param[%d] (valid=%d)", m_params.size(), getResult().valid());
                         m_params.push_back(getResult());
                     }
                 }
@@ -421,9 +441,10 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
 
             m_idx = 2;
 
-            if (m_isreg_res.func
-                && m_isreg_res.is_write
-                && m_isreg_res.is_struct) {
+            if (m_builtin_i
+                && m_builtin_i->hasFlags(BuiltinFuncFlags::RegFunc)
+                && m_builtin_i->hasFlags(BuiltinFuncFlags::RegFuncWrite)
+                && m_builtin_i->hasFlags(BuiltinFuncFlags::RegFuncStruct)) {
                 // Must convert second parameter (data) from struct
                 // to integer
                 DEBUG("Convert struct-type parameter to integer");
@@ -433,11 +454,23 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
             }
 
             DEBUG_ENTER("callFuncReq");
-            ctxtT<IEvalContextInt>()->callFuncReq(
-                m_thread,
-                m_func,
-                m_params
-            );
+            if (m_builtin_i) {
+                m_builtin_i->getImpl()(m_thread, e->getTarget(), m_params);
+            } else if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
+                !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
+                DEBUG("TODO: Running function locally");
+                EvalTypeFunction(
+                    m_ctxt, 
+                    m_thread, 
+                    m_vp_id, e->getTarget(), 
+                    m_params, true).eval();
+            } else {
+                ctxtT<IEvalContextInt>()->callFuncReq(
+                    m_thread,
+                    e->getTarget(),
+                    m_params
+                );
+            }
 
             if (!hasFlags(EvalFlags::Complete)) {
                 break;
@@ -449,6 +482,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
             DEBUG_LEAVE("callFuncReq haveResult=%d", hasFlags(EvalFlags::Complete));
 //            setResult(m_thread->getResult());
 
+#ifdef UNDEFINED
             if (m_isreg_res.func
                 && !m_isreg_res.is_write
                 && m_isreg_res.is_struct) {
@@ -463,6 +497,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 vsc::dm::ValRefStruct res(getResult());
                 DEBUG("res[0]=0x%08x", vsc::dm::ValRefInt(res.getFieldRef(0)).get_val_u());
             }
+#endif
         }
     }
 
@@ -513,11 +548,16 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             DEBUG("[%d] Function %s: m_builtin_i=%p", 
                 getIdx(), e->getTarget()->name().c_str(), m_builtin_i);
             if (m_builtin_i) {
-                m_builtin_i->getImpl()(m_thread, m_func, m_params);
+                m_builtin_i->getImpl()(m_thread, e->getTarget(), m_params);
             } else if (!e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import) &&
                 !e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Core)) {
                 DEBUG("TODO: Running function locally");
-                EvalTypeFunction(m_ctxt, m_thread, m_vp_id, e->getTarget(), m_params).eval();
+                EvalTypeFunction(
+                    m_ctxt, 
+                    m_thread, 
+                    m_vp_id, 
+                    e->getTarget(), 
+                    m_params, false).eval();
             } else {
                 DEBUG_ENTER("Context: callFuncReq");
                 ctxtT<IEvalContextInt>()->callFuncReq(

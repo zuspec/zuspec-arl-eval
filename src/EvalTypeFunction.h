@@ -36,7 +36,8 @@ public:
         IEvalThread                         *thread,
         int32_t                             vp_id,
         dm::IDataTypeFunction               *func,
-        const std::vector<vsc::dm::ValRef>  &params);
+        const std::vector<vsc::dm::ValRef>  &params,
+        bool                                is_ctxt);
 
     EvalTypeFunction(const EvalTypeFunction *o);
 
@@ -59,6 +60,7 @@ public:
 protected:
     dm::IDataTypeFunction               *m_func;
     std::vector<vsc::dm::ValRef>        m_params;
+    bool                                m_is_ctxt;
 
 };
 

@@ -1,5 +1,5 @@
 /**
- * BuiltinFuncInfo.h
+ * EvalTypeExprRegOffset.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,7 +19,7 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/arl/eval/IBuiltinFuncInfo.h"
+#include "EvalTypeExpr.h"
 
 namespace zsp {
 namespace arl {
@@ -27,30 +27,27 @@ namespace eval {
 
 
 
-class BuiltinFuncInfo : public virtual IBuiltinFuncInfo {
+class EvalTypeExprRegOffset : public virtual EvalTypeExpr {
 public:
-    BuiltinFuncInfo(
-        const FuncT             &impl,
-        BuiltinFuncFlags        flags=BuiltinFuncFlags::NoFlags);
+    EvalTypeExprRegOffset(
+        IEvalContext        *ctxt,
+        IEvalThread         *thread,
+        int32_t             vp_id,
+        vsc::dm::ITypeExpr  *expr);
 
-    virtual ~BuiltinFuncInfo();
+    EvalTypeExprRegOffset(EvalTypeExprRegOffset *o);
 
-    virtual const FuncT &getImpl() const override {
-        return m_impl;
-    }
+    virtual ~EvalTypeExprRegOffset();
 
-    virtual BuiltinFuncFlags getFlags() const override {
-        return m_flags;
-    }
+    virtual int32_t eval() override;
 
-    virtual bool hasFlags(BuiltinFuncFlags flags) const override {
-        return ((m_flags & flags) != BuiltinFuncFlags::NoFlags);
-    }
+    virtual IEval *clone() override;
 
+	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
 
-private:
-    FuncT                       m_impl;
-    BuiltinFuncFlags            m_flags;
+protected:
+    uint64_t                m_value;
+    bool                    m_offset_mode;
 
 };
 
