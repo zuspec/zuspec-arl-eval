@@ -22,6 +22,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "vsc/dm/impl/ValRef.h"
 #include "zsp/arl/dm/impl/VisitorBase.h"
+#include "zsp/arl/eval/IEvalContext.h"
 
 namespace zsp {
 namespace arl {
@@ -31,7 +32,7 @@ namespace eval {
 
 class TaskGetRegBaseAddr : public dm::VisitorBase {
 public:
-    TaskGetRegBaseAddr(dmgr::IDebugMgr *dmgr);
+    TaskGetRegBaseAddr(IEvalContext *ctxt);
 
     virtual ~TaskGetRegBaseAddr();
 
@@ -47,6 +48,7 @@ public:
 
 private:
     static dmgr::IDebug             *m_dbg;
+    IEvalContext                    *m_ctxt;
     vsc::dm::ValRef                 m_val;
 
 };

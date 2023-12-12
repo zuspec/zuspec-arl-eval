@@ -388,7 +388,6 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                     false,
                     64));
                  */
-                setResult(m_ctxt->ctxt()->mkValRefInt(10, false, 32));
             } else {
                 DEBUG("Is NOT a register access");
 

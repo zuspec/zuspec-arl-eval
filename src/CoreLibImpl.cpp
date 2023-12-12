@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/IDataTypeWrapper.h"
 #include "vsc/dm/impl/TaskComputeTypePackedSize.h"
 #include "vsc/dm/impl/ValRefStr.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
@@ -101,7 +102,17 @@ IBuiltinFuncInfo *CoreLibImpl::findBuiltin(
                     BuiltinFuncFlags::RegFunc);
             }
         } else if (leaf.substr(0, 11) == "reg_group_c") {
-            DEBUG("TODO: handle reg_group_c functions");
+            int32_t leaf_idx = leaf.rfind("::");
+            std::string fname = leaf.substr(leaf_idx+2);
+
+            DEBUG("reg_group_c: fname=\"%s\"", fname.c_str());
+            if (fname == "set_handle") {
+                DEBUG("Returning RegGroupSetHandle");
+                ret = new BuiltinFuncInfo(std::bind(
+                    &CoreLibImpl::RegGroupSetHandle,
+                    this,
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            }
         }
     } else if (name.substr(0,14) == "executor_pkg::") {
 
@@ -115,8 +126,8 @@ void CoreLibImpl::Print(
             dm::IDataTypeFunction           *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     std::string fmt = vsc::dm::ValRefStr(params.at(0)).val_s();
-    DEBUG_ENTER("Print");
-    const std::string &msg = StringFormatter(m_ctxt->getDebugMgr()).format(
+    DEBUG_ENTER("Print %s", fmt.c_str());
+    const std::string msg = StringFormatter(m_ctxt->getDebugMgr()).format(
         fmt,
         params,
         1);
@@ -173,7 +184,27 @@ void CoreLibImpl::RegReadVal(
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegReadVal");
-    thread->setFlags(EvalFlags::Complete);
+    IEvalContextInt *ctxt_i = dynamic_cast<IEvalContextInt *>(m_ctxt);
+    uint32_t sz = vsc::dm::TaskComputeTypePackedSize().compute(
+        func_t->getReturnType());
+    dm::IDataTypeFunction *func = 0;
+
+    DEBUG("width=%d", sz);
+    for (uint32_t i=0; i<params.size(); i++) {
+        DEBUG("Param[%d] valid=%d", i, params.at(i).valid());
+    }
+
+    if (sz > 32) {
+        func = ctxt_i->getFunction(EvalContextFunc::Read64);
+    } else if (sz > 16) {
+        func = ctxt_i->getFunction(EvalContextFunc::Read32);
+    } else if (sz > 8) {
+        func = ctxt_i->getFunction(EvalContextFunc::Read16);
+    } else {
+        func = ctxt_i->getFunction(EvalContextFunc::Read8);
+    }
+    
+    ctxt_i->callFuncReq(thread, func, params);
     DEBUG_LEAVE("RegReadVal");
 }
 
@@ -190,7 +221,6 @@ void CoreLibImpl::RegWriteVal(
     for (uint32_t i=0; i<params.size(); i++) {
         DEBUG("Param[%d] valid=%d", i, params.at(i).valid());
     }
-    fflush(stdout);
 
     if (sz > 32) {
         func = ctxt_i->getFunction(EvalContextFunc::Write64);
@@ -212,6 +242,18 @@ void CoreLibImpl::RegGroupSetHandle(
             dm::IDataTypeFunction               *func_t,
             const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegGroupSetHandle");
+    vsc::dm::IDataTypeWrapper *dt = dynamic_cast<vsc::dm::IDataTypeWrapper *>(params.at(0).type());
+    vsc::dm::ValRefPtr hndl_p(params.at(0));
+
+    // RHS will be an integer (for now), and later an address handle
+    vsc::dm::ValRefInt val_i(params.at(1));
+    DEBUG("val_i: 0x%llx", val_i.get_val_u());
+    hndl_p.set_val(val_i.get_val_u());
+    DEBUG("hndl_p: 0x%0llx", hndl_p.get_val());
+
+    // Context is of Wrapper type
+    // Must set to specified value
+    thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("RegGroupSetHandle");
 }
 

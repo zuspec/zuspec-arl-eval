@@ -29,8 +29,8 @@ namespace arl {
 namespace eval {
 
 
-TaskGetRegBaseAddr::TaskGetRegBaseAddr(dmgr::IDebugMgr *dmgr) {
-    DEBUG_INIT("zsp::arl::eval::TaskGetRegBaseAddr", dmgr);
+TaskGetRegBaseAddr::TaskGetRegBaseAddr(IEvalContext *ctxt) : m_ctxt(ctxt) {
+    DEBUG_INIT("zsp::arl::eval::TaskGetRegBaseAddr", ctxt->getDebugMgr());
 
 }
 
@@ -51,11 +51,10 @@ void TaskGetRegBaseAddr::visitDataTypeWrapper(vsc::dm::IDataTypeWrapper *t) {
     vsc::dm::ValRefPtr val_p(m_val);
 
     DEBUG("base=%lld type=%p", val_p.get_val(), t->getDataTypeVirt());
-    m_val = vsc::dm::ValRef(
-        val_p.vp(),
-        t->getDataTypeVirt(),
-        vsc::dm::ValRef::Flags::None
-    );
+    m_val = m_ctxt->ctxt()->mkValRefInt(
+        val_p.get_val(),
+        false,
+        64);
 
     DEBUG_LEAVE("visitDataTypeWrapper");
 }

@@ -47,7 +47,7 @@ EvalTypeExecList::~EvalTypeExecList() {
 }
 
 int32_t EvalTypeExecList::eval() {
-    DEBUG_ENTER("[%d] eval size=%d idx=%d", getIdx(), m_execs.size(), m_idx);
+    DEBUG_ENTER("eval initial=%d", m_initial);
 
     if (m_initial) {
         m_thread->pushEval(this);
@@ -56,40 +56,41 @@ int32_t EvalTypeExecList::eval() {
         setFlags(EvalFlags::Complete);
     }
 
-    int32_t ret = 0;
 
     if (m_idx < m_execs.size()) {
         while (m_idx < m_execs.size()) {
-            clrFlags(EvalFlags::Complete);
+//            clrFlags(EvalFlags::Complete);
             m_execs.at(m_idx)->accept(m_this);
             m_idx++;
 
             if (!hasFlags(EvalFlags::Complete)) {
-                ret = true;
                 break;
             }
         }
     }
 
+    int32_t ret = !hasFlags(EvalFlags::Complete);
+
     if (m_initial) {
         m_initial = false;
-        if (!hasFlags(EvalFlags::Complete)) {
+        if (ret) {
             m_thread->suspendEval(this);
         } else {
             m_thread->popEval(this);
         }
     }
 
-    DEBUG_LEAVE("[%d] eval (%d)", getIdx(), ret);
+    DEBUG_LEAVE("eval");
     return ret;
 }
 
 IEval *EvalTypeExecList::clone() {
+    DEBUG("clone");
     return new EvalTypeExecList(this);
 }
 
 void EvalTypeExecList::visitTypeExecProc(dm::ITypeExecProc *e) {
-    DEBUG_ENTER("visitTypeExecProc vp_id=%d", m_vp_id);
+    DEBUG_ENTER("visitTypeExecProc kind=%d", e->getKind());
 
     EvalTypeProcStmtScope evaluator(
         m_ctxt, 
@@ -101,7 +102,7 @@ void EvalTypeExecList::visitTypeExecProc(dm::ITypeExecProc *e) {
         clrFlags(EvalFlags::Complete);
     }
 
-    DEBUG_LEAVE("visitTypeExecProc");
+    DEBUG_LEAVE("visitTypeExecProc kind=%d", e->getKind());
 }
 
 }

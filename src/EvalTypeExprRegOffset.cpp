@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/arl/dm/impl/TaskIsRefGroupRef.h"
+#include "zsp/arl/dm/ITypeFieldReg.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "EvalTypeExprRegOffset.h"
 #include "TaskGetSubField.h"
@@ -49,10 +50,26 @@ EvalTypeExprRegOffset::EvalTypeExprRegOffset(EvalTypeExprRegOffset *o) :
 }
 
 int32_t EvalTypeExprRegOffset::eval() {
-    int32_t ret = EvalTypeExpr::eval();
+    DEBUG_ENTER("eval");
+    if (m_initial) {
+        m_thread->pushEval(this);
 
-    if (!ret) {
+        setFlags(EvalFlags::Complete);
+    }
 
+    m_expr->accept(m_this);
+
+//    setResult(m_ctxt->ctxt()->mkValRefInt(20, false, 32));
+
+    int32_t ret = !hasFlags(EvalFlags::Complete);
+
+    if (m_initial) {
+        m_initial = false;
+        if (!ret) {
+            m_thread->popEval(this);
+        } else {
+            m_thread->suspendEval(this);
+        }
     }
 
     return ret;
@@ -97,21 +114,35 @@ void EvalTypeExprRegOffset::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e)
             if (dm::TaskIsRefGroupRef().check(root.field())) {
                 DEBUG("Found register base");
                 have_base = true;
-                TaskGetRegBaseAddr(m_ctxt->getDebugMgr()).get(root);
+//                TaskGetRegBaseAddr(m_ctxt->getDebugMgr()).get(root);
             }
             
             DEBUG("  ref type=%p", root.type());
-            for (uint32_t i=0; i<e->getPath().size(); i++) {
-                root = TaskGetSubField(m_ctxt->getDebugMgr()).getMutVal(
-                    root,
-                    e->getPath().at(i));
-                if (!have_base && dm::TaskIsRefGroupRef().check(root.field())) {
-                    DEBUG("Found register base @ %d", i);
-                    have_base = true;
-                    TaskGetRegBaseAddr(m_ctxt->getDebugMgr()).get(root);
+            vsc::dm::IDataTypeStruct *dt = 0;
+            vsc::dm::ValRefInt addr;
+            for (uint32_t i=1; i<e->getPath().size(); i++) {
+                if (!have_base) {
+                    root = TaskGetSubField(m_ctxt->getDebugMgr()).getMutVal(
+                        root,
+                        e->getPath().at(i));
+                    dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
+                        root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
+                    if (!have_base && dm::TaskIsRefGroupRef().check(root.field())) {
+                        DEBUG("Found register base @ %d", i);
+                        have_base = true;
+                        addr = TaskGetRegBaseAddr(m_ctxt).get(root);
+                        DEBUG("Base: 0x%08llx", addr.get_val_u());
+                    }
+                } else {
+                    dm::ITypeFieldReg *tf = dt->getFieldT<dm::ITypeFieldReg>(e->getPath().at(i));
+                    DEBUG("Offset %d: %s -- %lld", e->getPath().at(i), tf->name().c_str(), tf->getAddrOffset());
+                    addr.set_val(addr.get_val_u() + tf->getAddrOffset());
+                    dt = tf->getDataTypeT<vsc::dm::IDataTypeStruct>();
                 }
             }
-            setResult(root);
+
+            DEBUG("Final Address: 0x%llx", addr.get_val_u());
+            setResult(addr);
         } break;
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::RootExpr: {

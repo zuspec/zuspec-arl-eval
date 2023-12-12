@@ -88,7 +88,7 @@ void TaskElaborateRegisterOffsets::visitTypeFieldReg(dm::ITypeFieldReg *f) {
     // TODO: call offset function
     // TODO: set field offset
     DEBUG("Set register offset to %d", result_i.get_val_u());
-    f->setOffset(result_i.get_val_u());
+    f->setAddrOffset(result_i.get_val_u());
 
     DEBUG_LEAVE("visitTypeFieldRegField");
 }

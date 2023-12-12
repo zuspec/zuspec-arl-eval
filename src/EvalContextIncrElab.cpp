@@ -103,6 +103,7 @@ int32_t EvalContextIncrElab::buildCompTree() {
 }
 
 int32_t EvalContextIncrElab::initCompTree() {
+    DEBUG_ENTER("initCompTree");
 
     m_pss_top->initCompTree();
 
@@ -114,6 +115,7 @@ int32_t EvalContextIncrElab::initCompTree() {
 
     m_pss_top_is_init = true;
 
+    DEBUG_LEAVE("initCompTree");
     return 0;
 }
 
@@ -131,13 +133,14 @@ int32_t EvalContextIncrElab::eval() {
             goto leaving;
         }
 
-        if (!m_pss_top_is_init) {
-            initCompTree();
-        }
-
         if (!getBackend()) {
             DEBUG("Note: using stub implementation of backend");
             setBackend(new EvalBackendBase());
+        }
+
+        DEBUG("eval initial=true top_is_init=%d", m_pss_top_is_init);
+        if (!m_pss_top_is_init) {
+            initCompTree();
         }
 
         m_root_action_f = m_root_action->mkRootField(

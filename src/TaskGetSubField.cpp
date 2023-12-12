@@ -68,8 +68,16 @@ void TaskGetSubField::visitTypeFieldPhy(vsc::dm::ITypeFieldPhy *f) {
 
 void TaskGetSubField::visitTypeFieldRef(vsc::dm::ITypeFieldRef *f) {
     DEBUG_ENTER("visitTypeFieldRef");
+    uintptr_t *ui_p = reinterpret_cast<uintptr_t *>(m_root.vp());
+    DEBUG("ui_p: %p", ui_p);
+    DEBUG("*ui_p: %llx", *ui_p);
     vsc::dm::ValRefPtr val_p(m_root);
-    m_root = val_p.deref();
+    DEBUG("val_p.vp: %llx", val_p.vp());
+    m_root = val_p.val();
+    DEBUG("val_p.deref: %llx", m_root.vp());
+    ui_p = reinterpret_cast<uintptr_t *>(m_root.vp());
+    DEBUG("ui_p: %p", ui_p);
+    DEBUG("*ui_p: %llx", *ui_p);
     f->getDataType()->accept(m_this);
     DEBUG_LEAVE("visitTypeFieldRef");
 }
