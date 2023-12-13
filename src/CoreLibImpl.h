@@ -59,6 +59,13 @@ public:
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params);
 
+    // Address-space methods
+
+    virtual void ContinuousAddressSpaceAddNonAllocatableRegion(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params);
+
     virtual void RegRead(
         IEvalThread                         *thread,
         dm::IDataTypeFunction               *func_t,

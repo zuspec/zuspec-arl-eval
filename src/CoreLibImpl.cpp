@@ -57,6 +57,7 @@ IBuiltinFuncInfo *CoreLibImpl::findBuiltin(
         }
     } else if (name.substr(0,14) == "addr_reg_pkg::") {
         std::string leaf = name.substr(14);
+        DEBUG("addr_reg_pkg: leaf=%s", leaf.c_str());
         if (leaf == "addr_value") {
             ret = new BuiltinFuncInfo(std::bind(
                 &CoreLibImpl::AddrValue, 
@@ -72,18 +73,29 @@ IBuiltinFuncInfo *CoreLibImpl::findBuiltin(
                 &CoreLibImpl::MakeHandleFromHandle, 
                 this,
                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        } else if (leaf.substr(0,23) == "contiguous_addr_space_c") {
+            int32_t leaf_idx = leaf.rfind("::");
+            std::string fname = leaf.substr(leaf_idx+2);
+            if (fname == "add_region") {
+            } else if (fname == "add_nonallocatable_region") {
+                ret = new BuiltinFuncInfo(std::bind(
+                    &CoreLibImpl::ContinuousAddressSpaceAddNonAllocatableRegion,
+                    this,
+                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            }
+            DEBUG("TODO: handle address_space functions");
         } else if (leaf.substr(0,5) == "reg_c") {
             int32_t leaf_idx = leaf.rfind("::");
             std::string fname = leaf.substr(leaf_idx+2);
             DEBUG("TODO: handle reg_c functions %s", fname.c_str());
             if (fname == "read") {
-               ret = new BuiltinFuncInfo(std::bind(
+                ret = new BuiltinFuncInfo(std::bind(
                     &CoreLibImpl::RegRead,
                     this,
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
                     BuiltinFuncFlags::RegFunc);
             } else if (fname == "write") {
-               ret = new BuiltinFuncInfo(std::bind(
+                ret = new BuiltinFuncInfo(std::bind(
                     &CoreLibImpl::RegWrite,
                     this,
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
@@ -158,6 +170,16 @@ void CoreLibImpl::MakeHandleFromHandle(
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("MakeHandleFromHandle");
     DEBUG_LEAVE("MakeHandleFromHandle");
+}
+
+void CoreLibImpl::ContinuousAddressSpaceAddNonAllocatableRegion(
+        IEvalThread                         *thread,
+        dm::IDataTypeFunction               *func_t,
+        const std::vector<vsc::dm::ValRef>  &params) {
+    DEBUG_ENTER("ContiguousAddressSpaceAddNonAllocatableRegion");
+
+    thread->setFlags(EvalFlags::Complete);
+    DEBUG_LEAVE("ContiguousAddressSpaceAddNonAllocatableRegion");
 }
 
 void CoreLibImpl::RegRead(

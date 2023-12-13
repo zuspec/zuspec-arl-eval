@@ -96,7 +96,7 @@ public:
         } else {
             while (path_idx < e->getPath().size()) {
                 vsc::dm::ValRefStruct val_s(var);
-                var = val_s.getFieldRef(path_idx);
+                var = val_s.getFieldRef(e->getPath().at(path_idx));
             /** TODO:
             switch (var->getKind()) {
                 case EvalResultKind::Val: {

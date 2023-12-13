@@ -299,8 +299,9 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
                 e->getRootRefOffset(),
                 e->getPath().at(0)));
 
-            if (e->getPath().size() > 1) {
-                DEBUG("TODO: stack-local refernece deeper than 2");
+            for (uint32_t i=1; i<e->getPath().size(); i++) {
+                vsc::dm::ValRefStruct val_s(val);
+                val = val_s.getFieldRef(e->getPath().at(i));
             }
 
             // Are there any cases in which we need to clone?
