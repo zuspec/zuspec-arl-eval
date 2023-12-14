@@ -94,7 +94,7 @@ void TaskElaborateRegisterOffsets::visitTypeFieldReg(dm::ITypeFieldReg *f) {
 }
 
 void TaskElaborateRegisterOffsets::visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *f) {
-    DEBUG_ENTER("visitTypeFiedRegGroup %s", f->name().c_str());
+    DEBUG_ENTER("visitTypeFieldRegGroup %s", f->name().c_str());
     vsc::dm::IDataTypeWrapper *wrapper_t = f->getDataTypeT<vsc::dm::IDataTypeWrapper>();
     dm::IDataTypeComponent *group_t = dynamic_cast<dm::IDataTypeComponent *>(wrapper_t->getDataTypeVirt());
 
@@ -122,7 +122,7 @@ void TaskElaborateRegisterOffsets::visitTypeFieldRegGroup(dm::ITypeFieldRegGroup
         }
 
         if (!instance_off || !instance_array_off) {
-            ERROR("failed to find offset-calculation functions");
+            ERROR("failed to find offset-calculation functions (instance_off=%p instance_array_off=%p)");
             DEBUG_LEAVE("visitTypeFiedRegGroup");
             return;
         } else {
@@ -147,18 +147,7 @@ void TaskElaborateRegisterOffsets::visitTypeFieldRegGroup(dm::ITypeFieldRegGroup
     } else {
         DEBUG("Register-group type %s has already been processed", group_t->name().c_str());
     }
-    DEBUG_LEAVE("visitTypeFiedRegGroup");
-    /*
-    DEBUG_ENTER("visitTypeFieldRegGroup");
-    if (m_field_s.size()) {
-        DEBUG("TODO: obtain offset of field %s", f->name().c_str());
-    } else {
-        m_field_s.push_back(f);
-        VisitorBase::visitTypeFieldRegGroup(f);
-        m_field_s.pop_back();
-    }
     DEBUG_LEAVE("visitTypeFieldRegGroup");
-     */
 }
 
 dmgr::IDebug *TaskElaborateRegisterOffsets::m_dbg = 0;
