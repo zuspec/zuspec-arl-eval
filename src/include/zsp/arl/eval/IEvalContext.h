@@ -61,12 +61,21 @@ enum class EvalContextFunc {
     NumFunctions
 };
 
+enum class EvalContextFlags {
+    NoFlags = 0,
+    SkipExecBody = (1 << 0)
+};
+
 class IEvalContext;
 using IEvalContextUP=vsc::dm::UP<IEvalContext>;
 class IEvalContext {
 public:
 
     virtual ~IEvalContext() { }
+
+    virtual void setContextFlags(EvalContextFlags flags) = 0;
+
+    virtual bool hasContextFlags(EvalContextFlags flags) = 0;
 
     virtual int32_t eval() = 0;
 

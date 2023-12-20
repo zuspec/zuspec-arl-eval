@@ -62,14 +62,18 @@ void EvalBackendClosure::leaveThreads(
 
 void EvalBackendClosure::enterAction(
         IEvalThread                         *thread,
-        dm::IModelFieldAction               *action) {
-    EvalBackendClosure_enterAction(m_peer, thread, action);
+        dm::IDataTypeAction                 *action_t,
+        const vsc::dm::ValRef               &action_v) {
+            // TODO:
+//    EvalBackendClosure_enterAction(m_peer, thread, action);
 }
 
 void EvalBackendClosure::leaveAction(
         IEvalThread                         *thread,
-        dm::IModelFieldAction               *action) {
-    EvalBackendClosure_leaveAction(m_peer, thread, action);
+        dm::IDataTypeAction                 *action_t,
+        const vsc::dm::ValRef               &action_v) {
+            // TODO:
+//    EvalBackendClosure_leaveAction(m_peer, thread, action);
 }
 
 void EvalBackendClosure::callFuncReq(

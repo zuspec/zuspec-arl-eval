@@ -49,11 +49,13 @@ public:
 
     virtual void enterAction(
         IEvalThread                         *thread,
-        dm::IModelFieldAction               *action) override { }
+        dm::IDataTypeAction                 *action_t,
+        const vsc::dm::ValRef               &action_v) override { }
 
     virtual void leaveAction(
         IEvalThread                         *thread,
-        dm::IModelFieldAction               *action) override { }
+        dm::IDataTypeAction                 *action_t,
+        const vsc::dm::ValRef               &action_v) override { }
 
     virtual void callFuncReq(
             IEvalThread                         *thread,

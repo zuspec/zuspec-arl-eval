@@ -55,6 +55,16 @@ public:
         return 0;
     }
 
+    virtual void setContextFlags(EvalContextFlags flags) override {
+        m_ctxt_flags = static_cast<EvalContextFlags>(
+            static_cast<uint32_t>(m_ctxt_flags) | 
+            static_cast<uint32_t>(flags));
+    }
+
+    virtual bool hasContextFlags(EvalContextFlags flags) override {
+        return (static_cast<uint32_t>(m_ctxt_flags) & static_cast<uint32_t>(flags));
+    }
+
     /**
      * @brief Push an eval-stack entry
      */
@@ -210,6 +220,8 @@ protected:
     std::vector<IEvalListener *>            m_listeners;
     dm::IDataTypeFunction                               *m_functions[(int)EvalContextFunc::NumFunctions];
     std::unordered_map<dm::IDataTypeFunction *, FuncT>  m_func_impl;
+
+    EvalContextFlags                        m_ctxt_flags;
 
     bool                                    m_initial;
     std::vector<IEvalUP>                    m_eval_s;

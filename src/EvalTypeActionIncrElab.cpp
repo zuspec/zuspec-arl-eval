@@ -84,6 +84,11 @@ int32_t EvalTypeActionIncrElab::eval() {
                 clrFlags(EvalFlags::Complete);
                 break;
             }
+
+            m_ctxt->getBackend()->enterAction(
+                m_thread,
+                dynamic_cast<arl::dm::IDataTypeAction *>(m_action.type()),
+                m_action);
         }
         case 1: {
             dm::IDataTypeAction *action_t = m_action.typeT<dm::IDataTypeAction>();
@@ -92,18 +97,24 @@ int32_t EvalTypeActionIncrElab::eval() {
             if (action_t->activities().size()) {
                 // TODO: determine if we have an activity
             } else if (action_t->getExecs(dm::ExecKindT::Body).size()) {
-                if (EvalTypeExecList(m_ctxt, m_thread, getIdx(), 
-                    action_t->getExecs(dm::ExecKindT::Body)).eval()) {
-                    DEBUG("Suspend due to execs");
-                    clrFlags(EvalFlags::Complete);
-                    break;
-                } else {
-                    DEBUG("EvalTypeExecList completed");
+                if (!m_ctxt->hasContextFlags(EvalContextFlags::SkipExecBody)) {
+                    if (EvalTypeExecList(m_ctxt, m_thread, getIdx(), 
+                        action_t->getExecs(dm::ExecKindT::Body)).eval()) {
+                        DEBUG("Suspend due to execs");
+                        clrFlags(EvalFlags::Complete);
+                        break;
+                    } else {
+                        DEBUG("EvalTypeExecList completed");
+                    }
                 }
             }
         }
         case 2: {
             // End
+            m_ctxt->getBackend()->leaveAction(
+                m_thread,
+                dynamic_cast<arl::dm::IDataTypeAction *>(m_action.type()),
+                m_action);
             setFlags(EvalFlags::Complete);
         }
     }

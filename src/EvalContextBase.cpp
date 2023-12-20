@@ -40,6 +40,7 @@ EvalContextBase::EvalContextBase(
         m_dmgr(dmgr), m_corelib(this),
          m_solvers_f(solvers_f), m_ctxt(ctxt),
         m_randstate(randstate), m_pyeval(pyeval),
+        m_ctxt_flags(EvalContextFlags::NoFlags),
         m_flags(EvalFlags::NoFlags), m_backend(backend), m_initial(true) {
         
     // m_func_impl.insert({m_functions[(int)EvalContextFunc::RegGroupSetHandle], std::bind(
