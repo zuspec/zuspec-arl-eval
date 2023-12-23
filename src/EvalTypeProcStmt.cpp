@@ -189,38 +189,64 @@ void EvalTypeProcStmt::visitTypeProcStmtIfElse(dm::ITypeProcStmtIfElse *s) {
         case 0: {
             // Evaluate condition
             m_idx = 1;
+            m_sub_idx = 0;
 
-            if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, s->getCond()).eval()) {
-                clrFlags(EvalFlags::Complete);
-                break;
-            }
         }
 
         case 1: {
-            m_idx = 2;
-            // Have the condition result
-            vsc::dm::ValRefBool cond(getResult());
 
-            if (!cond.valid()) {
-                ERROR("if-condition value is not valid");
-            }
+            // Step through if-else clauses until we find cond==true or
+            // reach the end of the list
+            if (m_sub_idx > 0 && hasFlags(EvalFlags::Complete) && getResult().vp()) {
+                // Move on to the 'execute' stage
+                m_idx = 2;
+                // The condition was for the *previous* entry, so adjust
+                m_sub_idx--;
+            } else {
+                while (m_sub_idx < s->getIfClauses().size()) {
 
-            if (cond.valid() && cond.get_val()) {
-                DEBUG("True branch");
-                if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, s->getTrue()).eval()) {
-                    clrFlags(EvalFlags::Complete);
-                    break;
+                    if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, 
+                            s->getIfClauses().at(m_sub_idx)->getCond()).eval()) {
+                        clrFlags(EvalFlags::Complete);
+                        m_sub_idx++;
+                        break;
+                    } else if (getResult().vp()) {
+                        // Roll 
+                        m_idx = 2;
+                        break;
+                    } else {
+                        m_sub_idx++;
+                    }
                 }
-            } else if (s->getFalse()) {
-                DEBUG("False branch");
-                if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, s->getFalse()).eval()) {
-                    clrFlags(EvalFlags::Complete);
+
+                if (!hasFlags(EvalFlags::Complete)) {
                     break;
                 }
             }
         }
         case 2: {
-            // 
+            m_idx = 3;
+
+            vsc::dm::ValRefBool cond(getResult());
+            // Evaluate the selected branch (if cond==true)
+            if (m_sub_idx < s->getIfClauses().size() && cond.valid() && cond.get_val()) {
+                //
+                if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, 
+                        s->getIfClauses().at(m_sub_idx).get()).eval()) {
+                    clrFlags(EvalFlags::Complete);
+                    break;
+                }
+            } else if (s->getElseClause()) {
+                if (EvalTypeProcStmt(m_ctxt, m_thread, m_vp_id, 
+                        s->getElseClause()).eval()) {
+                    clrFlags(EvalFlags::Complete);
+                    break;
+                }
+            }
+        }
+
+        case 3: {
+
         }
     }
     DEBUG_LEAVE("visitTypeProcStmtIfElse");

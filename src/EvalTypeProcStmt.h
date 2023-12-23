@@ -62,6 +62,7 @@ private:
     static dmgr::IDebug             *m_dbg;
     dm::ITypeProcStmt               *m_stmt;
     uint32_t                        m_idx;
+    int32_t                         m_sub_idx;
 
 };
 
