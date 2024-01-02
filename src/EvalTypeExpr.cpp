@@ -633,6 +633,9 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
 
                 if (!ret) {
                     setError("Failed to evaluate Python method");
+                } else {
+//                    m_ctxt->getPyEval()->Py_IncRef(ret);
+                    setResult(m_ctxt->ctxt()->mkValPyObj(ret));
                 }
             } 
         }

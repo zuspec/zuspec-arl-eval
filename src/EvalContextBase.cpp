@@ -217,15 +217,18 @@ void EvalContextBase::setResult(const vsc::dm::ValRef &r, EvalFlags flags) {
 }
 
 void EvalContextBase::setError(const char *fmt, ...) {
+    DEBUG_ENTER("setError");
     char tmp[1024];
     va_list ap;
 
     va_start(ap, fmt);
     vsnprintf(tmp, sizeof(tmp), fmt, ap);
+    DEBUG("Message: %s", tmp);
     setResult(
         m_ctxt->mkValRefStr(tmp),
         EvalFlags::Error);
     va_end(ap);
+    DEBUG_LEAVE("setError");
 }
 
 int32_t EvalContextBase::evalMethodCallContext(

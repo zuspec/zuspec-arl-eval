@@ -146,15 +146,18 @@ void EvalBase::setResult(
 }
 
 void EvalBase::setError(const char *fmt, ...) {
+    DEBUG_ENTER("setError");
     char tmp[1024];
     va_list ap;
 
     va_start(ap, fmt);
     vsnprintf(tmp, sizeof(tmp), fmt, ap);
     va_end(ap);
+    DEBUG("Message: %s", tmp);
     setResult(
         m_ctxt->ctxt()->mkValRefStr(tmp),
         EvalFlags::Error);
+    DEBUG_LEAVE("setError");
 }
 
 }

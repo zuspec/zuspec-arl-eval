@@ -25,6 +25,7 @@
 #include "EvalTypeExpr.h"
 #include "EvalTypeProcStmt.h"
 #include "EvalTypeProcStmtScope.h"
+#include "TaskAssign.h"
 
 
 namespace zsp {
@@ -104,6 +105,7 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
             m_idx = 2;
 
             DEBUG("pre-GetLval: haveResult: %d", hasFlags(EvalFlags::Complete));
+            m_rhs = getResult();
 
             // TODO: Getting the LHS possibly could be time-consuming (?)
             // For now, cheat
@@ -124,25 +126,11 @@ void EvalTypeProcStmt::visitTypeProcStmtAssign(dm::ITypeProcStmtAssign *s) {
                 break;
             }
 
-            fprintf(stdout, "TODO: Check of result kind\n");
-
-            switch (s->op()) {
-                case dm::TypeProcStmtAssignOp::Eq: {
-                    vsc::dm::ValRefInt val_i(lval);
-                    vsc::dm::ValRefInt val_r(getResult());
-                    DEBUG("RHS(int): init=%lld", val_i.get_val_s());
-                    val_i.set_val(val_r.get_val_u());
-                    DEBUG("RHS(int): %lld (lhs=%lld)", val_r.get_val_s(), val_i.get_val_s());
-                    DEBUG("LHS: flags=0x%08x", val_i.flags());
-                    /*
-                    DEBUG("lval.bits=%d rval.bits=%d", lval->bits(), getResult()->bits());
-                    lval->set(getResult());
-                     */
-                } break;
-                default: FATAL("unsupported assign op %d", s->op());
-            }
-#ifdef UNDEFINED
-#endif
+            TaskAssign(m_ctxt).assign(
+                lval,
+                s->op(),
+                m_rhs
+            );
 
             DEBUG("Ready");
         }
