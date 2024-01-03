@@ -84,19 +84,19 @@ int32_t EvalTypeProcStmtScope::eval() {
                         m_build_ctxt.get(),
                         var->name(),
                         false)));
+                m_subidx++;
                 if (var->getInit()) {
                     if (EvalTypeExpr(m_ctxt, m_thread, getIdx(), var->getInit()).eval()) {
-                        m_subidx++;
                         break;
                     }
                     m_locals.back()->getMutVal().set(getResult());
-                } else {
-                    m_subidx++;
                 }
             }
 
-            m_idx = 1;
-            m_subidx = 0;
+            if (hasFlags(EvalFlags::Complete)) {
+                m_idx = 1;
+                m_subidx = 0;
+            }
         }
 
         case 1: {

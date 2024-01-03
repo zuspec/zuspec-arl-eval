@@ -67,7 +67,6 @@ int32_t EvalTypeActionIncrElab::eval() {
 //            DEBUG("Initial Comp: %p", comp_p.get_val());
             comp_p.set_val(m_comp.vp());
             DEBUG("FieldVal: %p idx=%d", m_action.getFieldRef(0).vp(), getIdx());
-            fflush(stdout);
 
             if (EvalTypeExecList(m_ctxt, m_thread, getIdx(),
                 action_t->getExecs(dm::ExecKindT::PreSolve)).eval()) {

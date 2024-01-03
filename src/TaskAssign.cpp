@@ -63,6 +63,7 @@ bool TaskAssign::assign(
     } else if ((lval_is_enum=TaskIsDataTypeEnum().check(lval.type()))) {
     } else if ((lval_is_struct=TaskIsDataTypeStruct().check(lval.type()))) {
     } else if (TaskIsDataTypePyObj().check(lval.type())) {
+        assign_pyobj(lval, rhs);
     } else {
         ERROR("Unknown type for lval");
         ret = false;
@@ -121,6 +122,44 @@ bool TaskAssign::assign_int(
     }
 
     DEBUG_LEAVE("assign_int %d", ret);
+    return ret;
+}
+
+bool TaskAssign::assign_pyobj(
+        vsc::dm::ValRef                 &lval,
+        const vsc::dm::ValRef           &rhs) {
+    using namespace vsc::dm;
+    using namespace arl::dm;
+    DEBUG_ENTER("assign_pyobj");
+    ValRefPyObj lval_py(lval);
+    IDataTypeInt *rval_is_int;
+    IDataTypeEnum *rval_is_enum;
+    IDataTypeEnum *rval_is_bool;
+    bool ret = true;
+
+    if ((rval_is_int=TaskIsDataTypeInt().check(rhs.type()))) {
+        ValRefInt rhs_i(rhs);
+        DEBUG("rhs is int");
+        // if (lval_i.is_signed()) {
+        //     lval_i.set_val(rhs_i.get_val_s());
+        // } else {
+        //     lval_i.set_val(rhs_i.get_val_u());
+        // }
+    } else if ((rval_is_enum=TaskIsDataTypeEnum().check(rhs.type()))) {
+        DEBUG("rhs is enum");
+    } else if (TaskIsDataTypeBool().check(rhs.type())) {
+        ValRefBool val_b(rhs);
+//        lval_i.set_val(val_b.get_val());
+    } else if (TaskIsDataTypePyObj().check(rhs.type())) {
+        DEBUG("rhs is pyobj");
+        arl::dm::ValRefPyObj rhs_py(rhs);
+        lval_py.setObj(rhs_py.getObj());
+    } else {
+        ERROR("Unknown rhs for integer assign");
+        ret = false;
+    }
+
+    DEBUG_LEAVE("assign_pyobj %d", ret);
     return ret;
 }
 

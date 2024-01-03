@@ -137,7 +137,6 @@ int32_t EvalTypeMethodCallContext::eval() {
                     break;
                 } else {
                     if (hasFlags(EvalFlags::Complete)) {
-                        fprintf(stdout, "Note: push expr result\n");
                         /*
                         if (intf) {
                             m_stack_frame->setVariable(m_param_idx, moveResult());

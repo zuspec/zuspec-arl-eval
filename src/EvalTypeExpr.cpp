@@ -530,7 +530,6 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                     break;
                 } else {
                     if (hasFlags(EvalFlags::Complete)) {
-                        fprintf(stdout, "Note: push expr result\n");
                         m_params.push_back(getResult());
                     }
                 }
@@ -593,8 +592,26 @@ void EvalTypeExpr::visitTypeExprPyImportRef(dm::ITypeExprPyImportRef *t) {
 }
 
 void EvalTypeExpr::visitTypeExprPythonFieldRef(dm::ITypeExprPythonFieldRef *t) {
-    DEBUG_ENTER("visitTypeExprPythonFieldRef");
-    DEBUG("TODO: visitTypeExprPythonFieldRef");
+    DEBUG_ENTER("visitTypeExprPythonFieldRef %s", t->getName().c_str());
+    t->getBase()->accept(m_this);
+
+    dm::ValRefPyObj base(getResult());
+
+    if (!m_ctxt->getPyEval()->hasAttr(base.getObj(), t->getName())) {
+        DEBUG("Error: no attribute in object");
+        clrFlags(EvalFlags::Complete);
+        setError("Object does not contain name <>");
+    } else {
+        pyapi::PyEvalObj *obj = m_ctxt->getPyEval()->getAttr(base.getObj(), t->getName());
+        DEBUG("obj=%p", obj);
+
+        if (!obj) {
+            setError("Failed to get %s attribute", t->getName().c_str());
+        } else {
+//                    m_ctxt->getPyEval()->Py_IncRef(ret);
+            setResult(m_ctxt->ctxt()->mkValPyObj(obj));
+        }
+    }
     DEBUG_LEAVE("visitTypeExprPythonFieldRef");
 }
 
@@ -618,14 +635,16 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
                 clrFlags(EvalFlags::Complete);
                 setError("Attempting to invoke <> on null handle" /*, t->getName() */);
                 break;
+            /*
             } else if (!m_ctxt->getPyEval()->hasAttr(base.getObj(), t->getName())) {
                 DEBUG("Error: no attribute in object");
                 clrFlags(EvalFlags::Complete);
                 setError("Object does not contain name <>");
                 break;
+             */
             } else {
-                pyapi::PyEvalObj *obj = m_ctxt->getPyEval()->getAttr(
-                    base.getObj(), t->getName());
+                pyapi::PyEvalObj *obj = base.getObj() /*m_ctxt->getPyEval()->getAttr(
+                    base.getObj(), t->getName())*/;
                 DEBUG("obj=%p", obj);
                 pyapi::PyEvalObj *args = m_ctxt->getPyEval()->mkTuple(0);
                 pyapi::PyEvalObj *ret = m_ctxt->getPyEval()->call(obj, args, 0);

@@ -47,7 +47,7 @@ EvalTypeExecList::~EvalTypeExecList() {
 }
 
 int32_t EvalTypeExecList::eval() {
-    DEBUG_ENTER("eval initial=%d", m_initial);
+    DEBUG_ENTER("eval initial=%d size=%d", m_initial, m_execs.size());
 
     if (m_initial) {
         m_thread->pushEval(this);
@@ -60,7 +60,9 @@ int32_t EvalTypeExecList::eval() {
     if (m_idx < m_execs.size()) {
         while (m_idx < m_execs.size()) {
 //            clrFlags(EvalFlags::Complete);
+            DEBUG_ENTER("--> exec[%d] kind=%d", m_idx, m_execs.at(m_idx)->getKind());
             m_execs.at(m_idx)->accept(m_this);
+            DEBUG_ENTER("<-- exec[%d] kind=%d", m_idx, m_execs.at(m_idx)->getKind());
             m_idx++;
 
             if (!hasFlags(EvalFlags::Complete)) {

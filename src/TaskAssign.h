@@ -46,6 +46,10 @@ protected:
         vsc::dm::IDataTypeInt           *lval_t,
         const vsc::dm::ValRef           &rhs);
 
+    bool assign_pyobj(
+        vsc::dm::ValRef                 &lval,
+        const vsc::dm::ValRef           &rhs);
+
 private:
     static dmgr::IDebug             *m_dbg;
     IEvalContext                    *m_ctxt;
