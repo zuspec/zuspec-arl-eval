@@ -31,6 +31,11 @@ namespace zsp {
 namespace arl {
 namespace eval {
 
+enum class CoreValOpsE {
+    AddrSpaceTransparent,
+    AddrHandle,
+    Number
+};
 
 
 class IEvalContextInt : public virtual IEvalContext {
@@ -48,6 +53,8 @@ public:
 
     virtual IBuiltinFuncInfo *getBuiltinFuncInfo(
         dm::IDataTypeFunction *func) = 0;
+
+    virtual vsc::dm::IValOps *getValOps(CoreValOpsE kind) = 0;
 
 };
 

@@ -184,6 +184,8 @@ public:
     virtual IBuiltinFuncInfo *getBuiltinFuncInfo(
         dm::IDataTypeFunction *func) override;
 
+    virtual vsc::dm::IValOps *getValOps(CoreValOpsE kind) override;
+
     virtual vsc::dm::ValRef getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
@@ -219,6 +221,7 @@ protected:
     std::vector<dm::IDataTypeFunction *>    m_target_functions;
     std::vector<IEvalListener *>            m_listeners;
     dm::IDataTypeFunction                               *m_functions[(int)EvalContextFunc::NumFunctions];
+    vsc::dm::IValOpsUP                      m_valops[(int)CoreValOpsE::Number];
     std::unordered_map<dm::IDataTypeFunction *, FuncT>  m_func_impl;
 
     EvalContextFlags                        m_ctxt_flags;

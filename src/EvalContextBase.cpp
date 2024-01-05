@@ -23,6 +23,9 @@
 #include "BuiltinFuncInfo.h"
 #include "EvalContextBase.h"
 #include "EvalStackFrame.h"
+#include "TaskBindDataTypeValOps.h"
+#include "ValOpsAddrSpaceTransparent.h"
+#include "ValOpsDataTypeAddrHandle.h"
 
 
 namespace zsp {
@@ -94,6 +97,18 @@ void EvalContextBase::init() {
         if (!m_functions[i]) {
             ERROR("Failed to find tool-called function %s", tool_call_funcs.at(i).c_str());
         }
+    }
+
+    m_valops[(int)CoreValOpsE::AddrSpaceTransparent] = 
+        vsc::dm::IValOpsUP(new ValOpsAddrSpaceTransparent(this));
+    m_valops[(int)CoreValOpsE::AddrHandle] = 
+        vsc::dm::IValOpsUP(new ValOpsDataTypeAddrHandle(this));
+
+    TaskBindDataTypeValOps binder(this);
+    for (std::vector<vsc::dm::IDataTypeStructUP>::const_iterator
+        it=m_ctxt->getDataTypeStructs().begin();
+        it!=m_ctxt->getDataTypeStructs().end(); it++) {
+        binder.bind(it->get());
     }
 }
 
@@ -290,6 +305,10 @@ IBuiltinFuncInfo *EvalContextBase::getBuiltinFuncInfo(
     } else {
         return 0;
     }
+}
+
+vsc::dm::IValOps *EvalContextBase::getValOps(CoreValOpsE kind) {
+    return m_valops[(int)kind].get();
 }
 
 vsc::dm::ValRef EvalContextBase::getImmVal(

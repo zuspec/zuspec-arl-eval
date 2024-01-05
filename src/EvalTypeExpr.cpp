@@ -643,12 +643,20 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
                 break;
              */
             } else {
+                pyapi::IPyEval *py_eval = m_ctxt->getPyEval();
                 pyapi::PyEvalObj *obj = base.getObj() /*m_ctxt->getPyEval()->getAttr(
                     base.getObj(), t->getName())*/;
                 DEBUG("obj=%p", obj);
                 pyapi::PyEvalObj *args = m_ctxt->getPyEval()->mkTuple(0);
                 pyapi::PyEvalObj *ret = m_ctxt->getPyEval()->call(obj, args, 0);
                 DEBUG("ret=%p", ret);
+
+                PyObject *ptype, *pvalue, *ptraceback;
+                py_eval->PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+                if (ptype || pvalue || ptraceback) {
+                    py_eval->PyErr_Display(ptype, pvalue, ptraceback);
+                    ERROR("Exception occurred");
+                }
 
                 if (!ret) {
                     setError("Failed to evaluate Python method");
