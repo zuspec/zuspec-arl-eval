@@ -404,6 +404,7 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
 
             if (m_subidx == 0) {
                 // Perform first-time checks
+                DEBUG("Context flags=0x%08x", getResult().flags());
                 m_params.push_back(getResult());
                 clrFlags(EvalFlags::Complete);
             } else if (hasFlags(EvalFlags::Complete)) {

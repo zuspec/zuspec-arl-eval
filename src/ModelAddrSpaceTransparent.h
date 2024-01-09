@@ -1,5 +1,5 @@
 /**
- * ValOpsAddrSpaceTransparent.h
+ * ModelAddrSpaceTransparent.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -19,10 +19,8 @@
  *     Author: 
  */
 #pragma once
-#include "dmgr/IDebugMgr.h"
-#include "vsc/dm/IValOps.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
-#include "ModelAddrSpace.h"
+#include "ModelAddrSpaceContiguous.h"
 
 namespace zsp {
 namespace arl {
@@ -30,22 +28,18 @@ namespace eval {
 
 
 
-class ValOpsAddrSpaceTransparent : 
-    public virtual vsc::dm::IValOps {
+class ModelAddrSpaceTransparent : public ModelAddrSpaceContiguous {
 public:
-    ValOpsAddrSpaceTransparent(IEvalContextInt *ctxt);
+    ModelAddrSpaceTransparent(IEvalContextInt *ctxt);
 
-    virtual ~ValOpsAddrSpaceTransparent();
+    virtual ~ModelAddrSpaceTransparent();
 
-    virtual void initVal(vsc::dm::ValRef &v) override;
-
-    virtual void finiVal(vsc::dm::ValRef &v) override;
-
-    virtual vsc::dm::ValRef copyVal(const vsc::dm::ValRef &src) override;
+    virtual void addNonallocatableRegion(
+        IEvalThread                     *thread,
+        const vsc::dm::ValRefStruct     &region) override;
 
 private:
-    static dmgr::IDebug             *m_dbg;
-    IEvalContextInt                 *m_ctxt;
+    static dmgr::IDebug                 *m_dbg;
 
 };
 

@@ -27,6 +27,7 @@
 #include "CoreLibImpl.h"
 #include "StringFormatter.h"
 #include "EvalTypeFunction.h"
+#include "ModelAddrSpaceContiguous.h"
 
 
 namespace zsp {
@@ -177,6 +178,19 @@ void CoreLibImpl::ContinuousAddressSpaceAddNonAllocatableRegion(
         dm::IDataTypeFunction               *func_t,
         const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("ContiguousAddressSpaceAddNonAllocatableRegion");
+    vsc::dm::ValRefStruct aspace_s(params.at(0));
+    DEBUG("flags: 0x%08x", aspace_s.flags());
+    DEBUG("aspace_s: 0x%08x", aspace_s.vp());
+    vsc::dm::ValRefPtr aspace_p(aspace_s.getFieldRef(-1));
+    DEBUG("aspace_p (vp): 0x%08x", aspace_p.vp());
+    DEBUG("aspace_p: 0x%p", aspace_p.get_val());
+    IModelAddressSpace *aspace_b = reinterpret_cast<IModelAddressSpace *>(
+        aspace_p.get_val()
+    );
+    DEBUG("aspace_b: 0x%p", aspace_b);
+
+    vsc::dm::ValRefStruct region_s(params.at(1));
+    aspace_b->addNonallocatableRegion(thread, region_s);
 
     thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("ContiguousAddressSpaceAddNonAllocatableRegion");

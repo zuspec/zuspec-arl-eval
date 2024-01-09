@@ -97,27 +97,7 @@ public:
             while (path_idx < e->getPath().size()) {
                 vsc::dm::ValRefStruct val_s(var);
                 var = val_s.getFieldRef(e->getPath().at(path_idx));
-            /** TODO:
-            switch (var->getKind()) {
-                case EvalResultKind::Val: {
-                    FATAL("TODO: support val-kind intermediate var");
-                } break;
-                case EvalResultKind::Ref: {
-                    if (!field) {
-                        field = var->getRef()->getField(e->getPath().at(path_idx++));
-                    } else {
-                        field = field->getField(e->getPath().at(path_idx++));
-                    }
-
-                    DEBUG("Get field @%d: %s", path_idx-1, field->name().c_str());
-
-                    if (path_idx >= e->getPath().size()) {
-                        m_val = field->val();
-                    }
-                } break;
-                default: FATAL("Unsupported var-result kind %d", var->getKind());
-            }
-             */
+                DEBUG("Get field-ref @ %d", e->getPath().at(path_idx));
                 path_idx++;
             }
             m_val.setWeakRef(var);

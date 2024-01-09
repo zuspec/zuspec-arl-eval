@@ -19,6 +19,9 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "vsc/dm/impl/ValRefPtr.h"
+#include "vsc/dm/impl/ValRefStruct.h"
+#include "ModelAddrSpaceTransparent.h"
 #include "ValOpsAddrSpaceTransparent.h"
 
 
@@ -37,7 +40,17 @@ ValOpsAddrSpaceTransparent::~ValOpsAddrSpaceTransparent() {
 }
 
 void ValOpsAddrSpaceTransparent::initVal(vsc::dm::ValRef &v) {
-    DEBUG_ENTER("initVal");
+    DEBUG_ENTER("initVal flags=0x%08x", v.flags());
+    vsc::dm::ValRefStruct val_s(v);
+    vsc::dm::ValRefPtr self_p(val_s.getFieldRef(-1));
+    IModelAddressSpace *aspace = new ModelAddrSpaceTransparent(m_ctxt);
+    DEBUG("val_s: 0x%08x", val_s.vp());
+    DEBUG("self_p: 0x%08x", self_p.vp());
+    DEBUG("aspace: 0x%p", aspace);
+    self_p.set_val(reinterpret_cast<uintptr_t>(aspace));
+    DEBUG("self_p (get): 0x%p", self_p.get_val());
+    self_p = val_s.getFieldRef(-1);
+    DEBUG("self_p (get2): 0x%p", self_p.get_val());
     DEBUG_LEAVE("initVal");
 }
 

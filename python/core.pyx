@@ -388,3 +388,7 @@ cdef class ModelEvaluator(object):
         ret._owned = owned
         return ret
 
+# if "pss" not in sys.modules.keys():
+#     print("load pss")
+#     import zsp_arl_eval.impl.pss_module as pss
+#     sys.modules["pss"] = pss
