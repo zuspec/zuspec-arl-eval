@@ -29,7 +29,7 @@ namespace eval {
 
 class ModelAddrSpaceContiguous : public ModelAddrSpace {
 public:
-    ModelAddrSpaceContiguous();
+    ModelAddrSpaceContiguous(IEvalContextInt *ctxt);
 
     virtual ~ModelAddrSpaceContiguous();
 

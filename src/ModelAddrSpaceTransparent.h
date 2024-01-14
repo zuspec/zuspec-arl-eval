@@ -34,10 +34,6 @@ public:
 
     virtual ~ModelAddrSpaceTransparent();
 
-    virtual void addNonallocatableRegion(
-        IEvalThread                     *thread,
-        const vsc::dm::ValRefStruct     &region) override;
-
 private:
     static dmgr::IDebug                 *m_dbg;
 

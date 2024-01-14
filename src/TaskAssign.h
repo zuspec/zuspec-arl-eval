@@ -50,6 +50,15 @@ protected:
         vsc::dm::ValRef                 &lval,
         const vsc::dm::ValRef           &rhs);
 
+    bool assign_struct(
+        vsc::dm::ValRef                 &lval,
+        vsc::dm::IDataTypeStruct        *lval_t,
+        const vsc::dm::ValRef           &rhs);
+
+    bool assign_addr_handle(
+        vsc::dm::ValRef                 &lval,
+        const vsc::dm::ValRef           &rhs);
+
 private:
     static dmgr::IDebug             *m_dbg;
     IEvalContext                    *m_ctxt;

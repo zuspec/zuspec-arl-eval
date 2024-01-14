@@ -19,7 +19,11 @@
  *     Author: 
  */
 #pragma once
+#include <vector>
+#include "dmgr/IDebugMgr.h"
+#include "zsp/arl/eval/IEvalContextInt.h"
 #include "zsp/arl/eval/IModelAddressSpace.h"
+#include "ModelAddrSpaceRegion.h"
 
 namespace zsp {
 namespace arl {
@@ -29,9 +33,18 @@ namespace eval {
 
 class ModelAddrSpace : public virtual IModelAddressSpace {
 public:
-    ModelAddrSpace();
+    ModelAddrSpace(IEvalContextInt *ctxt);
 
     virtual ~ModelAddrSpace();
+    
+    virtual void addNonallocatableRegion(
+        IEvalThread                     *thread,
+        const vsc::dm::ValRefStruct     &region) override;
+
+private:
+    static dmgr::IDebug                     *m_dbg;
+    IEvalContextInt                         *m_ctxt;
+    std::vector<ModelAddrSpaceRegionUP>     m_regions;
 
 };
 

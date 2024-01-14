@@ -62,6 +62,7 @@ bool TaskAssign::assign(
         ret = assign_int(lval, lval_is_int, rhs);
     } else if ((lval_is_enum=TaskIsDataTypeEnum().check(lval.type()))) {
     } else if ((lval_is_struct=TaskIsDataTypeStruct().check(lval.type()))) {
+        assign_struct(lval, lval_is_struct, rhs);
     } else if (TaskIsDataTypePyObj().check(lval.type())) {
         assign_pyobj(lval, rhs);
     } else {
@@ -160,6 +161,38 @@ bool TaskAssign::assign_pyobj(
     }
 
     DEBUG_LEAVE("assign_pyobj %d", ret);
+    return ret;
+}
+
+bool TaskAssign::assign_struct(
+    vsc::dm::ValRef                     &lval,
+    vsc::dm::IDataTypeStruct            *lval_t,
+    const vsc::dm::ValRef               &rhs) {
+    bool ret = true;
+    DEBUG_ENTER("assign_struct (%s)", lval_t->name().c_str());
+    if (dynamic_cast<arl::dm::IDataTypeAddrHandle *>(lval_t)) {
+        ret = assign_addr_handle(lval, rhs);
+    } else {
+        DEBUG("TODO: implement struct assign");
+    }
+
+    DEBUG_LEAVE("assign_struct");
+    return ret;
+}
+
+bool TaskAssign::assign_addr_handle(
+    vsc::dm::ValRef                     &lval,
+    const vsc::dm::ValRef               &rhs) {
+    bool ret = true;
+    DEBUG_ENTER("assign_addr_handle lval::flags=0x%08x", lval.flags());
+    // addr_handle is a struct with a single field
+    vsc::dm::ValRefStruct lval_s(lval);
+    vsc::dm::ValRefPtr lval_p(lval_s.getFieldRef(-1));
+    DEBUG("lval_p.flags=0x%08x", lval_p.flags());
+    vsc::dm::ValRefPtr rhs_p(rhs);
+    lval_p.set_val(rhs_p.get_val());
+    DEBUG("addr_handle: 0x%08llx (0x%08llx)", rhs_p.get_val(), lval_p.get_val());
+    DEBUG_LEAVE("assign_addr_handle");
     return ret;
 }
 

@@ -48,11 +48,20 @@ vsc::dm::ValRef TaskGetRegBaseAddr::get(const vsc::dm::ValRef &field_val) {
 
 void TaskGetRegBaseAddr::visitDataTypeWrapper(vsc::dm::IDataTypeWrapper *t) {
     DEBUG_ENTER("visitDataTypeWrapper");
-    vsc::dm::ValRefPtr val_p(m_val);
+    vsc::dm::ValRefInt val_i(vsc::dm::ValRef(
+        m_val.vp(),
+        t->getDataTypePhy(),
+        m_val.flags()));
 
-    DEBUG("base=%lld type=%p", val_p.get_val(), t->getDataTypeVirt());
+    DEBUG("base=%lld type=%p", val_i.get_val_u(), t->getDataTypeVirt());
+    DEBUG("vp=0x%08llx val=0x%08llx flags=0x%08x",
+        val_i.vp(), val_i.get_val_u(), val_i.flags());
+
+    uint64_t addr = val_i.get_val_u();
+    DEBUG("addr: 0x%08llx", addr);
+    
     m_val = m_ctxt->ctxt()->mkValRefInt(
-        val_p.get_val(),
+        addr,
         false,
         64);
 

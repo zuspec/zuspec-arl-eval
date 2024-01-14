@@ -26,7 +26,8 @@ namespace arl {
 namespace eval {
 
 
-ModelAddrSpaceContiguous::ModelAddrSpaceContiguous() {
+ModelAddrSpaceContiguous::ModelAddrSpaceContiguous(IEvalContextInt *ctxt) 
+    : ModelAddrSpace(ctxt) {
 
 }
 

@@ -19,18 +19,44 @@
  *     Author: 
  */
 #pragma once
+#include <stdint.h>
+#include "vsc/dm/impl/UP.h"
+#include "vsc/dm/impl/ValRef.h"
 
 namespace zsp {
 namespace arl {
 namespace eval {
 
+class ModelAddrSpace;
+class ModelAddrHandle;
 
-
+class ModelAddrSpaceRegion;
+using ModelAddrSpaceRegionUP=vsc::dm::UP<ModelAddrSpaceRegion>;
 class ModelAddrSpaceRegion {
 public:
-    ModelAddrSpaceRegion();
+    ModelAddrSpaceRegion(
+        ModelAddrSpace            *aspace,
+        uint64_t                  addr,
+        uint32_t                  size,
+        const vsc::dm::ValRef     trait
+    );
+
+    ModelAddrSpaceRegion(
+        ModelAddrSpace            *aspace,
+        uint64_t                  addr,
+        uint32_t                  size
+    );
 
     virtual ~ModelAddrSpaceRegion();
+
+    void releaseHandle(ModelAddrHandle *h);
+
+private:
+    ModelAddrSpace              *m_aspace;
+    uint64_t                    m_addr;
+    uint32_t                    m_size;
+    bool                        m_allocatable;
+    vsc::dm::ValRef             m_trait;
 
 };
 

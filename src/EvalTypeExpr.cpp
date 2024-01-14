@@ -26,6 +26,7 @@
 #include "zsp/arl/dm/impl/TaskUnpackInt2Struct.h"
 #include "zsp/arl/dm/impl/ValRefPyObj.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
+#include "zsp/arl/eval/impl/TaskEvalGetLval.h"
 #include "TaskEvalCheckRegAccess.h"
 #include "EvalTypeExpr.h"
 #include "EvalTypeExprRegOffset.h"
@@ -393,9 +394,15 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 DEBUG("Is NOT a register access");
 
                 // Push the context handle 
+                vsc::dm::ValRef ctxt(TaskEvalGetLval(m_ctxt->getDebugMgr(), this).eval(e->getContext()));
+
+                setFlags(EvalFlags::Complete);
+                setResult(ctxt);
+/*
                 if (EvalTypeExpr(m_ctxt, m_thread, m_vp_id, e->getContext()).eval()) {
                     break;
                 }
+ */
             }
         }
 

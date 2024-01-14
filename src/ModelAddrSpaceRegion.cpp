@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "ModelAddrSpaceRegion.h"
+#include "ModelAddrSpace.h"
 
 
 namespace zsp {
@@ -26,12 +27,34 @@ namespace arl {
 namespace eval {
 
 
-ModelAddrSpaceRegion::ModelAddrSpaceRegion() {
+ModelAddrSpaceRegion::ModelAddrSpaceRegion(
+    ModelAddrSpace          *aspace,
+    uint64_t                addr,
+    uint32_t                size,
+    vsc::dm::ValRef         trait) : m_aspace(aspace), 
+        m_addr(addr), m_size(size), m_allocatable(true),
+        m_trait(trait) {
+
+}
+
+ModelAddrSpaceRegion::ModelAddrSpaceRegion(
+    ModelAddrSpace            *aspace,
+    uint64_t                  addr,
+    uint32_t                  size) : m_aspace(aspace),
+        m_addr(addr), m_size(size), m_allocatable(false) {
 
 }
 
 ModelAddrSpaceRegion::~ModelAddrSpaceRegion() {
 
+}
+
+void ModelAddrSpaceRegion::releaseHandle(ModelAddrHandle *h) {
+    if (m_allocatable) {
+
+    }
+    // TODO: pool somewhere?
+    delete h;
 }
 
 }

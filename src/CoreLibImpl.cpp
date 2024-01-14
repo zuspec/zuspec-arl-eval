@@ -21,12 +21,14 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "vsc/dm/IDataTypeWrapper.h"
 #include "vsc/dm/impl/TaskComputeTypePackedSize.h"
+#include "vsc/dm/impl/ValRefPtr.h"
 #include "vsc/dm/impl/ValRefStr.h"
 #include "zsp/arl/eval/IEvalContextInt.h"
 #include "BuiltinFuncInfo.h"
 #include "CoreLibImpl.h"
 #include "StringFormatter.h"
 #include "EvalTypeFunction.h"
+#include "ModelAddrHandle.h"
 #include "ModelAddrSpaceContiguous.h"
 
 
@@ -279,13 +281,29 @@ void CoreLibImpl::RegGroupSetHandle(
             const std::vector<vsc::dm::ValRef>  &params) {
     DEBUG_ENTER("RegGroupSetHandle");
     vsc::dm::IDataTypeWrapper *dt = dynamic_cast<vsc::dm::IDataTypeWrapper *>(params.at(0).type());
-    vsc::dm::ValRefPtr hndl_p(params.at(0));
+    vsc::dm::ValRefInt hndl(vsc::dm::ValRef(
+        params.at(0).vp(),
+        dt->getDataTypePhy(),
+        params.at(0).flags()));
 
-    // RHS will be an integer (for now), and later an address handle
-    vsc::dm::ValRefInt val_i(params.at(1));
-    DEBUG("val_i: 0x%llx", val_i.get_val_u());
-    hndl_p.set_val(val_i.get_val_u());
-    DEBUG("hndl_p: 0x%0llx", hndl_p.get_val());
+//    vsc::dm::ValRefStruct hndl_p(params.at(0));
+//    vsc::dm::ValRefInt hndl_addr(hndl_p.getFieldRef(0));
+
+    // RHS is an address handle
+    vsc::dm::ValRefStruct addr_hndl_s(params.at(1));
+    vsc::dm::ValRefPtr addr_hndl_p(addr_hndl_s.getFieldRef(-1));
+
+//    DEBUG("hndl_p: vp=0x%08llx 0x%08llx flags=0x%08x", 
+//        hndl_p.vp(), hndl_p.get_val(), hndl_p.flags());
+    ModelAddrHandle *addr_hndl = addr_hndl_p.get_valT<ModelAddrHandle>();
+
+ //   *reinterpret_cast<uint64_t *>(hndl_p.get_val());
+
+    DEBUG("Set 0x%08llx = 0x%08llx", hndl.vp(), addr_hndl->getAddr());
+    
+    hndl.set_val(addr_hndl->getAddr());
+
+    DEBUG("hndl: 0x%08llx", hndl.get_val_u());
 
     // Context is of Wrapper type
     // Must set to specified value
