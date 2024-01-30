@@ -37,3 +37,7 @@ python/core.cpp
 python/core.h
 python/zsp_arl_eval/*.so
 __pycache__/
+
+.eggs/
+*.egg-info/
+
