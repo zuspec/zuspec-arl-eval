@@ -21,6 +21,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "EvalThread.h"
 #include "EvalTypeMethodCallContext.h"
+#include "ModelAddrHandle.h"
 
 
 namespace zsp {
@@ -148,6 +149,17 @@ vsc::dm::ValRefInt EvalThread::mkValRefInt(
         bool is_signed, 
         int32_t width) {
     return m_ctxt->ctxt()->mkValRefInt(value, is_signed, width);
+}
+
+vsc::dm::ValRefInt EvalThread::getAddrHandleValue(const vsc::dm::ValRef &addr_h) {
+    vsc::dm::ValRefStruct addr_h_s(addr_h);
+    vsc::dm::ValRefPtr addr_h_p(addr_h_s.getFieldRef(-1));
+    ModelAddrHandle *addr_hndl = addr_h_p.get_valT<ModelAddrHandle>();
+
+    return m_ctxt->ctxt()->mkValRefInt(
+        addr_hndl->getAddr(),
+        false,
+        64);
 }
 
 dmgr::IDebug *EvalThread::m_dbg = 0;

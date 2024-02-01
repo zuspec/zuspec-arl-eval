@@ -23,6 +23,7 @@
 #include "BuiltinFuncInfo.h"
 #include "EvalContextBase.h"
 #include "EvalStackFrame.h"
+#include "ModelAddrHandle.h"
 #include "TaskBindDataTypeValOps.h"
 #include "ValOpsAddrSpaceTransparent.h"
 #include "ValOpsDataTypeAddrHandle.h"
@@ -350,6 +351,17 @@ bool EvalContextBase::initPython() {
     }
     DEBUG_LEAVE("initPython");
     return true;
+}
+
+vsc::dm::ValRefInt EvalContextBase::getAddrHandleValue(const vsc::dm::ValRef &addr_h) {
+    vsc::dm::ValRefStruct addr_h_s(addr_h);
+    vsc::dm::ValRefPtr addr_h_p(addr_h_s.getFieldRef(-1));
+    ModelAddrHandle *addr_hndl = addr_h_p.get_valT<ModelAddrHandle>();
+
+    return m_ctxt->mkValRefInt(
+        addr_hndl->getAddr(),
+        false,
+        64);
 }
 
 

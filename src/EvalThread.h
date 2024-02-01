@@ -95,6 +95,8 @@ public:
         bool is_signed, 
         int32_t width) override;
 
+    virtual vsc::dm::ValRefInt getAddrHandleValue(const vsc::dm::ValRef &addr_h) override;
+
 protected:
 
 protected:

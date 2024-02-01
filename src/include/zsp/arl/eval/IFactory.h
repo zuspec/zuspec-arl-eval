@@ -76,6 +76,7 @@ public:
         vsc::dm::IModelField                        *func_ctxt,
         const std::vector<vsc::dm::ITypeExpr *>     &params) = 0;
 
+
 };
 
 } /* namespace eval */

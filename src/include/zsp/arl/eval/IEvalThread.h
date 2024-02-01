@@ -76,6 +76,8 @@ public:
         vsc::dm::IModelField                    *method_ctxt,
         const std::vector<vsc::dm::ITypeExpr *> &params) =  0;
 
+    virtual vsc::dm::ValRefInt getAddrHandleValue(const vsc::dm::ValRef &addr_h) = 0;
+
     virtual dmgr::IDebugMgr *getDebugMgr() const = 0;
 
     virtual vsc::dm::ValRefInt mkValRefInt(

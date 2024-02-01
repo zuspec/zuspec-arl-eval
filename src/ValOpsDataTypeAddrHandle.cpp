@@ -37,6 +37,7 @@ ValOpsDataTypeAddrHandle::~ValOpsDataTypeAddrHandle() {
 
 void ValOpsDataTypeAddrHandle::initVal(vsc::dm::ValRef &v) {
     DEBUG_ENTER("initVal");
+    DEBUG("vp: 0x%llx", v.vp());
     DEBUG_LEAVE("initVal");
 }
 

@@ -213,6 +213,11 @@ cdef class EvalContext(object):
         ret.val = self._hndl.mkValRefInt(value, is_signed, width)
         return ret
 
+    cpdef vsc.ValRefInt getAddrHandleValue(self, vsc.ValRef val):
+        cdef vsc.ValRefInt ret = vsc.ValRefInt()
+        ret.val = self._hndl.getAddrHandleValue(val.val)
+        return ret
+
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):
     #     return EvalResult.mk(self._hndl.mkEvalResultVal(v._hndl), True)
 
@@ -339,6 +344,11 @@ cdef class EvalThread(Eval):
     cpdef vsc.ValRefInt mkValRefInt(self, int value, bool is_signed, int width):
         cdef vsc.ValRefInt ret = vsc.ValRefInt()
         ret.val = self.asThread().mkValRefInt(value, is_signed, width)
+        return ret
+
+    cpdef vsc.ValRefInt getAddrHandleValue(self, vsc.ValRef val):
+        cdef vsc.ValRefInt ret = vsc.ValRefInt()
+        ret.val = self.asThread().getAddrHandleValue(val.val)
         return ret
 
     # cpdef EvalResult mkEvalResultVal(self, vsc.ModelVal v):

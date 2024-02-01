@@ -196,6 +196,8 @@ public:
         int32_t                                 root_offset,
         int32_t                                 val_offset) override;
 
+    virtual vsc::dm::ValRefInt getAddrHandleValue(const vsc::dm::ValRef &addr_h) override;
+
 protected:
 
     virtual bool initPython();

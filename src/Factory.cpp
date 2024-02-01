@@ -151,6 +151,7 @@ IEvalContext *Factory::mkEvalContextFunctionContext(
     );
 }
 
+
 IFactory *Factory::inst() {
     if (!m_inst.get()) {
         m_inst = FactoryUP(new Factory());
