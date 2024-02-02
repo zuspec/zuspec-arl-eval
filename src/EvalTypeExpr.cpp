@@ -31,6 +31,7 @@
 #include "EvalTypeExpr.h"
 #include "EvalTypeExprRegOffset.h"
 #include "EvalTypeFunction.h"
+#include "TaskConvertImportFuncVal.h"
 
 
 namespace zsp {
@@ -415,7 +416,14 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 m_params.push_back(getResult());
                 clrFlags(EvalFlags::Complete);
             } else if (hasFlags(EvalFlags::Complete)) {
-                m_params.push_back(getResult());
+                // Perform some light type conversion if we'll be calling
+                // an import function
+                if (e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import)) {
+                    m_params.push_back(
+                        TaskConvertImportFuncVal(m_ctxt).convert(getResult()));
+                } else {
+                    m_params.push_back(getResult());
+                }
             } else {
                 break;
             }
@@ -431,9 +439,15 @@ void EvalTypeExpr::visitTypeExprMethodCallContext(dm::ITypeExprMethodCallContext
                 clrFlags(EvalFlags::Complete);
                 if (evaluator.eval()) {
                     break;
-                } else {
-                    if (hasFlags(EvalFlags::Complete)) {
-                        DEBUG("push param[%d] (valid=%d)", m_params.size(), getResult().valid());
+                } else if (hasFlags(EvalFlags::Complete)) {
+                    DEBUG("push param[%d] (valid=%d)", m_params.size(), getResult().valid());
+
+                    // Perform some light type conversion if we'll be calling
+                    // an import function
+                    if (e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import)) {
+                        m_params.push_back(
+                            TaskConvertImportFuncVal(m_ctxt).convert(getResult()));
+                    } else {
                         m_params.push_back(getResult());
                     }
                 }
@@ -522,8 +536,14 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
             }
 
             if (m_subidx > 0 && hasFlags(EvalFlags::Complete)) {
-                // TODO: might 
-                m_params.push_back(getResult());
+                // Perform some light type conversion if we'll be calling
+                // an import function
+                if (e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import)) {
+                    m_params.push_back(
+                        TaskConvertImportFuncVal(m_ctxt).convert(getResult()));
+                } else {
+                    m_params.push_back(getResult());
+                }
             }
             while (m_subidx < e->getParameters().size()) {
                 EvalTypeExpr evaluator(
@@ -536,8 +556,13 @@ void EvalTypeExpr::visitTypeExprMethodCallStatic(dm::ITypeExprMethodCallStatic *
                 clrFlags(EvalFlags::Complete);
                 if (evaluator.eval()) {
                     break;
-                } else {
-                    if (hasFlags(EvalFlags::Complete)) {
+                } else if (hasFlags(EvalFlags::Complete)) {
+                    // Perform some light type conversion if we'll be calling
+                    // an import function
+                    if (e->getTarget()->hasFlags(dm::DataTypeFunctionFlags::Import)) {
+                        m_params.push_back(
+                            TaskConvertImportFuncVal(m_ctxt).convert(getResult()));
+                    } else {
                         m_params.push_back(getResult());
                     }
                 }

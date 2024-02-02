@@ -280,7 +280,8 @@ void EvalContextBase::callFuncReq(
         getBackend()->callFuncReq(thread, func_t, params);
         // 
     } else {
-        ERROR("Implement internal function evaluation. Should not have made it here");
+        ERROR("Implement internal function evaluation for %s (flags=0x%08x). Should not have made it here",
+            func_t->name().c_str(), func_t->getFlags());
         thread->setFlags(EvalFlags::Complete);
     }
 

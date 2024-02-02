@@ -258,6 +258,7 @@ void CoreLibImpl::RegWriteVal(
 
     for (uint32_t i=0; i<params.size(); i++) {
         DEBUG("Param[%d] valid=%d", i, params.at(i).valid());
+        DEBUG("  value: 0x%08x", vsc::dm::ValRefInt(params.at(i)).get_val_u());
     }
 
     if (sz > 32) {
