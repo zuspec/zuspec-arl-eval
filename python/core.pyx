@@ -322,7 +322,6 @@ cdef public void EvalBackendClosure_callFuncReq(
 cdef public void EvalBackendClosure_emitMessage(
     obj,
     const cpp_string                    &msg) with gil:
-    print("EvalBackendClosure_emitMessage")
     obj.emitMessage(msg.decode())
 
 cdef class EvalThread(Eval):
