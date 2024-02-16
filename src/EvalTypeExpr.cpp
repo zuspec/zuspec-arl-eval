@@ -98,6 +98,12 @@ IEval *EvalTypeExpr::clone() {
     return new EvalTypeExpr(this);
 }
 
+void EvalTypeExpr::visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) {
+    DEBUG_ENTER("visitTypeExprArrIndex");
+    ERROR("Unimplemented");
+    DEBUG_LEAVE("visitTypeExprArrIndex");
+}
+
 void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) { 
     DEBUG_ENTER("visitTypeExprBin");
     switch (m_idx) {
@@ -291,23 +297,19 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
 }
 
 void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) { 
+    vsc::dm::ValRef val;
+
     DEBUG_ENTER("visitTypeExprFieldRef");
+#ifdef UNDEFINED
     switch (e->getRootRefKind()) {
         case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
             DEBUG("Bottom-up scope");
             // TODO: Should we get a mutable reference instead?
-            vsc::dm::ValRef val(getImmVal(
+            val = getImmVal(
                 vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
                 e->getRootRefOffset(),
-                e->getPath().at(0)));
+                e->getPath().at(0));
 
-            for (uint32_t i=1; i<e->getPath().size(); i++) {
-                vsc::dm::ValRefStruct val_s(val);
-                val = val_s.getFieldRef(e->getPath().at(i));
-            }
-
-            // Are there any cases in which we need to clone?
-            setResult(val);
 
             // TODO:
             fprintf(stdout, "TODO: Set cloned result\n");
@@ -316,23 +318,35 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
             DEBUG("Top-down scope");
-            vsc::dm::ValRef root = ctxtT<IEvalContextInt>()->getValProvider(
-                m_vp_id)->getMutVal(
+            val = ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(
                     e->getRootRefKind(), 
                     e->getRootRefOffset(), e->getPath().at(0));
-            DEBUG("  ref type=%p", root.type());
-            for (uint32_t i=1; i<e->getPath().size(); i++) {
-                vsc::dm::ValRefStruct val_s(root);
-                root = val_s.getFieldRef(e->getPath().at(i));
-            }
-            setResult(root);
         } break;
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::RootExpr: {
-            DEBUG("Root expr");
+            ERROR("Root expr");
         } break;
     }
 
+    DEBUG("  ref type=%p", val.type());
+    
+    if (!val.valid()) {
+        setError("Failed to obtain a valid root handle");
+        DEBUG_LEAVE("visitTypeExprFieldRef");
+        return;
+    }
+
+    DEBUG("%d sub-elements on this path", (e->getPath().size()-1));
+
+    for (uint32_t i=1; i<e->getPath().size(); i++) {
+        vsc::dm::ValRefStruct val_s(val);
+        val = val_s.getFieldRef(e->getPath().at(i));
+    }
+
+    // Are there any cases in which we need to clone?
+    setResult(val);
+
+#endif /* UNDEFINED */
     DEBUG_LEAVE("visitTypeExprFieldRef");
 }
 
@@ -342,6 +356,33 @@ void EvalTypeExpr::visitTypeExprRange(vsc::dm::ITypeExprRange *e) {
 
 void EvalTypeExpr::visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) { 
 
+}
+
+void EvalTypeExpr::visitTypeExprRefBottomUp(vsc::dm::ITypeExprRefBottomUp *e) {
+    DEBUG_ENTER("visitTypeExprRefBottomUp");
+    vsc::dm::ValRef val(getImmVal(
+            vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
+            e->getScopeOffset(),
+            e->getSubFieldIndex()));
+    setResult(val);
+    DEBUG_LEAVE("visitTypeExprRefBottomUp");
+}
+
+void EvalTypeExpr::visitTypeExprRefTopDown(vsc::dm::ITypeExprRefTopDown *e) {
+    DEBUG_ENTER("visitTypeExprRefTopDown");
+    setResult(getImmVal(
+            vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+            -1,
+            -1));
+    DEBUG_LEAVE("visitTypeExprRefTopDown");
+}
+
+void EvalTypeExpr::visitTypeExprSubField(vsc::dm::ITypeExprSubField *e) {
+    DEBUG_ENTER("visitTypeExprSubField");
+    e->getRootExpr()->accept(m_this);
+    vsc::dm::ValRefStruct val_s(getResult());
+    setResult(val_s.getFieldRef(e->getSubFieldIndex()));
+    DEBUG_LEAVE("visitTypeExprSubField");
 }
 
 void EvalTypeExpr::visitTypeExprVal(vsc::dm::ITypeExprVal *e) { 

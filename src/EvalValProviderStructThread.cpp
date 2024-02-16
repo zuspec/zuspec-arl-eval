@@ -63,8 +63,9 @@ vsc::dm::ValRef EvalValProviderStructThread::getImmVal(
              */
         } break;
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
-            vsc::dm::ValRefStruct scope_s(m_scope);
-            var = scope_s.getFieldRef(val_offset);
+//            vsc::dm::ValRefStruct scope_s(m_scope);
+//            var = scope_s.getFieldRef(val_offset);
+            var = m_scope;
         } break;
     }
 
@@ -85,8 +86,9 @@ vsc::dm::ValRef EvalValProviderStructThread::getMutVal(
              */
         } break;
         case vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope: {
-            vsc::dm::ValRefStruct scope_s(m_scope);
-            var.setWeakRef(scope_s.getFieldRef(val_offset));
+//            vsc::dm::ValRefStruct scope_s(m_scope);
+//            var.setWeakRef(scope_s.getFieldRef(val_offset));
+            var = m_scope;
         } break;
     }
 

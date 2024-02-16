@@ -146,6 +146,7 @@ void CoreLibImpl::Print(
         fmt,
         params,
         1);
+    DEBUG("  MSG: %s", msg.c_str());
     m_ctxt->getBackend()->emitMessage(msg);
     thread->setFlags(EvalFlags::Complete);
     DEBUG_LEAVE("Print");
@@ -298,17 +299,19 @@ void CoreLibImpl::RegGroupSetHandle(
 //        hndl_p.vp(), hndl_p.get_val(), hndl_p.flags());
     ModelAddrHandle *addr_hndl = addr_hndl_p.get_valT<ModelAddrHandle>();
 
- //   *reinterpret_cast<uint64_t *>(hndl_p.get_val());
-
-    DEBUG("Set 0x%08llx = 0x%08llx", hndl.vp(), addr_hndl->getAddr());
+    if (!addr_hndl) {
+        thread->setError("RegGroup set_handle passed a null address handle");
+    } else {
+        DEBUG("Set 0x%08llx = 0x%08llx", hndl.vp(), addr_hndl->getAddr());
     
-    hndl.set_val(addr_hndl->getAddr());
+        hndl.set_val(addr_hndl->getAddr());
 
-    DEBUG("hndl: 0x%08llx", hndl.get_val_u());
+        DEBUG("hndl: 0x%08llx", hndl.get_val_u());
 
-    // Context is of Wrapper type
-    // Must set to specified value
-    thread->setFlags(EvalFlags::Complete);
+        // Context is of Wrapper type
+        // Must set to specified value
+        thread->setFlags(EvalFlags::Complete);
+    }
     DEBUG_LEAVE("RegGroupSetHandle");
 }
 

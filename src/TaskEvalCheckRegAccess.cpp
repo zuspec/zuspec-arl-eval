@@ -113,6 +113,7 @@ void TaskEvalCheckRegAccess::visitDataTypeStruct(vsc::dm::IDataTypeStruct *t) {
 void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
     DEBUG_ENTER("visitTypeExprFieldRef");
 
+#ifdef UNDEFINED
     m_val = dynamic_cast<IEvalContextInt *>(m_ctxt)->getValProvider(m_vp_id)->getImmVal(
         e->getRootRefKind(),
         e->getRootRefOffset(),
@@ -183,6 +184,7 @@ void TaskEvalCheckRegAccess::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e
     if (m_is_reg_ref) {
         DEBUG("Accessing offset %d", m_res.offset);
     }
+#endif /* UNDEFINED */
 
     DEBUG_LEAVE("visitTypeExprFieldRef");
 }

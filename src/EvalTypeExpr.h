@@ -50,6 +50,8 @@ public:
 
     virtual IEval *clone() override;
 
+	virtual void visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) override;
+
 	virtual void visitTypeExprBin(vsc::dm::ITypeExprBin *e) override;
 
 	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
@@ -57,6 +59,12 @@ public:
 	virtual void visitTypeExprRange(vsc::dm::ITypeExprRange *e) override;
 
 	virtual void visitTypeExprRangelist(vsc::dm::ITypeExprRangelist *e) override;
+
+	virtual void visitTypeExprRefBottomUp(vsc::dm::ITypeExprRefBottomUp *e) override;
+
+	virtual void visitTypeExprRefTopDown(vsc::dm::ITypeExprRefTopDown *e) override;
+
+	virtual void visitTypeExprSubField(vsc::dm::ITypeExprSubField *e) override;
 
 	virtual void visitTypeExprVal(vsc::dm::ITypeExprVal *e) override;
 

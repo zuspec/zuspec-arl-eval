@@ -43,7 +43,11 @@ vsc::dm::ValRef TaskGetSubField::getMutVal(
     DEBUG_ENTER("getMutVal");
     m_root = root;
     m_offset = offset;
-    m_root.field()->accept(m_this);
+    if ((m_root.flags() & vsc::dm::ValRef::Flags::HasField) != vsc::dm::ValRef::Flags::None) {
+        m_root.field()->accept(m_this);
+    } else {
+        m_root.type()->accept(m_this);
+    }
     DEBUG_LEAVE("getMutVal");
     return m_root;
 }

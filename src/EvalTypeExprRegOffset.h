@@ -43,11 +43,24 @@ public:
 
     virtual IEval *clone() override;
 
+	virtual void visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) override;
+
 	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override;
 
+	virtual void visitTypeExprRefBottomUp(vsc::dm::ITypeExprRefBottomUp *e) override;
+
+	virtual void visitTypeExprRefTopDown(vsc::dm::ITypeExprRefTopDown *e) override;
+
+	virtual void visitTypeExprSubField(vsc::dm::ITypeExprSubField *e) override;
+
 protected:
+    bool                    m_have_base;
+    vsc::dm::ValRef         m_root;
+    vsc::dm::ValRefInt      m_addr;
     uint64_t                m_value;
     bool                    m_offset_mode;
+    vsc::dm::IDataTypeStruct    *m_dt;
+    
 
 };
 

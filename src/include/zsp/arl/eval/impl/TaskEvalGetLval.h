@@ -50,11 +50,17 @@ public:
         return m_val;
     }
 
+	virtual void visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) override {
+        DEBUG_ENTER("visitTypeExprArrIndex");
+        DEBUG("TODO: visitTypeExprArrIndex");
+        DEBUG_LEAVE("visitTypeExprArrIndex");
+    }
+
 	virtual void visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) override {
-        vsc::dm::ValRef var;
         int32_t path_idx = 0;
         DEBUG_ENTER("visitTypeExprFieldRef");
 
+#ifdef UNDEFINED
         if (e->getPath().size() == 0) {
             ERROR("Path is empty");
             return;
@@ -68,12 +74,11 @@ public:
             path_idx,
             e->getPath().at(path_idx));
         DEBUG("vp=%p", m_vp);
-        var = m_vp->getMutVal(
+        m_val = m_vp->getMutVal(
             e->getRootRefKind(),
             e->getRootRefOffset(),
             e->getPath().at(path_idx++)
         );
-        fflush(stdout);
         // switch (e->getRootRefKind()) {
         //     case vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope: {
         //         IEvalStackFrame *frame = m_thread->stackFrame(e->getPath().at(path_idx++));
@@ -85,25 +90,48 @@ public:
         //     } break;
         // }
 
-        if (!var.valid()) {
-            FATAL("No root var");
-        }
+        // vsc::dm::IModelField *field = 0;
+        // if (path_idx >= e->getPath().size()) {
+        //     m_val.setWeakRef(var);
+        // } else {
+        //     while (path_idx < e->getPath().size()) {
+        //         vsc::dm::ValRefStruct val_s(var);
+        //         var = val_s.getFieldRef(e->getPath().at(path_idx));
+        //         DEBUG("Get field-ref @ %d", e->getPath().at(path_idx));
+        //         path_idx++;
+        //     }
+        //     m_val.setWeakRef(var);
+        // }
 
-        vsc::dm::IModelField *field = 0;
-
-        if (path_idx >= e->getPath().size()) {
-            m_val.setWeakRef(var);
-        } else {
-            while (path_idx < e->getPath().size()) {
-                vsc::dm::ValRefStruct val_s(var);
-                var = val_s.getFieldRef(e->getPath().at(path_idx));
-                DEBUG("Get field-ref @ %d", e->getPath().at(path_idx));
-                path_idx++;
-            }
-            m_val.setWeakRef(var);
-        }
+#endif /* UNDEFINED */
 
         DEBUG_LEAVE("visitTypeExprFieldRef");
+    }
+
+	virtual void visitTypeExprRefBottomUp(vsc::dm::ITypeExprRefBottomUp *e) override { 
+        DEBUG_ENTER("visitTypeExprRefBottomUp");
+        m_val = m_vp->getMutVal(
+            vsc::dm::ITypeExprFieldRef::RootRefKind::BottomUpScope,
+            e->getScopeOffset(),
+            e->getSubFieldIndex());
+        DEBUG_LEAVE("visitTypeExprRefBottomUp");
+    }
+
+	virtual void visitTypeExprRefTopDown(vsc::dm::ITypeExprRefTopDown *e) override { 
+        DEBUG_ENTER("visitTypeExprRefTopDown");
+        m_val = m_vp->getMutVal(
+            vsc::dm::ITypeExprFieldRef::RootRefKind::TopDownScope,
+            -1,
+            -1);
+        DEBUG_LEAVE("visitTypeExprRefTopDown");
+    }
+
+	virtual void visitTypeExprSubField(vsc::dm::ITypeExprSubField *e) override {
+        DEBUG_ENTER("visitTypeExprSubField");
+        e->getRootExpr()->accept(m_this);
+        vsc::dm::ValRefStruct val_s(m_val);
+        m_val = val_s.getFieldRef(e->getSubFieldIndex());
+        DEBUG_LEAVE("visitTypeExprSubField");
     }
 
 private:
