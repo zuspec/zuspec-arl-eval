@@ -40,7 +40,8 @@ public:
         IEvalContext        *ctxt,
         IEvalThread         *thread,
         int32_t             vp_id,
-        vsc::dm::ITypeExpr  *expr);
+        vsc::dm::ITypeExpr  *expr,
+        const std::string   &logid="zsp::arl::eval::EvalTypeExpr");
 
     EvalTypeExpr(EvalTypeExpr *o);
 

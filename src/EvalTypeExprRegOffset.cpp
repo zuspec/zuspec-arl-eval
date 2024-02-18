@@ -36,9 +36,9 @@ EvalTypeExprRegOffset::EvalTypeExprRegOffset(
         IEvalContext        *ctxt,
         IEvalThread         *thread,
         int32_t             vp_id,
-        vsc::dm::ITypeExpr  *expr) : EvalTypeExpr(ctxt, thread, vp_id, expr),
+        vsc::dm::ITypeExpr  *expr,
+        const std::string   &logid) : EvalTypeExpr(ctxt, thread, vp_id, expr, logid),
         m_have_base(0) {
-    DEBUG_INIT("zsp::arl::eval::EvalTypeExprRefOffset", ctxt->getDebugMgr());
 
 }
 
@@ -84,7 +84,45 @@ IEval *EvalTypeExprRegOffset::clone() {
 
 void EvalTypeExprRegOffset::visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) {
     DEBUG_ENTER("visitTypeExprArrIndex");
-    DEBUG("TODO: visitTypeExprArrIndex");
+    e->getRootExpr()->accept(m_this);
+
+    if (!m_have_base) {
+        DEBUG("TODO: array index prior to reg path");
+        /*
+        m_root = TaskGetSubField(m_ctxt->getDebugMgr()).getMutVal(
+            m_root,
+            e->getSubFieldIndex());
+         */
+//        m_dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
+//            m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
+        /*
+        */
+        if (!m_have_base && dm::TaskIsRefGroupRef().check(m_root.field())) {
+            DEBUG("Found register base");
+            m_have_base = true;
+            m_addr = TaskGetRegBaseAddr(m_ctxt).get(m_root);
+            setResult(m_addr);
+            m_dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
+               m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
+            DEBUG("Base: 0x%08llx", m_addr.get_val_u());
+        }
+    } else {
+        // Calculate the offset
+        int32_t offset = 0;
+        int32_t elem_sz = 0;
+
+        m_addr.set_val(m_addr.get_val_u() + offset*elem_sz);
+        /*
+        dm::ITypeFieldReg *tf = m_dt->getFieldT<dm::ITypeFieldReg>(e->getSubFieldIndex());
+        DEBUG("Offset %d: %s -- %lld", 
+            e->getSubFieldIndex(), 
+            tf->name().c_str(), 
+            tf->getAddrOffset());
+        m_addr.set_val(m_addr.get_val_u() + tf->getAddrOffset());
+        m_dt = tf->getDataTypeT<vsc::dm::IDataTypeStruct>();
+         */
+        setResult(m_addr);
+    }
     DEBUG_LEAVE("visitTypeExprArrIndex");
 }
 
@@ -202,21 +240,50 @@ void EvalTypeExprRegOffset::visitTypeExprSubField(vsc::dm::ITypeExprSubField *e)
             m_have_base = true;
             m_addr = TaskGetRegBaseAddr(m_ctxt).get(m_root);
             setResult(m_addr);
-            m_dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
-               m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
-            DEBUG("Base: 0x%08llx", m_addr.get_val_u());
+            m_dt = m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt();
+            DEBUG("Base: 0x%08llx dt=%s", m_addr.get_val_u(), 
+                dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)?
+                    dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)->name().c_str():"<unknown>");
         }
     } else {
-        dm::ITypeFieldReg *tf = m_dt->getFieldT<dm::ITypeFieldReg>(e->getSubFieldIndex());
-        DEBUG("Offset %d: %s -- %lld", 
-            e->getSubFieldIndex(), 
-            tf->name().c_str(), 
-            tf->getAddrOffset());
-        m_addr.set_val(m_addr.get_val_u() + tf->getAddrOffset());
-        m_dt = tf->getDataTypeT<vsc::dm::IDataTypeStruct>();
-        setResult(m_addr);
+        if (dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)) {
+            vsc::dm::IDataTypeStruct *dt_s = dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt);
+            vsc::dm::ITypeField *tf = dt_s->getField(e->getSubFieldIndex());
+            DEBUG("Offset %d: %s", e->getSubFieldIndex(), tf->name().c_str());
+
+            tf->accept(m_this);
+
+            // DEBUG("  dt: %s -> %s", 
+            //     m_dt->name().c_str(),
+            //     tf->getDataTypeT<vsc::dm::IDataTypeStruct>()->name().c_str());
+    //        m_dt = tf->getDataTypeT<vsc::dm::IDataTypeStruct>();
+            setResult(m_addr);
+        } else {
+            ERROR("Datatype is not composite");
+        }
     }
     DEBUG_LEAVE("visitTypeExprSubField");
+}
+
+void EvalTypeExprRegOffset::visitTypeFieldReg(arl::dm::ITypeFieldReg *f) {
+    DEBUG_ENTER("visitTypeFieldReg");
+    m_addr.set_val(m_addr.get_val_u() + f->getAddrOffset());
+    m_dt = f->getDataType();
+    DEBUG_LEAVE("visitTypeFieldReg");
+}
+
+void EvalTypeExprRegOffset::visitTypeFieldRegGroup(arl::dm::ITypeFieldRegGroup *f) {
+    DEBUG_ENTER("visitTypeFieldRegGroup");
+    m_addr.set_val(m_addr.get_val_u() + f->getAddrOffset());
+    m_dt = f->getDataType();
+    DEBUG_LEAVE("visitTypeFieldRegGroup");
+}
+
+
+void EvalTypeExprRegOffset::visitTypeFieldRegGroupArr(arl::dm::ITypeFieldRegGroupArr *f) {
+    DEBUG_ENTER("visitTypeFieldRegGroupArr %s", f->name().c_str());
+    m_dt = f->getElemType();
+    DEBUG_LEAVE("visitTypeFieldRegGroupArr %s", f->name().c_str());
 }
 
 }

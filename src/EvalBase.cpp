@@ -32,11 +32,12 @@ namespace eval {
 EvalBase::EvalBase(
     IEvalContext            *ctxt,
     IEvalThread             *thread,
-    int32_t                 vp_id) :
+    int32_t                 vp_id,
+    const std::string       &logid) :
         m_dbg(0),
         m_initial(true), m_entry_idx(-1), m_ctxt(ctxt), m_thread(thread),
         m_vp_id(vp_id), m_flags(EvalFlags::NoFlags) {
-
+    DEBUG_INIT(logid, ctxt->getDebugMgr());
 }
 
 EvalBase::EvalBase(IEvalThread *thread) :

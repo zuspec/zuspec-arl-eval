@@ -33,7 +33,8 @@ public:
         IEvalContext        *ctxt,
         IEvalThread         *thread,
         int32_t             vp_id,
-        vsc::dm::ITypeExpr  *expr);
+        vsc::dm::ITypeExpr  *expr,
+        const std::string   &logid="zsp::arl::eval::EvalTypeExprRegOffset");
 
     EvalTypeExprRegOffset(EvalTypeExprRegOffset *o);
 
@@ -53,13 +54,19 @@ public:
 
 	virtual void visitTypeExprSubField(vsc::dm::ITypeExprSubField *e) override;
 
+	virtual void visitTypeFieldRegGroupArr(arl::dm::ITypeFieldRegGroupArr *f) override;
+
+	virtual void visitTypeFieldRegGroup(arl::dm::ITypeFieldRegGroup *f) override;
+
+	virtual void visitTypeFieldReg(arl::dm::ITypeFieldReg *f) override;
+
 protected:
     bool                    m_have_base;
     vsc::dm::ValRef         m_root;
     vsc::dm::ValRefInt      m_addr;
     uint64_t                m_value;
     bool                    m_offset_mode;
-    vsc::dm::IDataTypeStruct    *m_dt;
+    vsc::dm::IDataType      *m_dt;
     
 
 };

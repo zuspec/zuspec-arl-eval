@@ -36,7 +36,8 @@ public:
     EvalBase(
         IEvalContext            *ctxt,
         IEvalThread             *thread,
-        int32_t                 vp_id=-1
+        int32_t                 vp_id=-1,
+        const std::string       &logid="zsp::arl::eval::EvalBase"
     );
 
     EvalBase(IEvalThread        *thread);

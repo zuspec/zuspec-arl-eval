@@ -40,15 +40,16 @@ namespace eval {
 
 
 EvalTypeExpr::EvalTypeExpr(
-    IEvalContext        *ctxt,
-    IEvalThread         *thread,
-    int32_t             vp_id,
-    vsc::dm::ITypeExpr  *expr) :
-        EvalBase(ctxt, thread, vp_id),
+    IEvalContext            *ctxt,
+    IEvalThread             *thread,
+    int32_t                 vp_id,
+    vsc::dm::ITypeExpr      *expr,
+    const std::string       &logid) :
+        EvalBase(ctxt, thread, vp_id, logid),
         m_expr(expr), 
         m_builtin_i(0),
         m_idx(0), m_subidx(0) {
-    DEBUG_INIT("EvalTypeExpr", ctxt->getDebugMgr());
+    DEBUG_INIT("zsp::arl::eval::EvalTypeExpr", ctxt->getDebugMgr());
 }
 
 EvalTypeExpr::EvalTypeExpr(EvalTypeExpr *o) :
