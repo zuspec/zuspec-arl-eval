@@ -61,12 +61,21 @@ public:
 	virtual void visitTypeFieldReg(arl::dm::ITypeFieldReg *f) override;
 
 protected:
+
+    bool findBase(const vsc::dm::ValRef &field);
+
+    void findFieldOffsetScale();
+
+protected:
     bool                    m_have_base;
     vsc::dm::ValRef         m_root;
-    vsc::dm::ValRefInt      m_addr;
+    vsc::dm::ITypeField     *m_root_field;
+    vsc::dm::IDataType      *m_root_dt;
+    int64_t                 m_offset;
+    int64_t                 m_scale;
+
     uint64_t                m_value;
     bool                    m_offset_mode;
-    vsc::dm::IDataType      *m_dt;
     
 
 };

@@ -60,6 +60,13 @@ int32_t EvalTypeExprRegOffset::eval() {
         m_have_base = false;
     }
 
+    // Expression consists of:
+    // - 0-M elements that are *not* of TypeFieldReg kind
+    //   - Must perform derferencing as normal, starting with the root value
+    // - 1-N elements that are TypeFieldReg kind
+    //   - On first TypeFieldReg reference, must compute base address
+    //   - On subsequent dereferences, use pre-computed offset information 
+    //     to offset the base address
     m_expr->accept(m_this);
 
 //    setResult(m_ctxt->ctxt()->mkValRefInt(20, false, 32));
@@ -85,10 +92,13 @@ IEval *EvalTypeExprRegOffset::clone() {
 void EvalTypeExprRegOffset::visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) {
     DEBUG_ENTER("visitTypeExprArrIndex");
     e->getRootExpr()->accept(m_this);
+    vsc::dm::ValRef base(getResult());
 
     if (!m_have_base) {
-        DEBUG("TODO: array index prior to reg path");
+        ERROR("reg-path index of non-reg-path not implemented");
         /*
+        if (dm::TaskIsRefGroupRef().check(m_root.field())) {
+            DEBUG("TODO: array index prior to reg path");
         m_root = TaskGetSubField(m_ctxt->getDebugMgr()).getMutVal(
             m_root,
             e->getSubFieldIndex());
@@ -96,32 +106,41 @@ void EvalTypeExprRegOffset::visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e)
 //        m_dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
 //            m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
         /*
-        */
-        if (!m_have_base && dm::TaskIsRefGroupRef().check(m_root.field())) {
             DEBUG("Found register base");
             m_have_base = true;
-            m_addr = TaskGetRegBaseAddr(m_ctxt).get(m_root);
-            setResult(m_addr);
+            setResult(TaskGetRegBaseAddr(m_ctxt).get(m_root));
             m_dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
-               m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
-            DEBUG("Base: 0x%08llx", m_addr.get_val_u());
+                m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
+            DEBUG("Base: 0x%08llx", vsc::dm::ValRefInt(getResult()).get_val_u());
         }
+        */
     } else {
         // Calculate the offset
-        int32_t offset = 0;
-        int32_t elem_sz = 0;
 
-        m_addr.set_val(m_addr.get_val_u() + offset*elem_sz);
-        /*
-        dm::ITypeFieldReg *tf = m_dt->getFieldT<dm::ITypeFieldReg>(e->getSubFieldIndex());
-        DEBUG("Offset %d: %s -- %lld", 
-            e->getSubFieldIndex(), 
-            tf->name().c_str(), 
-            tf->getAddrOffset());
-        m_addr.set_val(m_addr.get_val_u() + tf->getAddrOffset());
-        m_dt = tf->getDataTypeT<vsc::dm::IDataTypeStruct>();
-         */
-        setResult(m_addr);
+        // Save the address while we get the index
+        vsc::dm::ValRefInt addr(getResult());
+
+        EvalTypeExpr(
+            m_ctxt, 
+            m_thread,
+            m_vp_id,
+            e->getIndexExpr()).eval();
+        vsc::dm::ValRefInt index(getResult());
+
+        // Now, determine scale
+        findFieldOffsetScale();
+
+        DEBUG("Index: addr=0x%08llx offset=%lld scale=%lld index=%lld",
+            addr.get_val_u(),
+            m_offset,
+            m_scale,
+            index.get_val_s());
+        setResult(m_ctxt->mkValRefInt(
+            addr.get_val_u() + (m_scale * index.get_val_s()) + m_offset,
+            false,
+            64
+        ));
+        DEBUG("Result: %08llx", vsc::dm::ValRefInt(getResult()).get_val_u());
     }
     DEBUG_LEAVE("visitTypeExprArrIndex");
 }
@@ -231,21 +250,106 @@ void EvalTypeExprRegOffset::visitTypeExprSubField(vsc::dm::ITypeExprSubField *e)
         m_root = TaskGetSubField(m_ctxt->getDebugMgr()).getMutVal(
             m_root,
             e->getSubFieldIndex());
-//        m_dt = dynamic_cast<vsc::dm::IDataTypeStruct *>(
-//            m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt());
-        /*
-        */
-        if (!m_have_base && dm::TaskIsRefGroupRef().check(m_root.field())) {
-            DEBUG("Found register base");
-            m_have_base = true;
-            m_addr = TaskGetRegBaseAddr(m_ctxt).get(m_root);
-            setResult(m_addr);
-            m_dt = m_root.field()->getDataTypeT<vsc::dm::IDataTypeWrapper>()->getDataTypeVirt();
-            DEBUG("Base: 0x%08llx dt=%s", m_addr.get_val_u(), 
-                dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)?
-                    dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)->name().c_str():"<unknown>");
-        }
+
+        findBase(m_root);
     } else {
+        // m_root points to first element that is a TypeFieldReg
+        // <result> holds the base address
+        // 
+        // This expression is just a sub-element reference
+        // - Get field offset by visiting the field
+        // Result has
+
+        // Now, setup for next
+        vsc::dm::IDataTypeStruct *dt_s = dynamic_cast<vsc::dm::IDataTypeStruct *>(m_root_dt);
+        vsc::dm::ITypeField *field = dt_s->getField(e->getSubFieldIndex());
+        DEBUG("Moving from field %s to %s", m_root_field->name().c_str(), field->name().c_str());
+        m_root_field = field;
+
+        findFieldOffsetScale();
+
+        vsc::dm::ValRefInt addr(getResult());
+        DEBUG("Update Addr: addr=0x%08llx offset=%0d", addr.get_val_u(), m_offset);
+        setResult(m_ctxt->mkValRefInt(
+            addr.get_val_u() + m_offset,
+            false, 64));
+    }
+
+
+    DEBUG_LEAVE("visitTypeExprSubField");
+}
+
+void EvalTypeExprRegOffset::visitTypeFieldReg(arl::dm::ITypeFieldReg *f) {
+    DEBUG_ENTER("visitTypeFieldReg %s", f->name().c_str());
+    DEBUG("set m_offset=%lld", f->getAddrOffset());
+    m_offset = f->getAddrOffset();
+    DEBUG_LEAVE("visitTypeFieldReg");
+}
+
+void EvalTypeExprRegOffset::visitTypeFieldRegGroup(arl::dm::ITypeFieldRegGroup *f) {
+    DEBUG_ENTER("visitTypeFieldRegGroup");
+    DEBUG("set m_offset=%lld", f->getAddrOffset());
+    m_offset = f->getAddrOffset();
+    if (dynamic_cast<vsc::dm::IDataTypeWrapper *>(f->getDataType())) {
+        DEBUG("wrapper-dt");
+        m_root_dt = dynamic_cast<vsc::dm::IDataTypeWrapper *>(f->getDataType())->getDataTypeVirt();
+    } else {
+        m_root_dt = f->getDataType();
+    }
+    DEBUG_LEAVE("visitTypeFieldRegGroup");
+}
+
+
+void EvalTypeExprRegOffset::visitTypeFieldRegGroupArr(arl::dm::ITypeFieldRegGroupArr *f) {
+    DEBUG_ENTER("visitTypeFieldRegGroupArr %s", f->name().c_str());
+    DEBUG("set m_offset=%lld m_scale=%d", f->getAddrOffset(), f->getStride());
+    m_offset = f->getAddrOffset();
+    m_scale = f->getStride();
+    m_root_field = f;
+
+//    m_root_field = 0; // Upper-level logic needs to reset this
+    if (dynamic_cast<vsc::dm::IDataTypeWrapper *>(f->getElemType())) {
+        DEBUG("elem is wrapper-dt");
+        m_root_dt = dynamic_cast<vsc::dm::IDataTypeWrapper *>(f->getElemType())->getDataTypeVirt();
+    } else {
+        m_root_dt = f->getElemType();
+    }
+    DEBUG_LEAVE("visitTypeFieldRegGroupArr %s", f->name().c_str());
+}
+
+bool EvalTypeExprRegOffset::findBase(const vsc::dm::ValRef &field) {
+    bool ret = false;
+    DEBUG_ENTER("findBase");
+
+    m_root_field = m_root.field();
+    if ((ret=dm::TaskIsRefGroupRef().check(m_root.field()))) {
+        DEBUG("Found register base");
+        m_have_base = true;
+        vsc::dm::ValRefInt addr(TaskGetRegBaseAddr(m_ctxt).get(m_root));
+
+        setResult(addr);
+
+        vsc::dm::IDataTypeWrapper *dt = m_root_field->getDataTypeT<vsc::dm::IDataTypeWrapper>();
+        m_root_dt = dt->getDataTypeVirt();
+
+/*
+        DEBUG("Base: 0x%08llx dt=%s", m_addr.get_val_u(), 
+            dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)?
+                dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)->name().c_str():"<unknown>");
+ */
+    } else {
+    }
+    DEBUG_LEAVE("findBase %d", ret);
+    return ret;
+}
+
+void EvalTypeExprRegOffset::findFieldOffsetScale() {
+    m_offset = 0;
+    m_scale = 1;
+
+    m_root_field->accept(m_this);
+
+/*
         if (dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt)) {
             vsc::dm::IDataTypeStruct *dt_s = dynamic_cast<vsc::dm::IDataTypeStruct *>(m_dt);
             vsc::dm::ITypeField *tf = dt_s->getField(e->getSubFieldIndex());
@@ -262,28 +366,7 @@ void EvalTypeExprRegOffset::visitTypeExprSubField(vsc::dm::ITypeExprSubField *e)
             ERROR("Datatype is not composite");
         }
     }
-    DEBUG_LEAVE("visitTypeExprSubField");
-}
-
-void EvalTypeExprRegOffset::visitTypeFieldReg(arl::dm::ITypeFieldReg *f) {
-    DEBUG_ENTER("visitTypeFieldReg");
-    m_addr.set_val(m_addr.get_val_u() + f->getAddrOffset());
-    m_dt = f->getDataType();
-    DEBUG_LEAVE("visitTypeFieldReg");
-}
-
-void EvalTypeExprRegOffset::visitTypeFieldRegGroup(arl::dm::ITypeFieldRegGroup *f) {
-    DEBUG_ENTER("visitTypeFieldRegGroup");
-    m_addr.set_val(m_addr.get_val_u() + f->getAddrOffset());
-    m_dt = f->getDataType();
-    DEBUG_LEAVE("visitTypeFieldRegGroup");
-}
-
-
-void EvalTypeExprRegOffset::visitTypeFieldRegGroupArr(arl::dm::ITypeFieldRegGroupArr *f) {
-    DEBUG_ENTER("visitTypeFieldRegGroupArr %s", f->name().c_str());
-    m_dt = f->getElemType();
-    DEBUG_LEAVE("visitTypeFieldRegGroupArr %s", f->name().c_str());
+ */
 }
 
 }

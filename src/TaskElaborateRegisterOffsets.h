@@ -52,11 +52,15 @@ public:
 
 	virtual void visitTypeFieldRegGroup(dm::ITypeFieldRegGroup *f) override;
 
+	virtual void visitTypeFieldRegGroupArr(dm::ITypeFieldRegGroupArr *f) override;
+
 private:
     struct OffsetFuncInfo {
         dm::IDataTypeFunction   *instance_off_f;
         dm::IDataTypeFunction   *instance_array_off_f;
     };
+
+    OffsetFuncInfo findHelperFunctions(dm::IDataTypeComponent *comp_t);
 
 
 private:
