@@ -113,7 +113,7 @@ TEST_F(TestEvalPython, smoke2) {
 
     enableDebug(true);
 
-    dm::IPyImport *imp = m_ctxt->mkPyImport("test_eval_python.smoke");
+    dm::IPyImport *imp = m_ctxt->mkPyImport("test_eval_python.smoke2");
     m_ctxt->addPyImport(imp);
 
     dm::ITypeExecProc *exec = dynamic_cast<dm::ITypeExecProc *>(
