@@ -25,6 +25,7 @@ jobs:
             BUILD_NUM: ${{ github.run_id }}
           run: |
             echo "BUILD_NUM=${BUILD_NUM}" >> python/zsp_arl_eval/__build_num__.py
+            yum install -y glibc-static
             ${IVPM_PYTHON} -m pip install ivpm cython
             ${IVPM_PYTHON} -m ivpm update -a
         - name: Build packages
