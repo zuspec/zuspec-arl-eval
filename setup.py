@@ -69,10 +69,11 @@ setup_args = dict(
   keywords = ["SystemVerilog", "Verilog", "RTL", "Python"],
   url = "https://github.com/zuspec/zuspec-arl-eval",
   install_requires=[
+    'debug-mgr',
+    'pyapi-compat-if',
     'vsc-dm',
     'vsc-solvers',
     'zuspec-arl-dm',
-    'debug-mgr'
   ],
   entry_points={
     'ivpm.pkginfo': [
