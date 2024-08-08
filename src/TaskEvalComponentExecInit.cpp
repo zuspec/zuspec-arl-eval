@@ -77,7 +77,7 @@ vsc::dm::ValRef TaskEvalComponentExecInit::getMutVal(
 }
 
 int32_t TaskEvalComponentExecInit::eval() {
-    FATAL("TaskEvalComponentExecInit not intended to use eval interface");
+    DEBUG_FATAL("TaskEvalComponentExecInit not intended to use eval interface");
 }
 
 void TaskEvalComponentExecInit::visitDataTypeComponent(

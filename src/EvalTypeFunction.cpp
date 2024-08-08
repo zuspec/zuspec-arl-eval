@@ -107,7 +107,7 @@ vsc::dm::ValRef EvalTypeFunction::getImmVal(
                 DEBUG("Get parameter %d (%lld)", val_offset, m_params.at(val_offset).vp());
                 return m_params.at(val_offset);
             } else {
-                ERROR("out-of-bounds parameter value request (idx=%d sz=%d)",
+                DEBUG_ERROR("out-of-bounds parameter value request (idx=%d sz=%d)",
                 val_offset, m_params.size());
             }
         } else {
@@ -143,7 +143,7 @@ vsc::dm::ValRef EvalTypeFunction::getMutVal(
             if (val_offset < m_params.size()) {
                 return m_params.at(val_offset);
             } else {
-                ERROR("out-of-bounds parameter value request (idx=%d sz=%d)",
+                DEBUG_ERROR("out-of-bounds parameter value request (idx=%d sz=%d)",
                     val_offset, m_params.size());
             }
         } else {

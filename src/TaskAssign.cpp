@@ -66,7 +66,7 @@ bool TaskAssign::assign(
     } else if (TaskIsDataTypePyObj().check(lval.type())) {
         assign_pyobj(lval, rhs);
     } else {
-        ERROR("Unknown type for lval");
+        DEBUG_ERROR("Unknown type for lval");
         ret = false;
     }
 
@@ -110,15 +110,15 @@ bool TaskAssign::assign_int(
             int64_t val = py_eval->PyLong_AsLongLong(reinterpret_cast<PyObject  *>(rhs.vp()));
             py_eval->PyErr_Fetch(&ptype, &pvalue, &ptraceback);
             if (ptype || pvalue || ptraceback) {
-                ERROR("Exception occurred");
+                DEBUG_ERROR("Exception occurred");
             }
             lval_i.set_val(val);
             DEBUG("Python value: %lld", val);
         } else {
-            ERROR("TODO: implement py-to-int conversion");
+            DEBUG_ERROR("TODO: implement py-to-int conversion");
         }
     } else {
-        ERROR("Unknown rhs for integer assign");
+        DEBUG_ERROR("Unknown rhs for integer assign");
         ret = false;
     }
 
@@ -156,7 +156,7 @@ bool TaskAssign::assign_pyobj(
         arl::dm::ValRefPyObj rhs_py(rhs);
         lval_py.setObj(rhs_py.getObj());
     } else {
-        ERROR("Unknown rhs for integer assign");
+        DEBUG_ERROR("Unknown rhs for integer assign");
         ret = false;
     }
 

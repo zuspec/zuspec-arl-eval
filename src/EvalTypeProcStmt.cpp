@@ -158,7 +158,7 @@ void EvalTypeProcStmt::visitTypeProcStmtExpr(dm::ITypeProcStmtExpr *s) {
                     break;
                 }
             } else {
-                ERROR("Null expression for statement");
+                DEBUG_ERROR("Null expression for statement");
             }
         }
         case 1: {

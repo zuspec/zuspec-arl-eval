@@ -166,7 +166,7 @@ void TaskElaborateRegisterOffsets::visitTypeFieldRegGroupArr(dm::ITypeFieldRegGr
             f->setStride(offsets[1]-offsets[0]);
         
     } else {
-        ERROR("TODO: implement stride calculation for single-element arrays");
+        DEBUG_ERROR("TODO: implement stride calculation for single-element arrays");
     }
 
     dm::IDataTypeComponent *elem_t = dynamic_cast<dm::IDataTypeComponent *>(f->getElemType());
@@ -200,7 +200,7 @@ TaskElaborateRegisterOffsets::OffsetFuncInfo TaskElaborateRegisterOffsets::findH
     }
 
     if (!instance_off || !instance_array_off) {
-        ERROR("failed to find offset-calculation functions (instance_off=%p instance_array_off=%p) in %s",
+        DEBUG_ERROR("failed to find offset-calculation functions (instance_off=%p instance_array_off=%p) in %s",
             instance_off, instance_array_off, comp_t->name().c_str());
     } else {
         DEBUG("Found offset-calculation functions");

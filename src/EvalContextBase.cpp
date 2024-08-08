@@ -96,7 +96,7 @@ void EvalContextBase::init() {
 
     for (uint32_t i=0; i<tool_call_funcs.size(); i++) {
         if (!m_functions[i]) {
-            ERROR("Failed to find tool-called function %s", tool_call_funcs.at(i).c_str());
+            DEBUG_ERROR("Failed to find tool-called function %s", tool_call_funcs.at(i).c_str());
         }
     }
 
@@ -280,7 +280,7 @@ void EvalContextBase::callFuncReq(
         getBackend()->callFuncReq(thread, func_t, params);
         // 
     } else {
-        ERROR("Implement internal function evaluation for %s (flags=0x%08x). Should not have made it here",
+        DEBUG_ERROR("Implement internal function evaluation for %s (flags=0x%08x). Should not have made it here",
             func_t->name().c_str(), func_t->getFlags());
         thread->setFlags(EvalFlags::Complete);
     }
@@ -294,7 +294,7 @@ IEvalValProvider *EvalContextBase::getValProvider(int32_t id) {
     } else if (id < 0) {
         return this;
     } else {
-        FATAL("Out-of-bounds value request %d", id);
+        DEBUG_FATAL("Out-of-bounds value request %d", id);
         return 0;
     }
 }
@@ -317,14 +317,14 @@ vsc::dm::ValRef EvalContextBase::getImmVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
         int32_t                                 val_offset) {
-    FATAL("Root doesn't provide value");
+    DEBUG_FATAL("Root doesn't provide value");
 }
 
 vsc::dm::ValRef EvalContextBase::getMutVal(
         vsc::dm::ITypeExprFieldRef::RootRefKind root_kind,
         int32_t                                 root_offset,
         int32_t                                 val_offset) {
-    FATAL("Root doesn't provide value");
+    DEBUG_FATAL("Root doesn't provide value");
 }
 
 bool EvalContextBase::initPython() {

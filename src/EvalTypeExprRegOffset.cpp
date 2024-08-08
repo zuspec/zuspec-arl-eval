@@ -95,7 +95,7 @@ void EvalTypeExprRegOffset::visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e)
     vsc::dm::ValRef base(getResult());
 
     if (!m_have_base) {
-        ERROR("reg-path index of non-reg-path not implemented");
+        DEBUG_ERROR("reg-path index of non-reg-path not implemented");
         /*
         if (dm::TaskIsRefGroupRef().check(m_root.field())) {
             DEBUG("TODO: array index prior to reg path");
@@ -363,7 +363,7 @@ void EvalTypeExprRegOffset::findFieldOffsetScale() {
     //        m_dt = tf->getDataTypeT<vsc::dm::IDataTypeStruct>();
             setResult(m_addr);
         } else {
-            ERROR("Datatype is not composite");
+            DEBUG_ERROR("Datatype is not composite");
         }
     }
  */

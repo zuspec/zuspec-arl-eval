@@ -158,7 +158,7 @@ vsc::dm::ValRef EvalTypeProcStmtScope::getImmVal(
                 DEBUG("Get parameter %d", val_offset);
                 ret = m_locals.at(val_offset)->getImmVal();
             } else {
-                ERROR("out-of-bounds parameter value request");
+                DEBUG_ERROR("out-of-bounds parameter value request");
             }
         } else if (m_vp_id != -1) {
             // Delegate up
@@ -168,7 +168,7 @@ vsc::dm::ValRef EvalTypeProcStmtScope::getImmVal(
                 root_offset-1,
                 val_offset);
         } else {
-            ERROR("Invalid vp_id with root_offset=%d", root_offset);
+            DEBUG_ERROR("Invalid vp_id with root_offset=%d", root_offset);
         }
     } else {
         return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getImmVal(
@@ -193,7 +193,7 @@ vsc::dm::ValRef EvalTypeProcStmtScope::getMutVal(
                 DEBUG("Get parameter %d", val_offset);
                 ret = m_locals.at(val_offset)->getMutVal();
             } else {
-                ERROR("out-of-bounds parameter value request");
+                DEBUG_ERROR("out-of-bounds parameter value request");
             }
         } else if (m_vp_id != -1) {
             // Delegate up
@@ -203,7 +203,7 @@ vsc::dm::ValRef EvalTypeProcStmtScope::getMutVal(
                 root_offset-1,
                 val_offset);
         } else {
-            ERROR("Invalid vp_id with root_offset=%d", root_offset);
+            DEBUG_ERROR("Invalid vp_id with root_offset=%d", root_offset);
         }
     } else {
         return ctxtT<IEvalContextInt>()->getValProvider(m_vp_id)->getMutVal(

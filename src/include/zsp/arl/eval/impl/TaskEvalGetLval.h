@@ -62,7 +62,7 @@ public:
 
 #ifdef UNDEFINED
         if (e->getPath().size() == 0) {
-            ERROR("Path is empty");
+            DEBUG_ERROR("Path is empty");
             return;
         }
 

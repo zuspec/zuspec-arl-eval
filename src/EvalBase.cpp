@@ -86,7 +86,7 @@ vsc::dm::ValRef EvalBase::getImmVal(
             root_offset,
             val_offset);
     } else {
-        ERROR("vp_id is invalid, and this level has no values to provide");
+        DEBUG_ERROR("vp_id is invalid, and this level has no values to provide");
     }
     DEBUG_LEAVE("getImmVal");
     return ret;
@@ -112,7 +112,7 @@ vsc::dm::ValRef EvalBase::getMutVal(
             root_offset,
             val_offset);
     } else {
-        ERROR("vp_id is invalid, and this level has no values to provide");
+        DEBUG_ERROR("vp_id is invalid, and this level has no values to provide");
     }
 
     DEBUG_LEAVE("getMutVal");

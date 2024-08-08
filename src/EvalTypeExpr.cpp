@@ -77,7 +77,7 @@ int32_t EvalTypeExpr::eval() {
     if (m_expr) {
         m_expr->accept(m_this);
     } else {
-        ERROR("attempting to evaluate a null expression");
+        DEBUG_ERROR("attempting to evaluate a null expression");
     }
 
     int32_t ret = !hasFlags(EvalFlags::Complete);
@@ -101,7 +101,7 @@ IEval *EvalTypeExpr::clone() {
 
 void EvalTypeExpr::visitTypeExprArrIndex(vsc::dm::ITypeExprArrIndex *e) {
     DEBUG_ENTER("visitTypeExprArrIndex");
-    ERROR("Unimplemented");
+    DEBUG_ERROR("Unimplemented");
     DEBUG_LEAVE("visitTypeExprArrIndex");
 }
 
@@ -282,7 +282,7 @@ void EvalTypeExpr::visitTypeExprBin(vsc::dm::ITypeExprBin *e) {
                      */
                 } break;
                 default:
-//                    ERROR("")
+//                    DEBUG_ERROR("")
                     break;
             }
 
@@ -325,7 +325,7 @@ void EvalTypeExpr::visitTypeExprFieldRef(vsc::dm::ITypeExprFieldRef *e) {
         } break;
 
         case vsc::dm::ITypeExprFieldRef::RootRefKind::RootExpr: {
-            ERROR("Root expr");
+            DEBUG_ERROR("Root expr");
         } break;
     }
 
@@ -730,7 +730,7 @@ void EvalTypeExpr::visitTypeExprPythonMethodCall(dm::ITypeExprPythonMethodCall *
                 py_eval->PyErr_Fetch(&ptype, &pvalue, &ptraceback);
                 if (ptype || pvalue || ptraceback) {
                     py_eval->PyErr_Display(ptype, pvalue, ptraceback);
-                    ERROR("Exception occurred");
+                    DEBUG_ERROR("Exception occurred");
                 }
 
                 if (!ret) {
