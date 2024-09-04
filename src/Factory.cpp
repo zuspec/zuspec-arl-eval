@@ -31,6 +31,7 @@
 #include "ModelEvaluatorFullElab.h"
 #include "ModelEvaluatorIncrElab.h"
 #include "ModelEvaluatorFullElabActivity.h"
+#include "TaskBuildComponentTreeData.h"
 #include "TaskElaborateActivity.h"
 
 namespace zsp {
@@ -44,6 +45,11 @@ Factory::Factory() : m_dmgr(0) {
 
 Factory::~Factory() {
 
+}
+
+IComponentTreeData *Factory::mkComponentTreeData(
+        arl::dm::IDataTypeComponent     *root_t) {
+    return TaskBuildComponentTreeData(m_dmgr).build(root_t);
 }
 
 IModelEvaluator *Factory::mkModelEvaluator(

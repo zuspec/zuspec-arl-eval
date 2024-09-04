@@ -6,7 +6,7 @@ class PkgInfo(ivpm.PkgInfo):
     def __init__(self):
         pkgdir = os.path.dirname(os.path.abspath(__file__))
         projdir = os.path.dirname(os.path.dirname(pkgdir))
-        super().__init__("zsp-arl-eval", os.path.dirname(pkgdir))
+        super().__init__("zuspec-arl-eval", os.path.dirname(pkgdir))
 
         if os.path.isdir(os.path.join(projdir, "src")):
             self._incdirs = [
@@ -19,6 +19,6 @@ class PkgInfo(ivpm.PkgInfo):
             self._incdirs = [os.path.join(pkgdir, "share", "include")]
             self._libdirs = [os.path.join(pkgdir)]
 
-        self._deps = ["zsp-arl-dm", "vsc-solvers"]
+        self._deps = ["zuspec-arl-dm", "vsc-solvers"]
 
         self._libs = ["zsp-arl-eval"]

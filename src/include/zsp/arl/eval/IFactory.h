@@ -23,6 +23,7 @@
 #include "pyapi-compat-if/IPyEval.h"
 #include "vsc/solvers/IFactory.h"
 #include "zsp/arl/dm/IContext.h"
+#include "zsp/arl/eval/IComponentTreeData.h"
 #include "zsp/arl/eval/IModelEvaluator.h"
 #include "zsp/arl/eval/IEvalBackend.h"
 #include "zsp/arl/eval/IEvalContext.h"
@@ -40,6 +41,9 @@ public:
     virtual ~IFactory() { }
 
     virtual void init(dmgr::IDebugMgr *dmgr) = 0;
+
+    virtual IComponentTreeData *mkComponentTreeData(
+        arl::dm::IDataTypeComponent     *root_t) = 0;
 
     virtual IModelEvaluator *mkModelEvaluator(
         ModelEvaluatorKind          kind,

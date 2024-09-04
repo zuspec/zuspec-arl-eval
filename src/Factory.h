@@ -40,6 +40,9 @@ public:
         m_dmgr = dmgr;
     }
 
+    virtual IComponentTreeData *mkComponentTreeData(
+        arl::dm::IDataTypeComponent     *root_t) override;
+
     virtual IModelEvaluator *mkModelEvaluator(
         ModelEvaluatorKind          kind,
         vsc::solvers::IFactory      *solvers_f,
