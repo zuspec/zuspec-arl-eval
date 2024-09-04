@@ -38,8 +38,5 @@ package:
       src: pypi
     - name: cython
       src: pypi
-    - name: ivpm
-      src: pypi
-      #url: https://github.com/fvutils/ivpm.git
 
 
