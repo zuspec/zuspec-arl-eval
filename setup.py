@@ -82,8 +82,6 @@ setup_args = dict(
   },
   setup_requires=[
     'setuptools_scm',
-    'vsc-dm',
-    'debug-mgr',
     'cython',
   ],
   ext_modules=[ ext ]
