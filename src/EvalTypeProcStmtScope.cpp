@@ -73,7 +73,8 @@ int32_t EvalTypeProcStmtScope::eval() {
             }
 
             while (m_subidx < m_scope->getVariables().size()) {
-                dm::ITypeProcStmtVarDecl *var = m_scope->getVariables().at(m_subidx).get();
+                dm::ITypeProcStmtVarDecl *var = dynamic_cast<dm::ITypeProcStmtVarDecl *>(
+                    m_scope->getVariables().at(m_subidx).get());
 
                 // Create and optionally initialize variable
                 if (!m_build_ctxt) {
