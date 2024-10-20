@@ -17,6 +17,8 @@ package:
       url: https://github.com/zuspec/zuspec-arl-dm.git
     - name: pyapi-compat-if
       url: https://github.com/mballance-utils/pyapi-compat-if.git
+    - name: debug-mgr
+      url: https://github.com/mballance-utils/debug-mgr.git
 
   - name: default-dev
     deps:
