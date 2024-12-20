@@ -41,6 +41,10 @@ public:
 
     virtual vsc::dm::ValRef copyVal(const vsc::dm::ValRef &src) override;
 
+    virtual vsc::dm::IValIterator *mkValIterator(const vsc::dm::ValRef &src) override;
+
+    virtual vsc::dm::IValMutIterator *mkValMutIterator(const vsc::dm::ValRef &src) override;
+
 private:
     static dmgr::IDebug                     *m_dbg;
     IEvalContextInt                         *m_ctxt;

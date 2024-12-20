@@ -52,6 +52,20 @@ vsc::dm::ValRef ValOpsDataTypeAddrHandle::copyVal(const vsc::dm::ValRef &src) {
     DEBUG_LEAVE("copyVal");
 }
 
+vsc::dm::IValIterator *ValOpsDataTypeAddrHandle::mkValIterator(const vsc::dm::ValRef &src) {
+    DEBUG_ENTER("mkValIterator");
+    DEBUG("TODO: mkValIterator");
+    DEBUG_LEAVE("mkValIterator");
+    return 0;
+}
+
+vsc::dm::IValMutIterator *ValOpsDataTypeAddrHandle::mkValMutIterator(const vsc::dm::ValRef &src) {
+    DEBUG_ENTER("mkValMutIterator");
+    DEBUG("TODO: mkValMutIterator");
+    DEBUG_LEAVE("mkValMutIterator");
+    return 0;
+}
+
 dmgr::IDebug *ValOpsDataTypeAddrHandle::m_dbg = 0;
 
 }

@@ -63,6 +63,21 @@ vsc::dm::ValRef ValOpsAddrSpaceTransparent::copyVal(const vsc::dm::ValRef &src) 
     DEBUG_ENTER("copyVal");
 
     DEBUG_LEAVE("copyVal");
+    return vsc::dm::ValRef();
+}
+
+vsc::dm::IValIterator *ValOpsAddrSpaceTransparent::mkValIterator(const vsc::dm::ValRef &src) {
+    DEBUG_ENTER("mkValIterator");
+    DEBUG("TODO: mkValIterator");
+    DEBUG_LEAVE("mkValIterator");
+    return 0;
+}
+
+vsc::dm::IValMutIterator *ValOpsAddrSpaceTransparent::mkValMutIterator(const vsc::dm::ValRef &src) {
+    DEBUG_ENTER("mkValMutIterator");
+    DEBUG("TODO: mkValMutIterator");
+    DEBUG_LEAVE("mkValMutIterator");
+    return 0;
 }
 
 dmgr::IDebug *ValOpsAddrSpaceTransparent::m_dbg = 0;
