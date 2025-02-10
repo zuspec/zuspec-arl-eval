@@ -70,6 +70,10 @@ setup_args = dict(
   license = "Apache 2.0",
   keywords = ["SystemVerilog", "Verilog", "RTL", "Python"],
   url = "https://github.com/zuspec/zuspec-arl-eval",
+  package_data = {'zsp_arl_eval': [
+      'core.pxd',
+      'decl.pxd'
+  ]},
   install_requires=[
     'debug-mgr',
     'pyapi-compat-if',
@@ -97,6 +101,8 @@ if isSrcBuild:
     setup_args["ivpm_extra_data"] = {
         "zsp_arl_eval": [
             ("src/include", "share"),
+            ("python/EvalBackendClosure.h", "share/include"),
+            ("python/EvalThreadData.h", "share/include"),
             ("build/{libdir}/{libpref}zsp-arl-eval{dllext}", ""),
         ]
     }
