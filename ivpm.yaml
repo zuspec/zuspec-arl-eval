@@ -23,9 +23,9 @@ package:
   - name: default-dev
     deps:
     - name: vsc-dm
-      url: https://github.com/vsc-tools/libvsc-dm.git
+      src: pypi
     - name: vsc-solvers
-      url: https://github.com/vsc-tools/libvsc-solvers.git
+      src: pypi
     - name: zuspec-arl-dm
       src: pypi
     - name: zuspec-dataclasses
@@ -35,7 +35,7 @@ package:
     - name: pytypeworks
       src: pypi
     - name: pyapi-compat-if
-      url: https://github.com/mballance-utils/pyapi-compat-if.git
+      src: pypi
     - name: ninja
       src: pypi
     - name: cython
