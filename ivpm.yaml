@@ -23,6 +23,27 @@ package:
   - name: default-dev
     deps:
     - name: vsc-dm
+      src: pypi
+    - name: vsc-solvers
+      src: pypi
+    - name: zuspec-arl-dm
+      src: pypi
+    - name: zuspec-dataclasses
+      src: pypi
+    - name: pyvsc-dataclasses
+      src: pypi
+    - name: pytypeworks
+      src: pypi
+    - name: pyapi-compat-if
+      src: pypi
+    - name: ninja
+      src: pypi
+    - name: cython
+      src: pypi
+
+  - name: default-dev-src
+    deps:
+    - name: vsc-dm
       url: https://github.com/vsc-tools/libvsc-dm.git
     - name: vsc-solvers
       url: https://github.com/vsc-tools/libvsc-solvers.git

@@ -10,11 +10,13 @@ proj_dir = os.path.dirname(os.path.abspath(__file__))
 
 try:
     sys.path.insert(0, os.path.join(proj_dir, "python/zsp_arl_eval"))
-    from __version__ import VERSION
+    from __version__ import VERSION, BASE
+    base=BASE
     version=VERSION
 except ImportError as e:
     print("Import error: %s" % str(e))
-    version="0.0.1"
+    base="0.0.1"
+    version=base
 
 isSrcBuild = False
 
@@ -68,12 +70,16 @@ setup_args = dict(
   license = "Apache 2.0",
   keywords = ["SystemVerilog", "Verilog", "RTL", "Python"],
   url = "https://github.com/zuspec/zuspec-arl-eval",
+  package_data = {'zsp_arl_eval': [
+      'core.pxd',
+      'decl.pxd'
+  ]},
   install_requires=[
     'debug-mgr',
     'pyapi-compat-if',
     'vsc-dm',
     'vsc-solvers',
-    'zuspec-arl-dm',
+    'zuspec-arl-dm>=%s' % base,
   ],
   entry_points={
     'ivpm.pkginfo': [
@@ -95,6 +101,8 @@ if isSrcBuild:
     setup_args["ivpm_extra_data"] = {
         "zsp_arl_eval": [
             ("src/include", "share"),
+            ("python/EvalBackendClosure.h", "share/include"),
+            ("python/EvalThreadData.h", "share/include"),
             ("build/{libdir}/{libpref}zsp-arl-eval{dllext}", ""),
         ]
     }
