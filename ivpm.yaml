@@ -45,18 +45,25 @@ package:
     deps:
     - name: vsc-dm
       url: https://github.com/vsc-tools/libvsc-dm.git
+      dep-set: default-dev
     - name: vsc-solvers
       url: https://github.com/vsc-tools/libvsc-solvers.git
+      dep-set: default-dev
     - name: zuspec-arl-dm
       url: https://github.com/zuspec/zuspec-arl-dm.git
+      dep-set: default-dev
     - name: zuspec-dataclasses
       url: https://github.com/zuspec/zuspec-dataclasses.git
+      dep-set: default-dev
     - name: pyvsc-dataclasses
       url: https://github.com/vsc-tools/pyvsc-dataclasses.git
+      dep-set: default-dev
     - name: pytypeworks
       url: https://github.com/mballance/pytypeworks.git
+      dep-set: default-dev
     - name: pyapi-compat-if
       url: https://github.com/mballance-utils/pyapi-compat-if.git
+      dep-set: default-dev
     - name: ninja
       src: pypi
     - name: cython
