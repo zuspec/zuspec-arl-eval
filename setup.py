@@ -87,8 +87,12 @@ setup_args = dict(
     ]
   },
   setup_requires=[
-    'setuptools_scm',
     'cython',
+    'ivpm',
+    'pyapi-compat-if',
+    'vsc-solvers',
+    'zuspec-arl-dm',
+    'setuptools_scm',
   ],
   ext_modules=[ ext ]
 )
